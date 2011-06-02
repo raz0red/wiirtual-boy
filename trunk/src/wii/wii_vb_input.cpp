@@ -99,7 +99,7 @@ void wii_vb_update_controls()
     ( gcHeld & GC_BUTTON_VB_START ) )
     result|=VB_KEY_START;
 
-    if( ( held & WII_BUTTON_VB_SELECT ) ||
+  if( ( held & WII_BUTTON_VB_SELECT ) ||
     ( gcHeld & GC_BUTTON_VB_SELECT ) )
     result|=VB_KEY_SELECT;
 

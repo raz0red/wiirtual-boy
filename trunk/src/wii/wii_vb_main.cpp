@@ -35,7 +35,6 @@ distribution.
 #include "wii_Vb_input.h"
 #include "wii_vb_main.h"
 #include "wii_vb_sdl.h"
-#include "wii_vb_sound.h"
 
 #ifdef WII_NETTRACE
 #include <network.h>
