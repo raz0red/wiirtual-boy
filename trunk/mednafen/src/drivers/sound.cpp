@@ -39,6 +39,20 @@ static int32 EmuModBufferSize = 0;	// In frames.
 
 static double SoundRate = 0;
 
+#ifdef WII
+int PauseSound( int state )
+{
+  if(!Output) return(0);
+  return(Output->Pause(Output,state));
+}
+int ClearSound()
+{
+  if(!Output) return(0);
+  return(Output->Clear(Output));
+}
+
+#endif
+
 double GetSoundRate(void)
 {
   return(SoundRate);
@@ -71,6 +85,9 @@ void WriteSound(int16 *Buffer, int Count)
 
 void WriteSoundSilence(int ms)
 {
+  if( !Output )
+    return;
+
   unsigned int frames = (uint64)format.rate * ms / 1000;
   int16 SBuffer[frames * format.channels];
 

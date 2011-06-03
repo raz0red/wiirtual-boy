@@ -32,6 +32,11 @@ distribution.
  */
 extern void wii_vb_init();
 
+/*
+ * Free resources (closes) the emulator
+ */
+extern void wii_vb_free();
+
 /**
  * Loads the specified game
  *

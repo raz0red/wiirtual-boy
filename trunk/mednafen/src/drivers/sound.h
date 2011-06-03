@@ -9,6 +9,11 @@ uint32 GetMaxSound(void);
 uint32 GetWriteSound(void);
 void SilenceSound(int s);
 
+#ifdef WII
+int PauseSound( int state );
+int ClearSound();
+#endif
+
 int16 *GetEmuModSoundBuffer(int32 *max_size);
 
 double GetSoundRate(void);

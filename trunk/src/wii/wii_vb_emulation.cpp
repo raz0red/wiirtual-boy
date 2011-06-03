@@ -62,118 +62,103 @@ void wii_start_emulation( char *romfile, const char *savefile, bool reset, bool 
   bool succeeded = true;
   char autosavename[WII_MAX_PATH] = "";
 
-    // Determine the name of the save file
-    if( wii_auto_save_state || wii_auto_load_state )
-    {
-      wii_snapshot_handle_get_name( romfile, autosavename );
-    }
+  // Determine the name of the save file
+  if( wii_auto_save_state || wii_auto_load_state )
+  {
+    wii_snapshot_handle_get_name( romfile, autosavename );
+  }
 
-    // If a specific save file was not specified, and we are auto-loading 
-    // see if a save file exists
-    if( ( savefile == NULL ) &&
-        ( wii_auto_load_state && 
-          wii_check_snapshot( autosavename ) == 0 ) )
-    {
-      savefile = autosavename;
-    }        
+  // If a specific save file was not specified, and we are auto-loading 
+  // see if a save file exists
+  if( ( savefile == NULL ) &&
+      ( wii_auto_load_state && 
+        wii_check_snapshot( autosavename ) == 0 ) )
+  {
+    savefile = autosavename;
+  }        
 
-    // Start emulation
-    if( !resume && !reset )
-    {
+  // Start emulation
+  if( !resume )
+  {
 #if 0
-      // Clear the DB entry
-      memset( &wii_handy_db_entry, 0x0, sizeof( HandyDBEntry ) );
+    // Clear the DB entry
+    memset( &wii_handy_db_entry, 0x0, sizeof( HandyDBEntry ) );
 #endif
-      wii_cartridge_hash[0] = '\0'; // Reset the cartridge hash
+    wii_cartridge_hash[0] = '\0'; // Reset the cartridge hash
 
-      succeeded = ( wii_vb_load_game( romfile ) != 0 );      
+    succeeded = ( wii_vb_load_game( romfile ) != 0 );      
 
-      // Look up the cartridge in the database
-      //wii_handy_db_get_entry( wii_cartridge_hash, &wii_handy_db_entry );
+    // Look up the cartridge in the database
+    //wii_handy_db_get_entry( wii_cartridge_hash, &wii_handy_db_entry );
 
-      // Load the save if applicable
-      if( succeeded && 
-          ( savefile != NULL && strlen( savefile ) > 0 ) )
+    // Load the save if applicable
+    if( !reset && succeeded &&
+        ( savefile != NULL && strlen( savefile ) > 0 ) )
+    {
+      // Ensure the save is valid
+      int sscheck = wii_check_snapshot( savefile );
+      if( sscheck < 0 )
       {
-        // Ensure the save is valid
-        int sscheck = wii_check_snapshot( savefile );
-        if( sscheck < 0 )
+        if( sscheck == -2 )            
         {
-          if( sscheck == -2 )            
-          {
-            wii_set_status_message(
-              "The save specified is not valid." );                
-          }
-          else
-          {
-            wii_set_status_message(
-              "Unable to find the specified save state file." );                
-          }
-
-          succeeded = false;
+          wii_set_status_message(
+            "The save specified is not valid." );                
         }
         else
         {
+          wii_set_status_message(
+            "Unable to find the specified save state file." );                
+        }
+
+        succeeded = false;
+      }
+      else
+      {
 #if 0
-          succeeded = mpLynx->ContextLoad( savefile );                    
+        succeeded = mpLynx->ContextLoad( savefile );                    
 #endif
 
-          if( !succeeded )
-          {
-            wii_set_status_message(
-              "Error loading the specified save state file." );                
-          }
+        if( !succeeded )
+        {
+          wii_set_status_message(
+            "Error loading the specified save state file." );                
         }
       }
     }
-    else if( reset )
+  }
+
+  if( succeeded )
+  {
+    // Wait until no buttons are pressed
+    wii_wait_until_no_buttons( 2 );
+
+    // Start the emulator loop
+    wii_vb_emu_loop();            
+
+    // Auto save?
+    if( wii_auto_save_state )
     {
-#if 0
-      mpLynx->Reset();
-#endif
+      wii_save_snapshot( autosavename, TRUE );
+    }        
+
+    // Store the name of the last rom (for resuming later)        
+    // Do it in this order in case they passed in the pointer
+    // to the last rom variable
+    char *last = strdup( romfile );
+    if( wii_last_rom != NULL )
+    {
+      free( wii_last_rom );    
     }
 
-    if( succeeded )
+    wii_last_rom = last;
+
+    if( wii_top_menu_exit )
     {
-      // Wait until no buttons are pressed
-      wii_wait_until_no_buttons( 2 );
-
-      // Start the emulator loop
-      wii_vb_emu_loop();            
-
-      // Auto save?
-      if( wii_auto_save_state )
-      {
-        wii_save_snapshot( autosavename, TRUE );
-      }        
-
-      // Store the name of the last rom (for resuming later)        
-      // Do it in this order in case they passed in the pointer
-      // to the last rom variable
-      char *last = strdup( romfile );
-      if( wii_last_rom != NULL )
-      {
-        free( wii_last_rom );    
-      }
-
-      wii_last_rom = last;
-
-      if( wii_top_menu_exit )
-      {
-        // Pop to the top
-        while( wii_menu_pop() != NULL );
-      }
+      // Pop to the top
+      while( wii_menu_pop() != NULL );
     }
-#if 0
-  }
-  catch( CLynxException& ex )
-  { 	
-    succeeded = false;
-    wii_set_status_message( ex.mMsg.str().c_str() );
-  }
-#endif
- 
-  if( !succeeded )
+  } 
+  else
   {
     // Reset the last rom that was loaded
     if( wii_last_rom != NULL )

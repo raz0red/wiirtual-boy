@@ -157,7 +157,7 @@ namespace MDFN_IEN_VB
         ColorLUT[lr][i] = format.MakeColor((int)(r_prime * 255), (int)(g_prime * 255), (int)(b_prime * 255), 0);                
 
 #ifdef WII_NETTRACE
-        net_print_string( NULL, 0, "mapColor:%d=%d\n", i, format.MakeColor((int)(r_prime * 255), (int)(g_prime * 255), (int)(b_prime * 255), 0) );
+        net_print_string( NULL, 0, "mapColor:%d(%d,%d,%d)=%d\n", i, (int)(r_prime * 255), (int)(g_prime * 255), (int)(b_prime * 255), format.MakeColor((int)(r_prime * 255), (int)(g_prime * 255), (int)(b_prime * 255), 0) );
 #endif
       }
     }

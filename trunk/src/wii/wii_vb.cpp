@@ -85,9 +85,12 @@ void wii_handle_init()
  * Frees resources prior to the application exiting
  */
 void wii_handle_free_resources()
-{
+{  
   // We be done, write the config settings, free resources and exit
   wii_write_config();
+
+  // Free resources from the emulator
+  wii_vb_free();
 
   wii_sdl_free_resources();
   SDL_Quit();

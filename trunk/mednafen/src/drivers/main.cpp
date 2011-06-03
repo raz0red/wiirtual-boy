@@ -54,6 +54,7 @@
 #include "opengl.h"
 #include "video-state.h"
 #else
+#include "wii_app.h"
 #include "wii_sdl.h"
 #include "wii_vb.h"
 #include "wii_vb_input.h"
@@ -466,8 +467,8 @@ static SDL_Thread *GameThread;
 #endif
 
 //static uint32 *VTBuffer[2] = { NULL, NULL };
-static volatile MDFN_Surface *VTBuffer[2] = { NULL, NULL };
-static MDFN_Rect *VTLineWidths[2] = { NULL, NULL };
+volatile MDFN_Surface *VTBuffer[2] = { NULL, NULL };
+MDFN_Rect *VTLineWidths[2] = { NULL, NULL };
 
 static volatile int VTBackBuffer = 0;
 #ifndef WII
@@ -476,10 +477,10 @@ static SDL_mutex *StdoutMutex = NULL;
 #endif 
 
 //static volatile uint32 *VTReady;
-static volatile MDFN_Surface *VTReady;
-static volatile MDFN_Rect *VTLWReady;
-static volatile MDFN_Rect *VTDRReady;
-static MDFN_Rect VTDisplayRects[2];
+volatile MDFN_Surface *VTReady;
+volatile MDFN_Rect *VTLWReady;
+volatile MDFN_Rect *VTDRReady;
+MDFN_Rect VTDisplayRects[2];
 
 void LockGameMutex(bool lock)
 {
@@ -529,6 +530,7 @@ void MDFND_PrintError(const char *s)
 #ifdef WII_NETTRACE
   net_print_string( NULL, 0, s );
 #endif
+  wii_set_status_message( s );
 #endif
 }
 
@@ -556,7 +558,7 @@ void MDFND_Message(const char *s)
 }
 
 // CreateDirs should make sure errno is intact after calling mkdir() if it fails.
-static bool CreateDirs(void)
+bool CreateDirs(void)
 {
   const char *subs[7] = { "mcs", "mcm", "snaps", "palettes", "sav", "cheats", "firmware" };
   char *tdir;
@@ -708,7 +710,7 @@ static int HokeyPokeyFallDown(const char *name, const char *value)
   return(1);
 }
 
-static void DeleteInternalArgs(void)
+void DeleteInternalArgs(void)
 {
   if(!MDFN_Internal_Args) return;
   ARGPSTRUCT *argptr = MDFN_Internal_Args;
@@ -877,9 +879,7 @@ int LoadGame(const char *force_module, const char *path)
 
 #ifndef WII
   SDL_mutexP(VTMutex);
-#endif
   NeedVideoChange = -1;
-#ifndef WII
   SDL_mutexV(VTMutex);
 
   if(SDL_ThreadID() != MainThreadID)
@@ -890,8 +890,20 @@ int LoadGame(const char *force_module, const char *path)
 #endif
     sound_active = 0;
 
-    if(MDFN_GetSettingB("sound"))
-      sound_active = InitSound(tmp);
+#ifdef WII
+    //
+    // Only initialize sound once
+    //
+    static bool first_time = true;
+    if( first_time )
+    {
+#endif
+      if(MDFN_GetSettingB("sound"))
+        sound_active = InitSound(tmp);
+#ifdef WII
+      first_time = false;
+    }
+#endif
 
     if(MDFN_GetSettingB("autosave"))
       MDFNI_LoadState(NULL, "mcq");
@@ -960,7 +972,9 @@ int CloseGame(void)
   MDFNI_CloseGame();
 
   KillGameInput();
+#ifndef WII
   KillSound();
+#endif
 
   CurGame = NULL;
 
@@ -980,8 +994,8 @@ void MainRequestExit(void)
 #endif
 }
 
-static bool InFrameAdvance = 0;
-static bool NeedFrameAdvance = 0;
+bool InFrameAdvance = 0;
+bool NeedFrameAdvance = 0;
 
 void DoRunNormal(void)
 {
@@ -1061,6 +1075,8 @@ int64 Time64(void)
 
 int GameLoop(void *arg)
 {
+  int sskip = 0;
+
   while(GameThreadRun)
   {
     int16 *sound;
@@ -1120,7 +1136,18 @@ int GameLoop(void *arg)
 
       espec.SoundRate = GetSoundRate();
       espec.SoundBuf = GetEmuModSoundBuffer(&espec.SoundBufMaxSize);
-      espec.SoundVolume = (double)MDFN_GetSettingUI("sound.volume") / 100;
+      if( sskip != -1 )
+      {
+        espec.SoundVolume = 0;
+        if( sskip++ == 10 )
+        {
+          sskip = -1;
+        }        
+      }
+      else
+      {
+        espec.SoundVolume = (double)MDFN_GetSettingUI("sound.volume") / 100;
+      }
 
       int64 before_time = Time64();
       int64 after_time;
