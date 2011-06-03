@@ -153,7 +153,8 @@
 
 	BEGIN_OP(MOV);
 	    ADDCLOCK(1);
-            SetPREG(arg2, P_REG[arg1]);
+            //SetPREG(arg2, P_REG[arg1]);
+			asm("mr %[inreg],%[outreg]" : [outreg]"=r" (P_REG[arg2]) : [inreg]"r" (P_REG[arg1]));
 	END_OP();
 
 
