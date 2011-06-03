@@ -102,3 +102,59 @@ extern "C" void wii_config_handle_write_config( FILE *fp )
   fprintf( fp, "SCREEN_X=%d\n", wii_screen_x );
   fprintf( fp, "SCREEN_Y=%d\n", wii_screen_y );
 }
+
+/*
+ * Writes the mednafen configuration file
+ *
+ * fp   The file pointer
+ * op   Option - Sets what mode to render in
+ *               1 - Magenta/Cyan (3D)
+ *				 2 - Black/White  (2D)
+ *				 3 - Red/Black    (2D)
+ */
+ extern "C" void wii_mednafen_write_config( FILE *fp, int op )
+ {
+	fprintf( fp, ";VERSION 0.9.0\n");
+	fprintf( fp, ";Edit this file at your own risk!\n");
+	fprintf( fp, ";File format: <key><single space><value><LF or CR+LF>\n\n");
+
+	fprintf( fp, "vb.instant_display_hack 1\n");
+	fprintf( fp, "vb.allow_draw_skip 1\n\n");
+
+	fprintf( fp, ";3D mode.\n");
+	fprintf( fp, "vb.3dmode anaglyph\n\n");
+
+	fprintf( fp, ";Anaglyph maximum-brightness color for left view.\n");
+	if(op == 2)
+		fprintf( fp, "vb.anaglyph.lcolor 0xFFFFFF\n\n");
+	if(op == 1 || op == 3)
+		fprintf( fp, "vb.anaglyph.lcolor 0xFF0000\n\n");
+
+	fprintf( fp, ";Anaglyph maximum-brightness color for right view.");
+	if(op == 1)
+	fprintf( fp, "vb.anaglyph.rcolor 0x0080FF\n\n");
+	if(op == 2 || op == 3)
+		fprintf( fp, "vb.anaglyph.rcolor 0x000000\n\n");
+
+	fprintf( fp, ";Anaglyph preset colors.\n");
+	if(op == 1)
+		fprintf( fp, "vb.anaglyph.preset enabled\n\n");
+	if(op == 2 || op == 3)
+		fprintf( fp, "vb.anaglyph.preset disabled\n\n");
+
+	fprintf( fp, ";Select CPU emulation mode.\n");
+	fprintf( fp, "vb.cpu_emulation fast\n\n");
+
+	fprintf( fp, ";Default maximum-brightness color to use in non-anaglyph 3D modes.\n");
+	fprintf( fp, "vb.default_color 0xFFFFFF\n\n");
+
+	fprintf( fp, ";Disable parallax for BG and OBJ rendering.\n");
+	if(op == 1)
+		fprintf( fp, "vb.disable_parallax 0\n\n");
+	if(op == 2 || op == 3)
+		fprintf( fp, "vb.disable_parallax 1\n\n");
+
+	fprintf( fp, ";Force monophonic sound output.\n");
+	fprintf( fp, "vb.forcemono 0");
+	
+ }
