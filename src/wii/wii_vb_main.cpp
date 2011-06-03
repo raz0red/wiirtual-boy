@@ -25,6 +25,7 @@ distribution.
 */
 
 #include "main.h"
+#include "sound.h"
 
 #include "wii_app.h"
 #include "wii_gx.h"
@@ -54,7 +55,31 @@ Mtx gx_view;
 static void gxrender_callback();
 
 // Mednafen external references
-extern int mednafen_main( int argc, char *argv[] );            
+extern volatile Uint32 MainThreadID;
+extern MDFNSetting DriverSettings[]; 
+extern int DriverSettingsSize;
+extern std::vector <MDFNSetting> NeoDriverSettings;
+extern char *DrBaseDirectory;
+extern volatile MDFN_Surface *VTReady;
+extern volatile MDFN_Rect *VTLWReady;
+extern volatile MDFN_Rect *VTDRReady;
+extern MDFN_Rect VTDisplayRects[2];
+extern volatile MDFN_Surface *VTBuffer[2];
+extern MDFN_Rect *VTLineWidths[2];
+extern SDL_Surface *screen;
+extern volatile int NeedVideoChange;
+
+extern int LoadGame(const char *force_module, const char *path);
+extern int GameLoop(void *arg);
+extern char *GetBaseDirectory(void);
+extern void KillVideo(void);
+extern void FPS_Init(void);
+extern void MakeMednafenArgsStruct(void);
+extern bool CreateDirs(void);
+extern void MakeVideoSettings(std::vector <MDFNSetting> &settings);
+extern void MakeInputSettings(std::vector <MDFNSetting> &settings);
+extern void DeleteInternalArgs(void);
+extern void KillInputSettings(void);
 extern void CalcFramerates(char *virtfps, char *drawnfps, char *blitfps, size_t maxlen);
 
 /*
@@ -62,6 +87,99 @@ extern void CalcFramerates(char *virtfps, char *drawnfps, char *blitfps, size_t 
  */
 void wii_vb_init()
 {
+  std::vector<MDFNGI *> ExternalSystems;
+  MainThreadID = SDL_ThreadID();
+
+  DrBaseDirectory=GetBaseDirectory();
+
+  MDFNI_printf(_("Starting Mednafen %s\n"), MEDNAFEN_VERSION);
+  MDFN_indent(1);
+  MDFN_printf(_("Base directory: %s\n"), DrBaseDirectory);
+
+  // Look for external emulation modules here.
+  if(!MDFNI_InitializeModules(ExternalSystems))
+  {
+    MDFN_PrintError( "Unable to initialize external modules" );
+    exit( 0 );
+  }
+
+  for(unsigned int x = 0; x < DriverSettingsSize / sizeof(MDFNSetting); x++)
+    NeoDriverSettings.push_back(DriverSettings[x]);
+
+  MakeVideoSettings(NeoDriverSettings);
+  MakeInputSettings(NeoDriverSettings);
+
+  if(!(MDFNI_Initialize(DrBaseDirectory, NeoDriverSettings))) 
+  {
+    MDFN_PrintError( "Error during initialization" );
+    exit( 0 );
+  }
+
+  //
+  // TODO: I don't think we need to create dirs...
+  //
+  if(!CreateDirs())
+  {
+    ErrnoHolder ene(errno);	// TODO: Maybe we should have CreateDirs() return this instead?
+
+    MDFN_PrintError(_("Error creating directories: %s\n"), ene.StrError());
+    exit( 0 );
+  }
+
+  MakeMednafenArgsStruct();
+
+  VTReady = NULL;
+  VTDRReady = NULL;
+  VTLWReady = NULL;
+
+  MDFN_PixelFormat nf;
+#if BPP == 8
+  nf.bpp = 8;
+#elif BPP == 16
+  nf.bpp = 16;
+#else
+  nf.bpp = 32;
+#endif
+  nf.colorspace = MDFN_COLORSPACE_RGB;
+
+  VTBuffer[0] = new MDFN_Surface(NULL, VB_WIDTH, VB_HEIGHT, VB_WIDTH, nf);
+  VTBuffer[1] = new MDFN_Surface(NULL, VB_WIDTH, VB_HEIGHT, VB_WIDTH, nf);
+  VTLineWidths[0] = (MDFN_Rect *)calloc(VB_HEIGHT, sizeof(MDFN_Rect));
+  VTLineWidths[1] = (MDFN_Rect *)calloc(VB_HEIGHT, sizeof(MDFN_Rect));
+
+  FPS_Init();
+
+  KillVideo();
+
+  // Set the screen to our back surface
+  screen = back_surface;  
+}
+
+/*
+ * Free resources (closes) the emulator
+ */
+void wii_vb_free()
+{
+  CloseGame();
+
+  for(int x = 0; x < 2; x++)
+  {
+    if(VTBuffer[x])
+    {
+      delete VTBuffer[x];
+      VTBuffer[x] = NULL;
+    }
+
+    if(VTLineWidths[x])
+    {
+      free(VTLineWidths[x]);
+      VTLineWidths[x] = NULL;
+    }
+  }
+
+  MDFNI_Kill();
+  DeleteInternalArgs();
+  KillInputSettings();
 }
 
 /*
@@ -72,26 +190,31 @@ void wii_vb_init()
  */
 int wii_vb_load_game( char* game )
 {
-#if 0
   return LoadGame( NULL, game );
-#endif
+}
 
-// 
-// TODO: This is a total hack for now. We are just calling the Mednafen
-//       main method. Ultimately, the init, load, resume, save, etc. 
-//       functionality will be extracted so it can be called from the 
-//       front-end.
-//
+/*
+ * The emulation loop
+ */
+void wii_vb_emu_loop()
+{
+  for(int i = 0; i < 2; i++)
+    ((MDFN_Surface *)VTBuffer[i])->Fill(0, 0, 0, 0);
 
   wii_sdl_black_back_surface();
-  WII_SetRenderCallback( &gxrender_callback );
-  WII_VideoStart();     
-  WII_ChangeSquare( wii_screen_x, wii_screen_y, 0, 0 );
+  WII_SetRenderCallback( &gxrender_callback );  
+  WII_ChangeSquare( wii_screen_x, wii_screen_y, 0, 0 );  
+  WII_VideoStart();    
+  ClearSound();
+  PauseSound( 0 );
 
-  char* cmdline[] = { "", game };
-  mednafen_main( sizeof(cmdline)/sizeof(char *), cmdline );
+  GameThreadRun = 1;
+  NeedVideoChange = 0;
 
-  exit( 0 );
+  GameLoop( NULL );
+
+  PauseSound( 1 );
+  WII_VideoStop();     
 }
 
 #define CB_PIXELSIZE 14
@@ -142,11 +265,4 @@ static void gxrender_callback()
 
     wii_gx_drawtext( CB_X, CB_Y, CB_PIXELSIZE, text, ftgxWhite, FTGX_ALIGN_BOTTOM ); 
   }
-}
-
-/*
- * The emulation loop
- */
-void wii_vb_emu_loop()
-{
 }

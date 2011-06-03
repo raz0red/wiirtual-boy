@@ -118,13 +118,13 @@ namespace MDFN_IEN_VB
 
     if(A & 0x3)
     { 
-      puts("HWCtrl Bogus Read?");
+      //MDFND_PrintError("HWCtrl Bogus Read?\n");
       return(ret);
     }
 
     switch(A & 0xFF)
     {
-    default: printf("Unknown HWCTRL Read: %08x\n", A);
+    default: //printf("Unknown HWCTRL Read: %08x\n", A);
       break;
 
     case 0x18:
@@ -149,13 +149,13 @@ namespace MDFN_IEN_VB
   {
     if(A & 0x3)
     {
-      puts("HWCtrl Bogus Write?");
+      //MDFND_PrintError("HWCtrl Bogus Write?\n");
       return;
     }
 
     switch(A & 0xFF)
     {
-    default: printf("Unknown HWCTRL Write: %08x %02x\n", A, V);
+    default: //printf("Unknown HWCTRL Write: %08x %02x\n", A, V);
       break;
 
     case 0x18:
@@ -575,19 +575,19 @@ namespace MDFN_IEN_VB
 
     if(fp->size != round_up_pow2(fp->size))
     {
-      puts("VB ROM image size is not a power of 2???");
+      MDFND_PrintError("VB ROM image size is not a power of 2???\n");
       return(0);
     }
 
     if(fp->size < 256)
     {
-      puts("VB ROM image size is too small??");
+      MDFND_PrintError("VB ROM image size is too small??\n");
       return(0);
     }
 
     if(fp->size > (1 << 24))
     {
-      puts("VB ROM image size is too large??");
+      MDFND_PrintError("VB ROM image size is too large??\n");
       return(0);
     }
 
@@ -685,7 +685,7 @@ namespace MDFN_IEN_VB
       if(gp)
       {
         if(gzread(gp, GPRAM, 65536) != 65536)
-          puts("Error reading GPRAM");
+          MDFND_PrintError("Error reading GPRAM\n");
         gzclose(gp);
       }
     }

@@ -319,7 +319,6 @@ void wii_menu_handle_select_node( TREENODE *node )
   {
     case NODETYPE_RESIZE_SCREEN:
       {
-        wii_sdl_black_back_surface();
         wii_resize_screen_draw_border( back_surface, 0, back_surface->h );
         wii_sdl_flip(); 
         resize_info rinfo = 

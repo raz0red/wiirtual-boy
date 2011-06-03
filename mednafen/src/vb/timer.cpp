@@ -101,7 +101,7 @@ namespace MDFN_IEN_VB
   {
     if(A & 0x3)
     {
-      puts("HWCtrl Bogus Write?");
+      MDFND_PrintError("HWCtrl Bogus Write?");
       return;
     }
 

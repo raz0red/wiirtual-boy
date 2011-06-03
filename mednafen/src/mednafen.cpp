@@ -271,9 +271,10 @@ void MDFNI_StopAVRecord(void)
       MDFNMP_Kill();
 
       MDFNGameInfo = NULL;
-      MDFN_StateEvilEnd();
 
 #ifndef WII
+      MDFN_StateEvilEnd();
+
       if(CDInUse)
       {
         CDIF_Close();
@@ -734,10 +735,8 @@ void MDFNI_StopAVRecord(void)
 
 #ifndef WII
     TBlur_Init();
-#endif
-
     MDFN_StateEvilBegin();
-
+#endif
 
     last_sound_rate = -1;
     memset(&last_pixel_format, 0, sizeof(MDFN_PixelFormat));
@@ -950,7 +949,6 @@ void MDFNI_StopAVRecord(void)
     {
       return(0);
     }
-
 
     memset(PortDataCache, 0, sizeof(PortDataCache));
     memset(PortDataLenCache, 0, sizeof(PortDataLenCache));
@@ -1258,9 +1256,7 @@ void MDFNI_StopAVRecord(void)
     {
       NetplayUpdate((const char**)PortDeviceCache, PortDataCache, PortDataLenCache, MDFNGameInfo->InputInfo->InputPorts);
     }
-#endif
 
-#ifndef WII
     for(int x = 0; x < 16; x++)
       if(PortDataCache[x])
         MDFNMOV_AddJoy(PortDataCache[x], PortDataLenCache[x]);
@@ -1270,11 +1266,9 @@ void MDFNI_StopAVRecord(void)
 
     if(TBlur_IsOn())
       espec->skip = 0;
-#endif
 
     if(espec->NeedRewind)
     {
-#ifndef WII
       if(MDFNMOV_IsPlaying())
       {
         espec->NeedRewind = 0;
@@ -1286,7 +1280,6 @@ void MDFNI_StopAVRecord(void)
         MDFN_DispMessage(_("Silly-billy, can't rewind during netplay."));
       }
       else
-#endif
         if(MDFNGameInfo->GameType == GMT_PLAYER)
         {
           espec->NeedRewind = 0;
@@ -1295,6 +1288,7 @@ void MDFNI_StopAVRecord(void)
     }
 
     espec->NeedSoundReverse = MDFN_StateEvil(espec->NeedRewind);
+#endif
 
     MDFNGameInfo->Emulate(espec);
 

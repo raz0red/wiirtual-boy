@@ -444,7 +444,7 @@ static MDFNCS *FindSetting(const char *name, bool dref_alias, bool dont_freak_ou
 
   if(!ret && !dont_freak_out_on_fail)
   {
-    printf("\n\nINCONCEIVABLE!  Setting not found: %s\n\n", name);
+    MDFN_printf("\n\nINCONCEIVABLE!  Setting not found: %s\n\n", name);
     exit(1);
   }
   return(ret);
