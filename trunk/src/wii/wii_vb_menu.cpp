@@ -143,6 +143,12 @@ void wii_vb_menu_init()
   child = wii_create_tree_node( NODETYPE_SPACER, "" );
   wii_add_child( display, child );
 
+  child = wii_create_tree_node( NODETYPE_VB_MODE, 
+    "Display mode " );
+  child->x = -2; child->value_x = -3;
+  wii_add_child( display, child );
+
+#if 0
   child = wii_create_tree_node( NODETYPE_VSYNC, 
     "Vertical sync " );                        
   child->x = -2; child->value_x = -3;
@@ -152,6 +158,7 @@ void wii_vb_menu_init()
     "Maximum frame rate " );
   child->x = -2; child->value_x = -3;
   wii_add_child( display, child );
+#endif
 
   //
   // The advanced menu
@@ -301,6 +308,9 @@ void wii_menu_handle_get_node_name(
       }
       snprintf( value, WII_MENU_BUFF_SIZE, "%s", strmode );
       break;
+    case NODETYPE_VB_MODE:
+      snprintf( value, WII_MENU_BUFF_SIZE, "%s", wii_get_vb_mode().name );
+      break;
     default:
       break;
   }
@@ -338,6 +348,17 @@ void wii_menu_handle_select_node( TREENODE *node )
       break;
     case NODETYPE_VSYNC:
       wii_set_vsync( wii_vsync ^ 1 );
+      break;
+    case NODETYPE_VB_MODE:
+      {
+        int index = wii_get_vb_mode_index();
+        index++;
+        if( index >= wii_vb_mode_count )
+        {
+          index = 0;
+        }
+        strcpy( wii_vb_mode_key, wii_vb_modes[index].key );
+      }
       break;
     case NODETYPE_ROM:            
       snprintf( 

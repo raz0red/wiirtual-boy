@@ -69,6 +69,13 @@ extern MDFN_Rect *VTLineWidths[2];
 extern SDL_Surface *screen;
 extern volatile int NeedVideoChange;
 
+namespace MDFN_IEN_VB
+{
+  extern void VIP_SetParallaxDisable(bool disabled);
+  extern void VIP_SetAnaglyphColors(uint32 lcolor, uint32 rcolor);
+  extern void VIP_Set3DMode(uint32 mode, bool reverse, uint32 prescale, uint32 sbs_separation);
+}
+
 extern int LoadGame(const char *force_module, const char *path);
 extern int GameLoop(void *arg);
 extern char *GetBaseDirectory(void);
@@ -200,6 +207,11 @@ void wii_vb_emu_loop()
 {
   for(int i = 0; i < 2; i++)
     ((MDFN_Surface *)VTBuffer[i])->Fill(0, 0, 0, 0);
+
+  Vb3dMode mode = wii_get_vb_mode();
+  MDFN_IEN_VB::VIP_SetParallaxDisable( !mode.isParallax );
+  MDFN_IEN_VB::VIP_SetAnaglyphColors( mode.lColor, mode.rColor );
+  //MDFN_IEN_VB::VIP_Set3DMode( 0, false, 1, 0 );
 
   wii_sdl_black_back_surface();
   WII_SetRenderCallback( &gxrender_callback );  

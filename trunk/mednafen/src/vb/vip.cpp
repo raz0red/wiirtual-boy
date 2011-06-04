@@ -24,6 +24,11 @@
 #include "net_print.h"  
 #endif
 
+#ifdef WII
+extern SDL_Surface* screen;
+extern SDL_Palette orig_8bpp_palette;
+#endif
+
 #define VIP_DBGMSG(format, ...) { }
 //#define VIP_DBGMSG(format, ...) printf(format "\n", ## __VA_ARGS__)
 
@@ -121,8 +126,46 @@ namespace MDFN_IEN_VB
   static uint32 Anaglyph_Colors[2];
   static uint32 Default_Color;
 
+  static void addColor( 
+    SDL_Color *colors, SDL_Color *uniqueColors, 
+    int count, int *uniqueCount, 
+    int r, int g, int b )
+  {
+    colors[count].r = r;
+    colors[count].g = g;
+    colors[count].b = b;
+
+    bool found = false;
+    for( int i = 0; i < *uniqueCount; i++ )
+    {
+      if( uniqueColors[i].r == r && 
+          uniqueColors[i].g == g && 
+          uniqueColors[i].b == b )
+      {
+        found = true;
+        break;
+      }
+    }
+    if( !found )
+    {
+      uniqueColors[*uniqueCount].r = r;
+      uniqueColors[*uniqueCount].g = g;
+      uniqueColors[*uniqueCount].b = b;
+      (*uniqueCount)++;
+    }
+  }
+
+  SDL_Color lColors[256];
+  SDL_Color lUniqueColors[256];
+  int lColorCount = 0;
+  SDL_Color rColors[256];
+  SDL_Color rUniqueColors[256];
+  int rColorCount = 0;
+
   static void MakeColorLUT(const MDFN_PixelFormat &format)
   {
+    rColorCount = lColorCount = 0;
+
     for(int lr = 0; lr < 2; lr++)
     {
       for(int i = 0; i < 256; i++)
@@ -153,12 +196,65 @@ namespace MDFN_IEN_VB
         ColorLUTNoGC[lr][i][0] = pow(r_prime, 2.2 / 1.0);
         ColorLUTNoGC[lr][i][1] = pow(g_prime, 2.2 / 1.0);
         ColorLUTNoGC[lr][i][2] = pow(b_prime, 2.2 / 1.0);
+  
+        int ri = (int)(r_prime * 255);
+        int gi = (int)(g_prime * 255);
+        int bi = (int)(b_prime * 255);
 
-        ColorLUT[lr][i] = format.MakeColor((int)(r_prime * 255), (int)(g_prime * 255), (int)(b_prime * 255), 0);                
+        if( !lr )
+        {
+          addColor( lColors, lUniqueColors, i, &lColorCount, ri, gi, bi );
+        }
+        else
+        {
+          addColor( rColors, rUniqueColors, i, &rColorCount, ri, gi, bi );
+        }
 
 #ifdef WII_NETTRACE
-        net_print_string( NULL, 0, "mapColor:%d(%d,%d,%d)=%d\n", i, (int)(r_prime * 255), (int)(g_prime * 255), (int)(b_prime * 255), format.MakeColor((int)(r_prime * 255), (int)(g_prime * 255), (int)(b_prime * 255), 0) );
+        net_print_string( NULL, 0, "mapColor:%d(%d,%d,%d)=%d\n", i, ri, gi, bi, format.MakeColor( ri, gi, bi, 0) );
 #endif
+      }
+    }
+
+#ifdef WII_NETTRACE
+    net_print_string( NULL, 0, "unique colors:%d, %d\n", lColorCount, rColorCount );
+#endif
+
+#ifdef WII
+#if BPP == 8
+    //
+    // Simple hack that provides a 100% accurate palette in 8bpp if one of the colors
+    // is black.
+    //
+    if( !Anaglyph_Colors[0] || !Anaglyph_Colors[1] )
+    {
+      SDL_SetColors( 
+        screen, /*SDL_LOGPAL|SDL_PHYSPAL, */
+        ( !Anaglyph_Colors[0] ? rUniqueColors : lUniqueColors ), 0, 
+        ( !Anaglyph_Colors[0] ? rColorCount : lColorCount ) );
+    }
+    else
+    {
+      SDL_SetColors(
+        screen, /*SDL_LOGPAL|SDL_PHYSPAL,*/
+        orig_8bpp_palette.colors, 
+        0, orig_8bpp_palette.ncolors );
+    }
+#endif
+#endif    
+
+    for(int lr = 0; lr < 2; lr++)
+    {
+      for(int i = 0; i < 256; i++)
+      {
+        if( !lr )
+        {
+          ColorLUT[lr][i] = format.MakeColor( lColors[i].r, lColors[i].g, lColors[i].b, 0); 
+        }
+        else
+        {
+          ColorLUT[lr][i] = format.MakeColor( rColors[i].r, rColors[i].g, rColors[i].b, 0); 
+        }
       }
     }
 
