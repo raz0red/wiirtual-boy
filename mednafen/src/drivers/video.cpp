@@ -356,23 +356,17 @@ int InitVideo(MDFNGI *gi)
   _video.videoip = MDFN_GetSettingB(std::string(sn + "." + std::string("videoip")).c_str());
   _video.stretch = MDFN_GetSettingUI(std::string(sn + "." + std::string("stretch")).c_str());
   _video.scanlines = MDFN_GetSettingUI(std::string(sn + "." + std::string("scanlines")).c_str());
-
   _video.special = GetSpecialScalerID(special_string);
-
-#ifdef MDFN_WANT_OPENGL_SHADERS
-  _video.pixshader = MDFN_GetSettingS(std::string(sn + "." + std::string("pixshader")).c_str());
-#else
   _video.pixshader = "none";
-#endif
 
   CurrentScaler = _video.special ? &Scalers[_video.special - 1] : NULL;
 
   vinf=SDL_GetVideoInfo();
 
-  if(vinf->hw_available)
+  //if(vinf->hw_available)
     flags|=SDL_HWSURFACE;
 
-  if(_fullscreen)
+  //if(_fullscreen)
     flags|=SDL_FULLSCREEN;
 
   vdriver = MDFN_GetSettingI("video.driver");
@@ -396,7 +390,7 @@ int InitVideo(MDFNGI *gi)
       vdriver = 0;
     }
 
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1 );
+    //SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1 );
 
     if(MDFN_GetSettingB("video.glvsync"))
     {
@@ -541,7 +535,7 @@ int InitVideo(MDFNGI *gi)
     #endif
   #endif
 #endif
-  SDL_WM_SetIcon(IconSurface,0);
+  //SDL_WM_SetIcon(IconSurface,0);
 
   int rs, gs, bs, as;
 
@@ -716,6 +710,7 @@ static bool IsInternalMessageActive(void)
 
 static bool BlitInternalMessage(void)
 {
+#ifndef WII
   if(howlong < MDFND_GetTime())
   {
     if(CurrentMessage)
@@ -736,6 +731,7 @@ static bool BlitInternalMessage(void)
   }
 
   BlitRaw(SMSurface, &SMRect, &SMDRect);
+#endif
   return(1);
 }
 
