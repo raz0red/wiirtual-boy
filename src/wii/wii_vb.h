@@ -60,6 +60,20 @@ distribution.
 #define WII_NUNCHUK_VB_B ( WPAD_NUNCHUK_BUTTON_Z )
 #define GC_BUTTON_VB_B ( PAD_BUTTON_B )
 
+#define DEFAULT_VB_MODE_KEY "red_black"
+
+/*
+ * The 3d display mode
+ */
+typedef struct Vb3dMode
+{
+  const char *key;
+  const char *name;
+  u32 lColor;
+  u32 rColor;
+  bool isParallax;
+} Vb3dMode;
+
 // The last cartridge hash
 extern char wii_cartridge_hash[33];
 // Whether to display debug info (FPS, etc.)
@@ -76,7 +90,35 @@ extern int wii_screen_x;
 extern int wii_screen_y;
 // Maximum frame rate
 extern u8 wii_max_frames;
+// The current 3d mode
+extern char wii_vb_mode_key[255];
 
+// The 3d modes that are available
+extern Vb3dMode wii_vb_modes[];
+// The number of 3d modes
+extern int wii_vb_mode_count;
+
+/*
+ * Returns the index of the specified 3d mode key
+ *
+ * key    The 3d mode key
+ * return The index of the 3d mode (or -1 if not found)
+ */
+extern int wii_get_vb_mode_index( const char* key );
+
+/*
+ * Returns the current 3d mode index
+ *
+ * return   The current 3d mode index
+ */
+extern int wii_get_vb_mode_index();
+
+/*
+ * Returns the current 3d mode
+ *
+ * return   The current 3d mode
+ */
+extern Vb3dMode wii_get_vb_mode();
 
 /*
  * Returns the roms directory

@@ -56,6 +56,67 @@ int wii_screen_y = DEFAULT_SCREEN_Y;
 // Maximum frame rate
 u8 wii_max_frames = DEFAULT_FPS;
 
+// The list of available 3d modes
+Vb3dMode wii_vb_modes[] =
+{
+  { "white_black", "White/black (2d)", 0xFFFFFF, 0x000000, false },
+  { "red_black", "Red/black (2d)", 0xFF0000, 0x000000, false },
+  { "red_blue", "Red/blue (3d)", 0xFF0000, 0x0000FF, true },
+  { "red_green", "Red/green (3d)", 0xFF0000, 0x00FF00, true },
+  { "yellow_blue", "Yellow/blue (3d)", 0xFFFF00, 0x0000FF, true },
+};
+
+int wii_vb_mode_count = sizeof( wii_vb_modes ) / sizeof( Vb3dMode );
+
+// The current 3d mode
+char wii_vb_mode_key[255] = DEFAULT_VB_MODE_KEY;
+
+/*
+ * Returns the index of the specified 3d mode key
+ *
+ * key    The 3d mode key
+ * return The index of the 3d mode (or -1 if not found)
+ */
+int wii_get_vb_mode_index( const char* key )
+{
+  for( int i = 0; i < wii_vb_mode_count; i++ )
+  {
+    Vb3dMode mode = wii_vb_modes[i];
+    if( !strcmp( mode.key, key ) )
+    {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+/*
+ * Returns the current 3d mode index
+ *
+ * return   The current 3d mode index
+ */
+int wii_get_vb_mode_index()
+{
+  int index = wii_get_vb_mode_index( wii_vb_mode_key );
+  if( index == -1 )
+  {
+    index = wii_get_vb_mode_index( DEFAULT_VB_MODE_KEY );
+  }
+  return index;
+}
+
+
+/*
+ * Returns the current 3d mode
+ *
+ * return   The current 3d mode
+ */
+Vb3dMode wii_get_vb_mode()
+{
+  return wii_vb_modes[wii_get_vb_mode_index()];
+}
+
 /*
  * Initializes the application
  */
