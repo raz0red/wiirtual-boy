@@ -68,10 +68,11 @@ bool wii_mount()
   {
     mounted = sd.Mount();
 	usb.Startup();
-	if(!mounted)
+	if(!mounted){
 		mounted = usb.Mount();
 		if(mounted)
              wii_is_usb = TRUE;
+	}
 	else
 		ret = usb.Mount();
         if(ret)
