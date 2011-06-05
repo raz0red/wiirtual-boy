@@ -34,107 +34,107 @@ these four paragraphs for those parts of this code that are retained.
 extern "C" {
 #endif
 
-  /*----------------------------------------------------------------------------
-  | Software IEC/IEEE floating-point types.
-  *----------------------------------------------------------------------------*/
-  typedef uint32 float32;
-  typedef struct {
+/*----------------------------------------------------------------------------
+| Software IEC/IEEE floating-point types.
+*----------------------------------------------------------------------------*/
+typedef uint32 float32;
+typedef struct {
     uint32 high, low;
-  } float64;
+} float64;
 
-  /*----------------------------------------------------------------------------
-  | Software IEC/IEEE floating-point underflow tininess-detection mode.
-  *----------------------------------------------------------------------------*/
-  extern int8 float_detect_tininess;
-  enum {
+/*----------------------------------------------------------------------------
+| Software IEC/IEEE floating-point underflow tininess-detection mode.
+*----------------------------------------------------------------------------*/
+extern int8 float_detect_tininess;
+enum {
     float_tininess_after_rounding  = 0,
     float_tininess_before_rounding = 1
-  };
+};
 
-  /*----------------------------------------------------------------------------
-  | Software IEC/IEEE floating-point rounding mode.
-  *----------------------------------------------------------------------------*/
-  extern int8 float_rounding_mode;
-  enum {
+/*----------------------------------------------------------------------------
+| Software IEC/IEEE floating-point rounding mode.
+*----------------------------------------------------------------------------*/
+extern int8 float_rounding_mode;
+enum {
     float_round_nearest_even = 0,
     float_round_to_zero      = 1,
     float_round_down         = 2,
     float_round_up           = 3
-  };
+};
 
-  /*----------------------------------------------------------------------------
-  | Software IEC/IEEE floating-point exception flags.
-  *----------------------------------------------------------------------------*/
-  extern int8 float_exception_flags;
-  enum {
+/*----------------------------------------------------------------------------
+| Software IEC/IEEE floating-point exception flags.
+*----------------------------------------------------------------------------*/
+extern int8 float_exception_flags;
+enum {
     float_flag_inexact   =  1,
     float_flag_underflow =  2,
     float_flag_overflow  =  4,
     float_flag_divbyzero =  8,
     float_flag_invalid   = 16
-  };
+};
 
-  /*----------------------------------------------------------------------------
-  | Routine to raise any or all of the software IEC/IEEE floating-point
-  | exception flags.
-  *----------------------------------------------------------------------------*/
-  void float_raise( int8 );
+/*----------------------------------------------------------------------------
+| Routine to raise any or all of the software IEC/IEEE floating-point
+| exception flags.
+*----------------------------------------------------------------------------*/
+void float_raise( int8 );
 
-  /*----------------------------------------------------------------------------
-  | Software IEC/IEEE integer-to-floating-point conversion routines.
-  *----------------------------------------------------------------------------*/
-  float32 int32_to_float32( int32 );
-  float64 int32_to_float64( int32 );
+/*----------------------------------------------------------------------------
+| Software IEC/IEEE integer-to-floating-point conversion routines.
+*----------------------------------------------------------------------------*/
+float32 int32_to_float32( int32 );
+float64 int32_to_float64( int32 );
 
-  /*----------------------------------------------------------------------------
-  | Software IEC/IEEE single-precision conversion routines.
-  *----------------------------------------------------------------------------*/
-  int32 float32_to_int32( float32 );
-  int32 float32_to_int32_round_to_zero( float32 );
-  float64 float32_to_float64( float32 );
+/*----------------------------------------------------------------------------
+| Software IEC/IEEE single-precision conversion routines.
+*----------------------------------------------------------------------------*/
+int32 float32_to_int32( float32 );
+int32 float32_to_int32_round_to_zero( float32 );
+float64 float32_to_float64( float32 );
 
-  /*----------------------------------------------------------------------------
-  | Software IEC/IEEE single-precision operations.
-  *----------------------------------------------------------------------------*/
-  float32 float32_round_to_int( float32 );
-  float32 float32_add( float32, float32 );
-  float32 float32_sub( float32, float32 );
-  float32 float32_mul( float32, float32 );
-  float32 float32_div( float32, float32 );
-  float32 float32_rem( float32, float32 );
-  float32 float32_sqrt( float32 );
-  char float32_eq( float32, float32 );
-  char float32_le( float32, float32 );
-  char float32_lt( float32, float32 );
-  char float32_eq_signaling( float32, float32 );
-  char float32_le_quiet( float32, float32 );
-  char float32_lt_quiet( float32, float32 );
-  char float32_is_signaling_nan( float32 );
+/*----------------------------------------------------------------------------
+| Software IEC/IEEE single-precision operations.
+*----------------------------------------------------------------------------*/
+float32 float32_round_to_int( float32 );
+float32 float32_add( float32, float32 );
+float32 float32_sub( float32, float32 );
+float32 float32_mul( float32, float32 );
+float32 float32_div( float32, float32 );
+float32 float32_rem( float32, float32 );
+float32 float32_sqrt( float32 );
+char float32_eq( float32, float32 );
+char float32_le( float32, float32 );
+char float32_lt( float32, float32 );
+char float32_eq_signaling( float32, float32 );
+char float32_le_quiet( float32, float32 );
+char float32_lt_quiet( float32, float32 );
+char float32_is_signaling_nan( float32 );
 
-  /*----------------------------------------------------------------------------
-  | Software IEC/IEEE double-precision conversion routines.
-  *----------------------------------------------------------------------------*/
-  int32 float64_to_int32( float64 );
-  int32 float64_to_int32_round_to_zero( float64 );
-  float32 float64_to_float32( float64 );
+/*----------------------------------------------------------------------------
+| Software IEC/IEEE double-precision conversion routines.
+*----------------------------------------------------------------------------*/
+int32 float64_to_int32( float64 );
+int32 float64_to_int32_round_to_zero( float64 );
+float32 float64_to_float32( float64 );
 
-  /*----------------------------------------------------------------------------
-  | Software IEC/IEEE double-precision operations.
-  *----------------------------------------------------------------------------*/
-  float64 float64_round_to_int( float64 );
-  float64 float64_add( float64, float64 );
-  float64 float64_sub( float64, float64 );
-  float64 float64_mul( float64, float64 );
-  float64 float64_div( float64, float64 );
-  float64 float64_rem( float64, float64 );
-  float64 float64_sqrt( float64 );
-  char float64_eq( float64, float64 );
-  char float64_le( float64, float64 );
-  char float64_lt( float64, float64 );
-  char float64_eq_signaling( float64, float64 );
-  char float64_le_quiet( float64, float64 );
-  char float64_lt_quiet( float64, float64 );
-  char float64_is_signaling_nan( float64 );
+/*----------------------------------------------------------------------------
+| Software IEC/IEEE double-precision operations.
+*----------------------------------------------------------------------------*/
+float64 float64_round_to_int( float64 );
+float64 float64_add( float64, float64 );
+float64 float64_sub( float64, float64 );
+float64 float64_mul( float64, float64 );
+float64 float64_div( float64, float64 );
+float64 float64_rem( float64, float64 );
+float64 float64_sqrt( float64 );
+char float64_eq( float64, float64 );
+char float64_le( float64, float64 );
+char float64_lt( float64, float64 );
+char float64_eq_signaling( float64, float64 );
+char float64_le_quiet( float64, float64 );
+char float64_lt_quiet( float64, float64 );
+char float64_is_signaling_nan( float64 );
 
 #ifdef __cplusplus
 };

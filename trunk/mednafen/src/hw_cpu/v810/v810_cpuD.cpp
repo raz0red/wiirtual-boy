@@ -1,21 +1,21 @@
 /* V810 Emulator
-*
-* Copyright (C) 2006 David Tucker
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software
-* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
+ *
+ * Copyright (C) 2006 David Tucker
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
 //////////////////////////////////////////////////////////
 // CPU Debug routines
@@ -26,8 +26,7 @@
 //#include <string.h>
 //#include <ctype.h>
 
-//#include "mednafen/mednafen.h"
-#include "../../mednafen.h"
+#include "../mednafen.h"
 #include "v810_opt.h"
 #include "v810_cpu.h"
 #include "v810_cpuD.h"
@@ -39,15 +38,15 @@
 //Structure to store an element in our linked list
 // used to dynamicaly dissasemble a rom
 typedef struct dasms {
-  int            offset;
-  uint32 		   PC;
-  uint32           jump;
-  struct dasms * nextElement;
+	int            offset;
+	uint32 		   PC;
+	uint32           jump;
+      struct dasms * nextElement;
 } dasmS;
 
 typedef struct {
-  int addr_mode;               // Addressing mode
-  const char * opname;         // Opcode name (string)
+   int addr_mode;               // Addressing mode
+   const char * opname;         // Opcode name (string)
 } operation;
 
 static const operation optable[80] = {
@@ -144,7 +143,7 @@ static const operation optable[80] = {
 
 //Structure for holding the SubOpcodes, Same as above, without the InsType.
 typedef struct {
-  const char * opname;               // Opcode name (string)
+   const char * opname;               // Opcode name (string)
 } suboperation;
 
 
@@ -190,175 +189,175 @@ static const suboperation fpsuboptable[16] = {
 
 static const char *pretty_preg_names[32] =
 {
-  "r0", "r1", "hsp", "sp", "gp", "tp", "r6", "r7",
-  "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
-  "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23",
-  "r24", "r25", "r26", "r27", "r28", "r29", "r30", "lp",
+ "r0", "r1", "hsp", "sp", "gp", "tp", "r6", "r7",
+ "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
+ "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23",
+ "r24", "r25", "r26", "r27", "r28", "r29", "r30", "lp",
 };
 
 static const char *pretty_sreg_names[32] =
 {
-  "sr0(eipc)", "sr1(eipsw)", "sr2(fepc)", "sr3(fepsw)", "sr4(ecr)", "sr5(psw)", "sr6(pir)", "sr7(tkcw)",
-  "sr8(invalid)", "sr9(invalid)", "sr10(invalid)", "sr11(invalid)", "sr12(invalid)", "sr13(invalid)", 
-  "sr14(invalid)", "sr15(invalid)", "sr16(invalid)", "sr17(invalid)", "sr18(invalid)", "sr19(invalid)", 
-  "sr20(invalid)", "sr21(invalid)", "sr22(invalid)", "sr23(invalid)", 
-  "sr24(chcw)", "sr25(adtre)", "sr26(invalid)", "sr27(invalid)", "sr28(invalid)", "sr29(invalid)", "sr30(invalid)", 
-  "sr31(invalid)" 
+ "sr0(eipc)", "sr1(eipsw)", "sr2(fepc)", "sr3(fepsw)", "sr4(ecr)", "sr5(psw)", "sr6(pir)", "sr7(tkcw)",
+ "sr8(invalid)", "sr9(invalid)", "sr10(invalid)", "sr11(invalid)", "sr12(invalid)", "sr13(invalid)", 
+ "sr14(invalid)", "sr15(invalid)", "sr16(invalid)", "sr17(invalid)", "sr18(invalid)", "sr19(invalid)", 
+ "sr20(invalid)", "sr21(invalid)", "sr22(invalid)", "sr23(invalid)", 
+ "sr24(chcw)", "sr25(adtre)", "sr26(invalid)", "sr27(invalid)", "sr28(invalid)", "sr29(invalid)", "sr30(invalid)", 
+ "sr31(invalid)" 
 };
 
 void v810_dis(uint32 &tPC, int num, char *buf, uint16 (*rhword)(uint32))
 {
-  int lowB, highB, lowB2, highB2;             // up to 4 bytes for instruction (either 16 or 32 bits)
-  int opcode, arg1, arg2, arg3;
-  int i = 0;
+    int lowB, highB, lowB2, highB2;             // up to 4 bytes for instruction (either 16 or 32 bits)
+    int opcode, arg1, arg2, arg3;
+    int i = 0;
 
-  buf[0] = 0;
+    buf[0] = 0;
 
-  for(i = 0; i< num; i++) 
-  {
-    uint16 tmp;
+    for(i = 0; i< num; i++) 
+    {
+     uint16 tmp;
 
-    tmp = rhword(tPC);
-    //   lowB   = mem_rbyte(tPC);
-    //   highB  = mem_rbyte(tPC+1);
-    lowB = tmp & 0xFF;
-    highB = tmp >> 8;
+     tmp = rhword(tPC);
+     //   lowB   = mem_rbyte(tPC);
+     //   highB  = mem_rbyte(tPC+1);
+     lowB = tmp & 0xFF;
+     highB = tmp >> 8;
 
-    tmp = rhword(tPC + 2);
-    //   lowB2  = mem_rbyte(tPC+2);
-    //   highB2 = mem_rbyte(tPC+3);
-    lowB2 = tmp & 0xFF;
-    highB2 = tmp >> 8;
+     tmp = rhword(tPC + 2);
+     //   lowB2  = mem_rbyte(tPC+2);
+     //   highB2 = mem_rbyte(tPC+3);
+     lowB2 = tmp & 0xFF;
+     highB2 = tmp >> 8;
 
-    opcode = highB >> 2;
-    if((highB & 0xE0) == 0x80)        // Special opcode format for          
-      opcode = (highB >> 1);            // type III instructions.
-
-    if((opcode > 0x4F) | (opcode < 0)) {
-      //Error Invalid opcode!
-      sprintf(&buf[strlen(buf)],"0x%2x 0x%2x  ;Invalid Opcode", lowB, highB);
-      tPC += 2;                                               
-    }
-
-    switch(optable[opcode].addr_mode) {
+        opcode = highB >> 2;
+        if((highB & 0xE0) == 0x80)        // Special opcode format for          
+            opcode = (highB >> 1);            // type III instructions.
+    
+        if((opcode > 0x4F) | (opcode < 0)) {
+            //Error Invalid opcode!
+            sprintf(&buf[strlen(buf)],"0x%2x 0x%2x  ;Invalid Opcode", lowB, highB);
+            tPC += 2;                                               
+        }
+        
+        switch(optable[opcode].addr_mode) {
         case AM_I:       // Do the same Ither way =)
-          arg1 = (lowB >> 5) + ((highB & 0x3) << 3);
-          arg2 = (lowB & 0x1F);
-          if (opcode == JMP) {
-            sprintf(&buf[strlen(buf)],"%s    [%s]", optable[opcode].opname, pretty_preg_names[arg2]);
-          } else {
-            sprintf(&buf[strlen(buf)],"%s    %s, %s", optable[opcode].opname, pretty_preg_names[arg2], pretty_preg_names[arg1]);
-          }
-          tPC += 2;   // 16 bit instruction
-          break;
+            arg1 = (lowB >> 5) + ((highB & 0x3) << 3);
+            arg2 = (lowB & 0x1F);
+            if (opcode == JMP) {
+                sprintf(&buf[strlen(buf)],"%s    [%s]", optable[opcode].opname, pretty_preg_names[arg2]);
+            } else {
+                sprintf(&buf[strlen(buf)],"%s    %s, %s", optable[opcode].opname, pretty_preg_names[arg2], pretty_preg_names[arg1]);
+            }
+            tPC += 2;   // 16 bit instruction
+            break;
         case AM_II:
-          arg1 = (lowB >> 5) + ((highB & 0x3) << 3);
-          arg2 = (lowB & 0x1F);
-          if(opcode == LDSR) {
-            sprintf(&buf[strlen(buf)],"%s    %s, %s", optable[opcode].opname, pretty_preg_names[arg1], pretty_sreg_names[arg2]);
-          } else if(opcode == STSR) {
-            sprintf(&buf[strlen(buf)],"%s     %s, %s", optable[opcode].opname, pretty_sreg_names[arg2], pretty_preg_names[arg1]);
-          } else if(opcode == ADD_I || opcode == CMP_I) {
-            sprintf(&buf[strlen(buf)],"%s    %d, %s", optable[opcode].opname, sign_5(arg2), pretty_preg_names[arg1]);
-          } else {
-            sprintf(&buf[strlen(buf)],"%s    %d, %s", optable[opcode].opname, arg2, pretty_preg_names[arg1]);
-          }
-          tPC += 2;   // 16 bit instruction
-          break;
+            arg1 = (lowB >> 5) + ((highB & 0x3) << 3);
+            arg2 = (lowB & 0x1F);
+			if(opcode == LDSR) {
+				sprintf(&buf[strlen(buf)],"%s    %s, %s", optable[opcode].opname, pretty_preg_names[arg1], pretty_sreg_names[arg2]);
+			} else if(opcode == STSR) {
+				sprintf(&buf[strlen(buf)],"%s     %s, %s", optable[opcode].opname, pretty_sreg_names[arg2], pretty_preg_names[arg1]);
+			} else if(opcode == ADD_I || opcode == CMP_I) {
+				sprintf(&buf[strlen(buf)],"%s    %d, %s", optable[opcode].opname, sign_5(arg2), pretty_preg_names[arg1]);
+			} else {
+                                sprintf(&buf[strlen(buf)],"%s    %d, %s", optable[opcode].opname, arg2, pretty_preg_names[arg1]);
+			}
+            tPC += 2;   // 16 bit instruction
+            break;
         case AM_III:
-          arg1 = ((highB & 0x1) << 8) + (lowB & 0xFE);
-          if(opcode == NOP)
-            sprintf(&buf[strlen(buf)],"%s", optable[opcode].opname);
-          else
-            sprintf(&buf[strlen(buf)],"%s    %08x", optable[opcode].opname, tPC + sign_9(arg1));
-          tPC += 2;   // 16 bit instruction
-          break;
+            arg1 = ((highB & 0x1) << 8) + (lowB & 0xFE);
+	    if(opcode == NOP)
+             sprintf(&buf[strlen(buf)],"%s", optable[opcode].opname);
+	    else
+             sprintf(&buf[strlen(buf)],"%s    %08x", optable[opcode].opname, tPC + sign_9(arg1));
+            tPC += 2;   // 16 bit instruction
+            break;
         case AM_IV:
-          arg1 = ((highB & 0x3) << 24) + (lowB << 16) + (highB2 << 8) + lowB2;
+            arg1 = ((highB & 0x3) << 24) + (lowB << 16) + (highB2 << 8) + lowB2;
 
-          sprintf(&buf[strlen(buf)],"%s    %08x", optable[opcode].opname, tPC + sign_26(arg1));
+            sprintf(&buf[strlen(buf)],"%s    %08x", optable[opcode].opname, tPC + sign_26(arg1));
 
-          tPC += 4;                                               // 32 bit instruction
-          break;
+            tPC += 4;                                               // 32 bit instruction
+            break;
         case AM_V:       
-          arg1 = (lowB >> 5) + ((highB & 0x3) << 3);
-          arg2 = (lowB & 0x1F);
-          arg3 = (highB2 << 8) + lowB2;
+            arg1 = (lowB >> 5) + ((highB & 0x3) << 3);
+            arg2 = (lowB & 0x1F);
+            arg3 = (highB2 << 8) + lowB2;
 
-          // TODO: What would be the best way to disassemble the MOVEA instruction?
-          //if(opcode == MOVEA)
-          // sprintf(&buf[strlen(buf)],"%s    0x%X, %s, %s", optable[opcode].opname, (uint32)(int32)(int16)(uint16)arg3, pretty_preg_names[arg2], pretty_preg_names[arg1] );
-          //else
-          sprintf(&buf[strlen(buf)],"%s    0x%X, %s, %s", optable[opcode].opname, arg3, pretty_preg_names[arg2], pretty_preg_names[arg1] );
-          tPC += 4;   // 32 bit instruction
-          break;
+	    // TODO: What would be the best way to disassemble the MOVEA instruction?
+	    //if(opcode == MOVEA)
+            // sprintf(&buf[strlen(buf)],"%s    0x%X, %s, %s", optable[opcode].opname, (uint32)(int32)(int16)(uint16)arg3, pretty_preg_names[arg2], pretty_preg_names[arg1] );
+	    //else
+            sprintf(&buf[strlen(buf)],"%s    0x%X, %s, %s", optable[opcode].opname, arg3, pretty_preg_names[arg2], pretty_preg_names[arg1] );
+            tPC += 4;   // 32 bit instruction
+            break;
         case AM_VIa:  // Mode6 form1
-          arg1 = (lowB >> 5) + ((highB & 0x3) << 3);
-          arg2 = (lowB & 0x1F);
-          arg3 = (highB2 << 8) + lowB2;
+            arg1 = (lowB >> 5) + ((highB & 0x3) << 3);
+            arg2 = (lowB & 0x1F);
+            arg3 = (highB2 << 8) + lowB2;
 
-          if(!arg3) // Don't bother printing offset if it's 0
-            sprintf(&buf[strlen(buf)],"%s    [%s], %s", optable[opcode].opname, pretty_preg_names[arg2], pretty_preg_names[arg1]);
-          else if(sign_16(arg3) >= 0) // Make disassembly prettier if it's a positive offset
-            sprintf(&buf[strlen(buf)],"%s    0x%04x[%s], %s", optable[opcode].opname, sign_16(arg3), pretty_preg_names[arg2], pretty_preg_names[arg1]);
-          else
-            sprintf(&buf[strlen(buf)],"%s    %d[%s], %s", optable[opcode].opname, sign_16(arg3), pretty_preg_names[arg2], pretty_preg_names[arg1]);
+	    if(!arg3) // Don't bother printing offset if it's 0
+             sprintf(&buf[strlen(buf)],"%s    [%s], %s", optable[opcode].opname, pretty_preg_names[arg2], pretty_preg_names[arg1]);
+	    else if(sign_16(arg3) >= 0) // Make disassembly prettier if it's a positive offset
+             sprintf(&buf[strlen(buf)],"%s    0x%04x[%s], %s", optable[opcode].opname, sign_16(arg3), pretty_preg_names[arg2], pretty_preg_names[arg1]);
+	    else
+             sprintf(&buf[strlen(buf)],"%s    %d[%s], %s", optable[opcode].opname, sign_16(arg3), pretty_preg_names[arg2], pretty_preg_names[arg1]);
 
-          tPC += 4;   // 32 bit instruction
-          break;
+            tPC += 4;   // 32 bit instruction
+            break;
         case AM_VIb:  // Mode6 form2
-          arg1 = (lowB >> 5) + ((highB & 0x3) << 3);
-          arg2 = (lowB & 0x1F);
-          arg3 = (highB2 << 8) + lowB2;                              //  whats the order??? 2,3,1 or 1,3,2
+            arg1 = (lowB >> 5) + ((highB & 0x3) << 3);
+            arg2 = (lowB & 0x1F);
+            arg3 = (highB2 << 8) + lowB2;                              //  whats the order??? 2,3,1 or 1,3,2
 
-          if(!arg3) // Don't bother printing offset if it's 0
-            sprintf(&buf[strlen(buf)],"%s    %s, [%s]", optable[opcode].opname, pretty_preg_names[arg1], pretty_preg_names[arg2]);
-          else if(sign_16(arg3) >= 0) // Make disassembly prettier if it's a positive offset
-            sprintf(&buf[strlen(buf)],"%s    %s, 0x%04x[%s]", optable[opcode].opname, pretty_preg_names[arg1], sign_16(arg3), pretty_preg_names[arg2]);
-          else
-            sprintf(&buf[strlen(buf)],"%s    %s, %d[%s]", optable[opcode].opname, pretty_preg_names[arg1], sign_16(arg3), pretty_preg_names[arg2]);
-          tPC += 4;   // 32 bit instruction
-          break;
+	    if(!arg3) // Don't bother printing offset if it's 0
+             sprintf(&buf[strlen(buf)],"%s    %s, [%s]", optable[opcode].opname, pretty_preg_names[arg1], pretty_preg_names[arg2]);
+            else if(sign_16(arg3) >= 0) // Make disassembly prettier if it's a positive offset
+             sprintf(&buf[strlen(buf)],"%s    %s, 0x%04x[%s]", optable[opcode].opname, pretty_preg_names[arg1], sign_16(arg3), pretty_preg_names[arg2]);
+	    else
+             sprintf(&buf[strlen(buf)],"%s    %s, %d[%s]", optable[opcode].opname, pretty_preg_names[arg1], sign_16(arg3), pretty_preg_names[arg2]);
+            tPC += 4;   // 32 bit instruction
+            break;
         case AM_VII:   // Unhandled
-          sprintf(&buf[strlen(buf)],"0x%2x 0x%2x 0x%2x 0x%2x", lowB, highB, lowB2, highB2);
-          tPC +=4;        // 32 bit instruction
-          break;
+            sprintf(&buf[strlen(buf)],"0x%2x 0x%2x 0x%2x 0x%2x", lowB, highB, lowB2, highB2);
+            tPC +=4;        // 32 bit instruction
+            break;
         case AM_VIII:  // Unhandled
-          sprintf(&buf[strlen(buf)],"0x%2x 0x%2x 0x%2x 0x%2x", lowB, highB, lowB2, highB2);
-          tPC += 4;   // 32 bit instruction
-          break;
+            sprintf(&buf[strlen(buf)],"0x%2x 0x%2x 0x%2x 0x%2x", lowB, highB, lowB2, highB2);
+            tPC += 4;   // 32 bit instruction
+            break;
         case AM_IX:
-          arg1 = (lowB & 0x1); // Mode ID, Ignore for now
-          sprintf(&buf[strlen(buf)],"%s", optable[opcode].opname);   
-          tPC += 2;   // 16 bit instruction
-          break;
+            arg1 = (lowB & 0x1); // Mode ID, Ignore for now
+            sprintf(&buf[strlen(buf)],"%s", optable[opcode].opname);   
+            tPC += 2;   // 16 bit instruction
+            break;
         case AM_BSTR:  // Bit String Subopcodes
-          arg1 = (lowB >> 5) + ((highB & 0x3) << 3);
-          arg2 = (lowB & 0x1F);
-          if(arg2 > 15) {
-            sprintf(&buf[strlen(buf)],"BError");
-          } else {
-            //sprintf(&buf[strlen(buf)],"%s, $%d", bssuboptable[arg2].opname,arg1);
-            sprintf(&buf[strlen(buf)], "%s", bssuboptable[arg2].opname);
-          }
-          tPC += 2;   // 16 bit instruction
-          break;
+            arg1 = (lowB >> 5) + ((highB & 0x3) << 3);
+            arg2 = (lowB & 0x1F);
+            if(arg2 > 15) {
+                sprintf(&buf[strlen(buf)],"BError");
+            } else {
+                //sprintf(&buf[strlen(buf)],"%s, $%d", bssuboptable[arg2].opname,arg1);
+		sprintf(&buf[strlen(buf)], "%s", bssuboptable[arg2].opname);
+            }
+            tPC += 2;   // 16 bit instruction
+            break;
         case AM_FPP:   // Floating Point Subcode
-          arg1 = (lowB >> 5) + ((highB & 0x3) << 3);
-          arg2 = (lowB & 0x1F);
-          arg3 = (highB2 >> 2);
+            arg1 = (lowB >> 5) + ((highB & 0x3) << 3);
+            arg2 = (lowB & 0x1F);
+            arg3 = (highB2 >> 2);
 
-          if(arg3 > 15) {
-            sprintf(&buf[strlen(buf)],"(Invalid FPU: 0x%02x)", arg3);
-          } else {
-            sprintf(&buf[strlen(buf)],"%s  %s, %s", fpsuboptable[arg3].opname, pretty_preg_names[arg2], pretty_preg_names[arg1]);
-          }
-          tPC += 4;   // 32 bit instruction
-          break;
+            if(arg3 > 15) {
+                sprintf(&buf[strlen(buf)],"(Invalid FPU: 0x%02x)", arg3);
+            } else {
+                sprintf(&buf[strlen(buf)],"%s  %s, %s", fpsuboptable[arg3].opname, pretty_preg_names[arg2], pretty_preg_names[arg1]);
+            }
+            tPC += 4;   // 32 bit instruction
+            break;
         case AM_UDEF:  // Invalid opcode.
         default:       // Invalid opcode.
-          sprintf(&buf[strlen(buf)],"0x%2x 0x%2x  ;Invalid Opcode", lowB, highB);
-          tPC += 2;                                               
+            sprintf(&buf[strlen(buf)],"0x%2x 0x%2x  ;Invalid Opcode", lowB, highB);
+            tPC += 2;                                               
+        }
     }
-  }
 }
