@@ -39,7 +39,7 @@ these four paragraphs for those parts of this code that are retained.
 | Symbolic Boolean literals.
 *----------------------------------------------------------------------------*/
 enum {
-  FALSE = 0,
-  TRUE  = 1
+    FALSE = 0,
+    TRUE  = 1
 };
 

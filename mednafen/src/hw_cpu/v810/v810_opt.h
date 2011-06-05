@@ -78,12 +78,12 @@ static const int addr_mode[80] = {
 #define         TRAP                            0x18
 #define         RETI                            0x19
 #define         HALT                            0x1A
-//0x1B
+                                              //0x1B
 #define         LDSR                            0x1C
 #define         STSR                            0x1D
 #define         DI                              0x1E
 #define         BSTR                            0x1F  //Special Bit String Inst
-//0x20 - 0x27  // Lost to Branch Instructions
+                                              //0x20 - 0x27  // Lost to Branch Instructions
 #define         MOVEA                           0x28
 #define         ADDI                            0x29
 #define         JR                              0x2A
@@ -94,11 +94,11 @@ static const int addr_mode[80] = {
 #define         MOVHI                           0x2F
 #define         LD_B                            0x30
 #define         LD_H                            0x31
-//0x32
+                                              //0x32
 #define         LD_W                            0x33
 #define         ST_B                            0x34
 #define         ST_H                            0x35
-//0x36
+                                              //0x36
 #define         ST_W                            0x37
 #define         IN_B                            0x38
 #define         IN_H                            0x39

@@ -17,23 +17,23 @@ typedef int32 v810_timestamp_t;
 // Exception codes
 enum
 {
-  ECODE_TRAP_BASE =	0xFFA0,
-  ECODE_INVALID_OP = 	0xFF90,
-  ECODE_ZERO_DIV =	0xFF80, // Integer divide by 0
-  ECODE_FIV =		0xFF70, // Floating point invalid operation
-  ECODE_FZD =		0xFF68, // Floating point zero division
-  ECODE_FOV = 		0xFF64, // Floating point overflow
-  //#define ECODE_FUD	0xFF62 // Floating point underflow(unused on V810)
-  //#define ECODE_FPR	0xFF61 // Floating point precision degradation(unused on V810)
-  ECODE_FRO = 		0xFF60 // Floating point reserved operand
+ ECODE_TRAP_BASE =	0xFFA0,
+ ECODE_INVALID_OP = 	0xFF90,
+ ECODE_ZERO_DIV =	0xFF80, // Integer divide by 0
+ ECODE_FIV =		0xFF70, // Floating point invalid operation
+ ECODE_FZD =		0xFF68, // Floating point zero division
+ ECODE_FOV = 		0xFF64, // Floating point overflow
+//#define ECODE_FUD	0xFF62 // Floating point underflow(unused on V810)
+//#define ECODE_FPR	0xFF61 // Floating point precision degradation(unused on V810)
+ ECODE_FRO = 		0xFF60 // Floating point reserved operand
 };
 
 enum
 {
-  INVALID_OP_HANDLER_ADDR = 0xFFFFFF90, // Invalid opcode/instruction code!
-  ZERO_DIV_HANDLER_ADDR = 0xFFFFFF80, // Integer divide by 0 exception
-  FPU_HANDLER_ADDR = 0xFFFFFF60, // FPU exception
-  TRAP_HANDLER_BASE = 0xFFFFFFA0 // TRAP instruction
+ INVALID_OP_HANDLER_ADDR = 0xFFFFFF90, // Invalid opcode/instruction code!
+ ZERO_DIV_HANDLER_ADDR = 0xFFFFFF80, // Integer divide by 0 exception
+ FPU_HANDLER_ADDR = 0xFFFFFF60, // FPU exception
+ TRAP_HANDLER_BASE = 0xFFFFFFA0 // TRAP instruction
 };
 
 //System Register Defines (these are the only valid system registers!)
@@ -132,9 +132,9 @@ enum
 
 typedef enum
 {
-  V810_EMU_MODE_FAST = 0,
-  V810_EMU_MODE_ACCURATE = 1,
-  _V810_EMU_MODE_COUNT
+ V810_EMU_MODE_FAST = 0,
+ V810_EMU_MODE_ACCURATE = 1,
+ _V810_EMU_MODE_COUNT
 } V810_Emu_Mode;
 
 //
@@ -145,213 +145,213 @@ typedef enum
 
 class V810
 {
-public:
+ public:
 
-  V810();
-  ~V810();
+ V810();
+ ~V810();
 
-  // Pass TRUE for vb_mode if we're emulating a VB-specific enhanced V810 CPU core
-  bool Init(V810_Emu_Mode mode, bool vb_mode);
-  void Kill(void);
+ // Pass TRUE for vb_mode if we're emulating a VB-specific enhanced V810 CPU core
+ bool Init(V810_Emu_Mode mode, bool vb_mode);
+ void Kill(void);
 
-  void SetInt(int level);
+ void SetInt(int level);
 
-  void SetMemWriteBus32(uint8 A, bool value);
-  void SetMemReadBus32(uint8 A, bool value);
+ void SetMemWriteBus32(uint8 A, bool value);
+ void SetMemReadBus32(uint8 A, bool value);
 
-  void SetMemReadHandlers(uint8 MDFN_FASTCALL (*read8)(v810_timestamp_t &, uint32), uint16 MDFN_FASTCALL (*read16)(v810_timestamp_t &, uint32), uint32 MDFN_FASTCALL (*read32)(v810_timestamp_t &, uint32));
-  void SetMemWriteHandlers(void MDFN_FASTCALL (*write8)(v810_timestamp_t &, uint32, uint8), void MDFN_FASTCALL (*write16)(v810_timestamp_t &, uint32, uint16), void MDFN_FASTCALL (*write32)(v810_timestamp_t &, uint32, uint32));
+ void SetMemReadHandlers(uint8 MDFN_FASTCALL (*read8)(v810_timestamp_t &, uint32), uint16 MDFN_FASTCALL (*read16)(v810_timestamp_t &, uint32), uint32 MDFN_FASTCALL (*read32)(v810_timestamp_t &, uint32));
+ void SetMemWriteHandlers(void MDFN_FASTCALL (*write8)(v810_timestamp_t &, uint32, uint8), void MDFN_FASTCALL (*write16)(v810_timestamp_t &, uint32, uint16), void MDFN_FASTCALL (*write32)(v810_timestamp_t &, uint32, uint32));
 
-  void SetIOReadHandlers(uint8 MDFN_FASTCALL (*read8)(v810_timestamp_t &, uint32), uint16 MDFN_FASTCALL (*read16)(v810_timestamp_t &, uint32), uint32 MDFN_FASTCALL (*read32)(v810_timestamp_t &, uint32));
-  void SetIOWriteHandlers(void MDFN_FASTCALL (*write8)(v810_timestamp_t &, uint32, uint8), void MDFN_FASTCALL (*write16)(v810_timestamp_t &, uint32, uint16), void MDFN_FASTCALL (*write32)(v810_timestamp_t &, uint32, uint32));
+ void SetIOReadHandlers(uint8 MDFN_FASTCALL (*read8)(v810_timestamp_t &, uint32), uint16 MDFN_FASTCALL (*read16)(v810_timestamp_t &, uint32), uint32 MDFN_FASTCALL (*read32)(v810_timestamp_t &, uint32));
+ void SetIOWriteHandlers(void MDFN_FASTCALL (*write8)(v810_timestamp_t &, uint32, uint8), void MDFN_FASTCALL (*write16)(v810_timestamp_t &, uint32, uint16), void MDFN_FASTCALL (*write32)(v810_timestamp_t &, uint32, uint32));
 
-  // Length specifies the number of bytes to map in, at each location specified by addresses[] (for mirroring)
-  uint8 *SetFastMap(uint32 addresses[], uint32 length, unsigned int num_addresses, const char *name);
+ // Length specifies the number of bytes to map in, at each location specified by addresses[] (for mirroring)
+ uint8 *SetFastMap(uint32 addresses[], uint32 length, unsigned int num_addresses, const char *name);
 
-  INLINE void ResetTS(void)
-  {
-    assert(next_event_ts > v810_timestamp);
+ INLINE void ResetTS(void)
+ {
+  assert(next_event_ts > v810_timestamp);
 
-    next_event_ts -= v810_timestamp;
-    v810_timestamp = 0;
-  }
+  next_event_ts -= v810_timestamp;
+  v810_timestamp = 0;
+ }
 
-  INLINE void SetEventNT(const v810_timestamp_t timestamp)
-  {
-    next_event_ts = timestamp;
-  }
+ INLINE void SetEventNT(const v810_timestamp_t timestamp)
+ {
+  next_event_ts = timestamp;
+ }
 
-  INLINE v810_timestamp_t GetEventNT(void)
-  {
-    return(next_event_ts);
-  }
+ INLINE v810_timestamp_t GetEventNT(void)
+ {
+  return(next_event_ts);
+ }
 
-  v810_timestamp_t Run(int32 MDFN_FASTCALL (*event_handler)(const v810_timestamp_t timestamp));
-  void Exit(void);
+ v810_timestamp_t Run(int32 MDFN_FASTCALL (*event_handler)(const v810_timestamp_t timestamp));
+ void Exit(void);
 
-  void Reset(void);
+ void Reset(void);
 
-  int StateAction(StateMem *sm, int load, int data_only);
+ int StateAction(StateMem *sm, int load, int data_only);
 
-#ifdef WANT_DEBUGGER
-  void CheckBreakpoints(void (*callback)(int type, uint32 address, unsigned int len), uint16 MDFN_FASTCALL (*peek16)(const v810_timestamp_t, uint32), uint32 MDFN_FASTCALL (*peek32)(const v810_timestamp_t, uint32));
-  void SetCPUHook(void (*newhook)(uint32 PC), void (*new_ADDBT)(uint32));
-#endif
-  uint32 GetPC(void);
-  void SetPC(uint32);
+ #ifdef WANT_DEBUGGER
+ void CheckBreakpoints(void (*callback)(int type, uint32 address, unsigned int len), uint16 MDFN_FASTCALL (*peek16)(const v810_timestamp_t, uint32), uint32 MDFN_FASTCALL (*peek32)(const v810_timestamp_t, uint32));
+ void SetCPUHook(void (*newhook)(uint32 PC), void (*new_ADDBT)(uint32));
+ #endif
+ uint32 GetPC(void);
+ void SetPC(uint32);
 
-  uint32 GetPR(const unsigned int which);
-  void SetPR(const unsigned int which, uint32 value);
+ uint32 GetPR(const unsigned int which);
+ void SetPR(const unsigned int which, uint32 value);
 
-  uint32 GetSR(const unsigned int which);
-  void SetSR(const unsigned int which, uint32 value);
-
-
-private:
-
-  // Make sure P_REG[] is the first variable/array in this class, so non-zerfo offset encoding(at assembly level) isn't necessary to access it.
-  uint32 P_REG[32];  // Program registers pr0-pr31
-  uint32 S_REG[32];  // System registers sr0-sr31
-  uint32 PC;
-  uint8 *PC_ptr;
-  uint8 *PC_base;
-
-public:
-  v810_timestamp_t v810_timestamp;	// Will never be less than 0.
-
-private:
-  v810_timestamp_t next_event_ts;
-
-  enum
-  {
-    LASTOP_NORMAL = 0,
-    LASTOP_LOAD = 1,
-    LASTOP_STORE = 2,
-    LASTOP_IN = 3,
-    LASTOP_OUT = 4,
-    LASTOP_HEAVY_MATH = 5
-  };
-
-  V810_Emu_Mode EmuMode;
-  bool VBMode;
-
-  void Run_Fast(int32 MDFN_FASTCALL (*event_handler)(const v810_timestamp_t timestamp)) NO_INLINE;
-  void Run_Accurate(int32 MDFN_FASTCALL (*event_handler)(const v810_timestamp_t timestamp)) NO_INLINE;
-
-#ifdef WANT_DEBUGGER
-  void Run_Fast_Debug(int32 MDFN_FASTCALL (*event_handler)(const v810_timestamp_t timestamp)) NO_INLINE;
-  void Run_Accurate_Debug(int32 MDFN_FASTCALL (*event_handler)(const v810_timestamp_t timestamp)) NO_INLINE;
-#endif
-
-  uint8 MDFN_FASTCALL (*MemRead8)(v810_timestamp_t &timestamp, uint32 A);
-  uint16 MDFN_FASTCALL (*MemRead16)(v810_timestamp_t &timestamp, uint32 A);
-  uint32 MDFN_FASTCALL (*MemRead32)(v810_timestamp_t &timestamp, uint32 A);
-
-  void MDFN_FASTCALL (*MemWrite8)(v810_timestamp_t &timestamp, uint32 A, uint8 V);
-  void MDFN_FASTCALL (*MemWrite16)(v810_timestamp_t &timestamp, uint32 A, uint16 V);
-  void MDFN_FASTCALL (*MemWrite32)(v810_timestamp_t &timestamp, uint32 A, uint32 V);
-
-  uint8 MDFN_FASTCALL (*IORead8)(v810_timestamp_t &timestamp, uint32 A);
-  uint16 MDFN_FASTCALL (*IORead16)(v810_timestamp_t &timestamp, uint32 A);
-  uint32 MDFN_FASTCALL (*IORead32)(v810_timestamp_t &timestamp, uint32 A);
-
-  void MDFN_FASTCALL (*IOWrite8)(v810_timestamp_t &timestamp, uint32 A, uint8 V);
-  void MDFN_FASTCALL (*IOWrite16)(v810_timestamp_t &timestamp, uint32 A, uint16 V);
-  void MDFN_FASTCALL (*IOWrite32)(v810_timestamp_t &timestamp, uint32 A, uint32 V);
-
-  bool MemReadBus32[256];      // Corresponding to the upper 8 bits of the memory address map.
-  bool MemWriteBus32[256];
-
-  int32 lastop;    // Set to -1 on FP/MUL/DIV, 0x100 on LD, 0x200 on ST, 0x400 on in, 0x800 on out, and the actual opcode * 2(or >= 0) on everything else.
-
-#define LASTOP_LD       0x100
-#define LASTOP_ST       0x200
-#define LASTOP_IN       0x400
-#define LASTOP_OUT      0x800
-
-  enum
-  {
-    HALT_NONE = 0,
-    HALT_HALT = 1,
-    HALT_FATAL_EXCEPTION = 2
-  };
-
-  uint8 Halted;
-
-  bool Running;
-
-  int ilevel;
-
-  bool in_bstr;
-  uint16 in_bstr_to;
-
-  bool bstr_subop(v810_timestamp_t &timestamp, int sub_op, int arg1);
-  void fpu_subop(v810_timestamp_t &timestamp, int sub_op, int arg1, int arg2);
-
-  void Exception(uint32 handler, uint16 eCode);
-  bool WillInterruptOccur(void);
-  int Int(uint32 iNum);
-
-  // Caching-related:
-  typedef struct
-  {
-    uint32 tag;
-    uint32 data[2];
-    bool data_valid[2];
-  } V810_CacheEntry_t;
-
-  V810_CacheEntry_t Cache[128];
-
-  // Bitstring variables.
-  uint32 src_cache;
-  uint32 dst_cache;
-  bool have_src_cache, have_dst_cache;
-
-  uint8 *FastMap[(1ULL << 32) / V810_FAST_MAP_PSIZE];
-  std::vector<void *> FastMapAllocList;
+ uint32 GetSR(const unsigned int which);
+ void SetSR(const unsigned int which, uint32 value);
 
 
-#ifdef WANT_DEBUGGER
-  void (*CPUHook)(uint32 PC);
-  void (*ADDBT)(uint32 PC);
-#endif
+ private:
+
+ // Make sure P_REG[] is the first variable/array in this class, so non-zerfo offset encoding(at assembly level) isn't necessary to access it.
+ uint32 P_REG[32];  // Program registers pr0-pr31
+ uint32 S_REG[32];  // System registers sr0-sr31
+ uint32 PC;
+ uint8 *PC_ptr;
+ uint8 *PC_base;
+
+ public:
+ v810_timestamp_t v810_timestamp;	// Will never be less than 0.
+
+ private:
+ v810_timestamp_t next_event_ts;
+
+ enum
+ {
+  LASTOP_NORMAL = 0,
+  LASTOP_LOAD = 1,
+  LASTOP_STORE = 2,
+  LASTOP_IN = 3,
+  LASTOP_OUT = 4,
+  LASTOP_HEAVY_MATH = 5
+ };
+
+ V810_Emu_Mode EmuMode;
+ bool VBMode;
+
+ void Run_Fast(int32 MDFN_FASTCALL (*event_handler)(const v810_timestamp_t timestamp)) NO_INLINE;
+ void Run_Accurate(int32 MDFN_FASTCALL (*event_handler)(const v810_timestamp_t timestamp)) NO_INLINE;
+
+ #ifdef WANT_DEBUGGER
+ void Run_Fast_Debug(int32 MDFN_FASTCALL (*event_handler)(const v810_timestamp_t timestamp)) NO_INLINE;
+ void Run_Accurate_Debug(int32 MDFN_FASTCALL (*event_handler)(const v810_timestamp_t timestamp)) NO_INLINE;
+ #endif
+
+ uint8 MDFN_FASTCALL (*MemRead8)(v810_timestamp_t &timestamp, uint32 A);
+ uint16 MDFN_FASTCALL (*MemRead16)(v810_timestamp_t &timestamp, uint32 A);
+ uint32 MDFN_FASTCALL (*MemRead32)(v810_timestamp_t &timestamp, uint32 A);
+
+ void MDFN_FASTCALL (*MemWrite8)(v810_timestamp_t &timestamp, uint32 A, uint8 V);
+ void MDFN_FASTCALL (*MemWrite16)(v810_timestamp_t &timestamp, uint32 A, uint16 V);
+ void MDFN_FASTCALL (*MemWrite32)(v810_timestamp_t &timestamp, uint32 A, uint32 V);
+
+ uint8 MDFN_FASTCALL (*IORead8)(v810_timestamp_t &timestamp, uint32 A);
+ uint16 MDFN_FASTCALL (*IORead16)(v810_timestamp_t &timestamp, uint32 A);
+ uint32 MDFN_FASTCALL (*IORead32)(v810_timestamp_t &timestamp, uint32 A);
+
+ void MDFN_FASTCALL (*IOWrite8)(v810_timestamp_t &timestamp, uint32 A, uint8 V);
+ void MDFN_FASTCALL (*IOWrite16)(v810_timestamp_t &timestamp, uint32 A, uint16 V);
+ void MDFN_FASTCALL (*IOWrite32)(v810_timestamp_t &timestamp, uint32 A, uint32 V);
+
+ bool MemReadBus32[256];      // Corresponding to the upper 8 bits of the memory address map.
+ bool MemWriteBus32[256];
+
+ int32 lastop;    // Set to -1 on FP/MUL/DIV, 0x100 on LD, 0x200 on ST, 0x400 on in, 0x800 on out, and the actual opcode * 2(or >= 0) on everything else.
+
+ #define LASTOP_LD       0x100
+ #define LASTOP_ST       0x200
+ #define LASTOP_IN       0x400
+ #define LASTOP_OUT      0x800
+
+ enum
+ {
+  HALT_NONE = 0,
+  HALT_HALT = 1,
+  HALT_FATAL_EXCEPTION = 2
+ };
+
+ uint8 Halted;
+
+ bool Running;
+
+ int ilevel;
+
+ bool in_bstr;
+ uint16 in_bstr_to;
+
+ bool bstr_subop(v810_timestamp_t &timestamp, int sub_op, int arg1);
+ void fpu_subop(v810_timestamp_t &timestamp, int sub_op, int arg1, int arg2);
+
+ void Exception(uint32 handler, uint16 eCode);
+ bool WillInterruptOccur(void);
+ int Int(uint32 iNum);
+
+ // Caching-related:
+ typedef struct
+ {
+  uint32 tag;
+  uint32 data[2];
+  bool data_valid[2];
+ } V810_CacheEntry_t;
+
+ V810_CacheEntry_t Cache[128];
+
+ // Bitstring variables.
+ uint32 src_cache;
+ uint32 dst_cache;
+ bool have_src_cache, have_dst_cache;
+
+ uint8 *FastMap[(1ULL << 32) / V810_FAST_MAP_PSIZE];
+ std::vector<void *> FastMapAllocList;
 
 
-  // For CacheDump and CacheRestore
-  void CacheOpMemStore(v810_timestamp_t &timestamp, uint32 A, uint32 V);
-  uint32 CacheOpMemLoad(v810_timestamp_t &timestamp, uint32 A);
-
-  void CacheClear(v810_timestamp_t &timestamp, uint32 start, uint32 count);
-  void CacheDump(v810_timestamp_t &timestamp, const uint32 SA);
-  void CacheRestore(v810_timestamp_t &timestamp, const uint32 SA);
-
-  uint32 RDCACHE(v810_timestamp_t &timestamp, uint32 addr);
-  //
-  // End caching related
-  //
-
-  uint16 RDOP(v810_timestamp_t &timestamp, uint32 addr, uint32 meow = 2);
-  void SetFlag(uint32 n, bool condition);
-  void SetSZ(uint32 value);
-
-  void SetSREG(v810_timestamp_t &timestamp, unsigned int which, uint32 value);
-  uint32 GetSREG(unsigned int which);
+ #ifdef WANT_DEBUGGER
+ void (*CPUHook)(uint32 PC);
+ void (*ADDBT)(uint32 PC);
+ #endif
 
 
-  bool IsSubnormal(uint32 fpval);
-  void FPU_Math_Template(float32 (*func)(float32, float32), uint32 arg1, uint32 arg2);
-  void FPU_DoException(void);
-  bool CheckFPInputException(uint32 fpval);
-  bool FPU_DoesExceptionKillResult(void);
-  void SetFPUOPNonFPUFlags(uint32 result);
+ // For CacheDump and CacheRestore
+ void CacheOpMemStore(v810_timestamp_t &timestamp, uint32 A, uint32 V);
+ uint32 CacheOpMemLoad(v810_timestamp_t &timestamp, uint32 A);
+
+ void CacheClear(v810_timestamp_t &timestamp, uint32 start, uint32 count);
+ void CacheDump(v810_timestamp_t &timestamp, const uint32 SA);
+ void CacheRestore(v810_timestamp_t &timestamp, const uint32 SA);
+
+ uint32 RDCACHE(v810_timestamp_t &timestamp, uint32 addr);
+ //
+ // End caching related
+ //
+
+ uint16 RDOP(v810_timestamp_t &timestamp, uint32 addr, uint32 meow = 2);
+ void SetFlag(uint32 n, bool condition);
+ void SetSZ(uint32 value);
+
+ void SetSREG(v810_timestamp_t &timestamp, unsigned int which, uint32 value);
+ uint32 GetSREG(unsigned int which);
 
 
-  uint32 BSTR_RWORD(v810_timestamp_t &timestamp, uint32 A);
-  void BSTR_WWORD(v810_timestamp_t &timestamp, uint32 A, uint32 V);
-  bool Do_BSTR_Search(v810_timestamp_t &timestamp, const int inc_mul, unsigned int bit_test);
+ bool IsSubnormal(uint32 fpval);
+ void FPU_Math_Template(float32 (*func)(float32, float32), uint32 arg1, uint32 arg2);
+ void FPU_DoException(void);
+ bool CheckFPInputException(uint32 fpval);
+ bool FPU_DoesExceptionKillResult(void);
+ void SetFPUOPNonFPUFlags(uint32 result);
 
 
-  uint8 DummyRegion[V810_FAST_MAP_PSIZE + V810_FAST_MAP_TRAMPOLINE_SIZE];
+ uint32 BSTR_RWORD(v810_timestamp_t &timestamp, uint32 A);
+ void BSTR_WWORD(v810_timestamp_t &timestamp, uint32 A, uint32 V);
+ bool Do_BSTR_Search(v810_timestamp_t &timestamp, const int inc_mul, unsigned int bit_test);
+
+
+ uint8 DummyRegion[V810_FAST_MAP_PSIZE + V810_FAST_MAP_TRAMPOLINE_SIZE];
 };
 
 #endif
