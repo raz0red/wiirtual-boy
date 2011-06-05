@@ -199,10 +199,10 @@
 /* #undef HAVE_LIBASOUND */
 
 /* Define if we are compiling with libcdio support. */
-#define HAVE_LIBCDIO 1
+#undef HAVE_LIBCDIO
 
 /* Define if we are compiling with libsndfile support. */
-#define HAVE_LIBSNDFILE 1
+#undef HAVE_LIBSNDFILE
 
 /* Define to 1 if you have the `z' library (-lz). */
 #define HAVE_LIBZ 1
@@ -405,7 +405,7 @@
 #define MSB_FIRST 1
 
 /* Define if we are compiling with network play code. */
-#define NETWORK 1
+#undef NETWORK
 
 /* Define to 1 if your C compiler doesn't accept -c and -o together. */
 /* #undef NO_MINUS_C_MINUS_O */
