@@ -25,31 +25,8 @@ distribution.
 #ifndef WII_FILE_IO_H
 #define WII_FILE_IO_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <gctypes.h>
-
-/*
- * Unmounts the file system
- */
-extern void wii_unmount();
-
-/*
- * Mounts the file system
- *
- * return   Whether we mounted the file system successfully
- */
-extern BOOL wii_mount();
-
-/*
- * Remounts the file system
- */
-extern void wii_remount();
-
-#ifdef __cplusplus
-}
-#endif
+void wii_unmount();
+bool wii_mount();
+void wii_remount();
 
 #endif

@@ -28,6 +28,8 @@ distribution.
 #include <ogc/usbstorage.h>
 
 #include "wii_app.h"
+#include "wii_file_io.h"
+#include "wii_filesystem.h"
 
 #ifdef WII_NETTRACE
 #include <network.h>
@@ -35,7 +37,9 @@ distribution.
 #endif
 
 // Is the file system mounted?
-static BOOL mounted = FALSE;
+static bool mounted = FALSE;
+IO::SD sd;
+IO::USB usb;
 
 /*
  * Unmounts the file system
@@ -44,17 +48,10 @@ void wii_unmount()
 {
   if( mounted )
   {
-    if( wii_is_usb )
-    {
-      fatUnmount( "usb:/" );
-      __io_usbstorage.shutdown(); 
-    }
-    else
-    {
-      fatUnmount( "sd:/" );
-      __io_wiisd.shutdown();
-    }
+    usb.Unmount();
+	sd.Unmount();
 
+    wii_is_usb = FALSE;
     mounted = FALSE;
   }
 }
@@ -64,41 +61,21 @@ void wii_unmount()
  *
  * return    Whether we mounted the file system successfully
  */
-BOOL wii_mount()
+bool wii_mount()
 {
+  bool ret = false;
   if( !mounted )
   {
-    int retry = 20;
-    while( retry > 0 )
-    {    
-      if( wii_is_usb )
-      {
-        mounted = ( 
-          __io_usbstorage.startup() &&
-          fatMountSimple( "usb", &__io_usbstorage ) );
-      }
-      else
-      {
-        mounted = (
-          __io_wiisd.startup() && 
-          fatMountSimple( "sd", &__io_wiisd ) );
-      }
-
-      if( mounted )
-      {
-        break;
-      }
-      else
-      {
-        usleep( 1000 * 1000 ); // 1 second
-        retry--;
-      }
-    }
-
-    if( mounted )
-    {
-      chdir( wii_get_app_path() );    
-    }
+    mounted = sd.Mount();
+	usb.Startup();
+	if(!mounted)
+		mounted = usb.Mount();
+		if(mounted)
+             wii_is_usb = TRUE;
+	else
+		ret = usb.Mount();
+        if(ret)
+             wii_is_usb = TRUE;
   }
   
   return mounted;
