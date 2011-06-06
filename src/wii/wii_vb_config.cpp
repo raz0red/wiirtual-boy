@@ -2,7 +2,7 @@
 WiirtualBoy : Wii port of the Mednafen Virtual Boy emulator
 
 Copyright (C) 2011
-raz0red (www.twitchasylum.com)
+raz0red and Arikado
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any
@@ -58,10 +58,6 @@ extern "C" void wii_config_handle_read_value( char *name, char* value )
   {
     wii_vsync = Util_sscandec( value );
   }
-  else if( strcmp( name, "MAX_FRAMES" ) == 0 )
-  {
-    wii_max_frames = Util_sscandec( value );
-  }
   else if( strcmp( name, "SEL_OFFSET" ) == 0 )
   {
     wii_menu_sel_offset = Util_sscandec( value );
@@ -100,7 +96,6 @@ extern "C" void wii_config_handle_write_config( FILE *fp )
   fprintf( fp, "AUTO_LOAD_STATE=%d\n", wii_auto_load_state );
   fprintf( fp, "AUTO_SAVE_STATE=%d\n", wii_auto_save_state );
   fprintf( fp, "VSYNC=%d\n", wii_vsync );
-  fprintf( fp, "MAX_FRAMES=%d\n", wii_max_frames );  
   fprintf( fp, "SEL_OFFSET=%d\n", wii_menu_sel_offset );  
   fprintf( fp, "MOTE_MENU_VERTICAL=%d\n", wii_mote_menu_vertical );  
   fprintf( fp, "SCREEN_X=%d\n", wii_screen_x );

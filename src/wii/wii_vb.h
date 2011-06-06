@@ -2,7 +2,7 @@
 WiirtualBoy : Wii port of the Mednafen Virtual Boy emulator
 
 Copyright (C) 2011
-raz0red (www.twitchasylum.com)
+raz0red and Arikado
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any
@@ -29,9 +29,7 @@ distribution.
 
 #include <wiiuse/wpad.h>
 #include "wii_main.h"
-
-// FPS
-#define DEFAULT_FPS 60
+#include "wii_vb_db.h"
 
 // Virtual boy size
 #define VB_WIDTH 384
@@ -60,7 +58,7 @@ distribution.
 #define WII_NUNCHUK_VB_B ( WPAD_NUNCHUK_BUTTON_Z )
 #define GC_BUTTON_VB_B ( PAD_BUTTON_B )
 
-#define DEFAULT_VB_MODE_KEY "red_black"
+#define DEFAULT_VB_MODE_KEY "white_black"
 
 /*
  * The 3d display mode
@@ -76,6 +74,10 @@ typedef struct Vb3dMode
 
 // The last cartridge hash
 extern char wii_cartridge_hash[33];
+// The cartridge hash with header (may be the same)
+extern char wii_cartridge_hash_with_header[33];
+// The database entry for current game
+extern VbDbEntry wii_vb_db_entry;
 // Whether to display debug info (FPS, etc.)
 extern BOOL wii_debug;
 // Hardware buttons (reset, power, etc.)
@@ -88,11 +90,9 @@ extern BOOL wii_auto_save_state;
 extern int wii_screen_x;
 // The screen Y size
 extern int wii_screen_y;
-// Maximum frame rate
-extern u8 wii_max_frames;
+
 // The current 3d mode
 extern char wii_vb_mode_key[255];
-
 // The 3d modes that are available
 extern Vb3dMode wii_vb_modes[];
 // The number of 3d modes
@@ -119,6 +119,13 @@ extern int wii_get_vb_mode_index();
  * return   The current 3d mode
  */
 extern Vb3dMode wii_get_vb_mode();
+
+/*
+ * Returns the render rate
+ *
+ * return   The render rate (or -1 if we are rendering at 100%)
+ */
+extern int wii_get_render_rate();
 
 /*
  * Returns the roms directory

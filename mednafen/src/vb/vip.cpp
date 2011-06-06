@@ -25,6 +25,7 @@
 #endif
 
 #ifdef WII
+#include "wii_vb.h"
 extern SDL_Surface* screen;
 extern SDL_Palette orig_8bpp_palette;
 #endif
@@ -139,8 +140,8 @@ namespace MDFN_IEN_VB
     for( int i = 0; i < *uniqueCount; i++ )
     {
       if( uniqueColors[i].r == r && 
-          uniqueColors[i].g == g && 
-          uniqueColors[i].b == b )
+        uniqueColors[i].g == g && 
+        uniqueColors[i].b == b )
       {
         found = true;
         break;
@@ -196,7 +197,7 @@ namespace MDFN_IEN_VB
         ColorLUTNoGC[lr][i][0] = pow(r_prime, 2.2 / 1.0);
         ColorLUTNoGC[lr][i][1] = pow(g_prime, 2.2 / 1.0);
         ColorLUTNoGC[lr][i][2] = pow(b_prime, 2.2 / 1.0);
-  
+
         int ri = (int)(r_prime * 255);
         int gi = (int)(g_prime * 255);
         int bi = (int)(b_prime * 255);
@@ -211,13 +212,13 @@ namespace MDFN_IEN_VB
         }
 
 #ifdef WII_NETTRACE
-        net_print_string( NULL, 0, "mapColor:%d(%d,%d,%d)=%d\n", i, ri, gi, bi, format.MakeColor( ri, gi, bi, 0) );
+        //net_print_string( NULL, 0, "mapColor:%d(%d,%d,%d)=%d\n", i, ri, gi, bi, format.MakeColor( ri, gi, bi, 0) );
 #endif
       }
     }
 
 #ifdef WII_NETTRACE
-    net_print_string( NULL, 0, "unique colors:%d, %d\n", lColorCount, rColorCount );
+    //net_print_string( NULL, 0, "unique colors:%d, %d\n", lColorCount, rColorCount );
 #endif
 
 #ifdef WII
@@ -782,204 +783,225 @@ namespace MDFN_IEN_VB
   }
 
   //
-// Don't update the VIP state on reads/writes, the event system will update it with enough precision as far as VB software cares.
-//
+  // Don't update the VIP state on reads/writes, the event system will update it with enough precision as far as VB software cares.
+  //
 
-uint8 VIP_Read8(int32 timestamp, uint32 A)
-{
- uint8 ret = 0; //0xFF;
+  uint8 VIP_Read8(int32 timestamp, uint32 A)
+  {
+    uint8 ret = 0; //0xFF;
 
- //VIP_Update(timestamp);
+    //VIP_Update(timestamp);
 
- switch(A >> 16)
- {
-  case 0x0:
-  case 0x1:
-           if((A & 0x7FFF) >= 0x6000)
-           {
-            ret = VIP_MA16R8(CHR_RAM, (A & 0x1FFF) | ((A >> 2) & 0x6000));
-           }
-           else
-           {
-            ret = FB[(A >> 15) & 1][(A >> 16) & 1][A & 0x7FFF];
-           }
-           break;
+    switch(A >> 16)
+    {
+    case 0x0:
+    case 0x1:
+      if((A & 0x7FFF) >= 0x6000)
+      {
+        ret = VIP_MA16R8(CHR_RAM, (A & 0x1FFF) | ((A >> 2) & 0x6000));
+      }
+      else
+      {
+        ret = FB[(A >> 15) & 1][(A >> 16) & 1][A & 0x7FFF];
+      }
+      break;
 
-  case 0x2:
-  case 0x3: ret = VIP_MA16R8(DRAM, A & 0x1FFFF);
-            break;
+    case 0x2:
+    case 0x3: ret = VIP_MA16R8(DRAM, A & 0x1FFFF);
+      break;
 
-  case 0x4:
-  case 0x5: if(A >= 0x5E000)
-	     ret = ReadRegister(timestamp, A);
-	    else
-	     VIP_DBGMSG("Unknown VIP Read: %08x", A);
-            break;
+    case 0x4:
+    case 0x5: if(A >= 0x5E000)
+                ret = ReadRegister(timestamp, A);
+              else
+                VIP_DBGMSG("Unknown VIP Read: %08x", A);
+      break;
 
-  case 0x6: break;
+    case 0x6: break;
 
-  case 0x7: if(A >= 0x8000)
-            {
-             ret = VIP_MA16R8(CHR_RAM, A & 0x7FFF);
-            }
-	    else
-	     VIP_DBGMSG("Unknown VIP Read: %08x", A);
-            break;
+    case 0x7: if(A >= 0x8000)
+              {
+                ret = VIP_MA16R8(CHR_RAM, A & 0x7FFF);
+              }
+              else
+                VIP_DBGMSG("Unknown VIP Read: %08x", A);
+      break;
 
-  default: VIP_DBGMSG("Unknown VIP Read: %08x", A);
-	   break;
- }
-
-
- //VB_SetEvent(VB_EVENT_VIP, timestamp + CalcNextEvent());
-
- return(ret);
-}
-
-uint16 VIP_Read16(int32 timestamp, uint32 A)
-{
- uint16 ret = 0; //0xFFFF;
-
- //VIP_Update(timestamp); 
-
- switch(A >> 16)
- {
-  case 0x0:
-  case 0x1:
-           if((A & 0x7FFF) >= 0x6000)
-           {
-            ret = VIP_MA16R16(CHR_RAM, (A & 0x1FFF) | ((A >> 2) & 0x6000));
-           }
-           else
-           {
-            ret = le16toh(*(uint16 *)&FB[(A >> 15) & 1][(A >> 16) & 1][A & 0x7FFF]);
-           }
-           break;
-
-  case 0x2:
-  case 0x3: ret = VIP_MA16R16(DRAM, A & 0x1FFFF);
-            break;
-
-  case 0x4:
-  case 0x5: 
-	    if(A >= 0x5E000)
-	     ret = ReadRegister(timestamp, A);
-            else
-             VIP_DBGMSG("Unknown VIP Read: %08x", A);
-            break;
-
-  case 0x6: break;
-
-  case 0x7: if(A >= 0x8000)
-            {
-             ret = VIP_MA16R16(CHR_RAM, A & 0x7FFF);
-            }
-	    else
-	     VIP_DBGMSG("Unknown VIP Read: %08x", A);
-            break;
-
-  default: VIP_DBGMSG("Unknown VIP Read: %08x", A);
-           break;
- }
+    default: VIP_DBGMSG("Unknown VIP Read: %08x", A);
+      break;
+    }
 
 
- //VB_SetEvent(VB_EVENT_VIP, timestamp + CalcNextEvent());
- return(ret);
-}
+    //VB_SetEvent(VB_EVENT_VIP, timestamp + CalcNextEvent());
 
-void VIP_Write8(int32 timestamp, uint32 A, uint8 V)
-{
- //VIP_Update(timestamp); 
+    return(ret);
+  }
 
- //if(A >= 0x3DC00 && A < 0x3E000)
- // printf("%08x %02x\n", A, V);
+  uint16 VIP_Read16(int32 timestamp, uint32 A)
+  {
+    uint16 ret = 0; //0xFFFF;
 
- switch(A >> 16)
- {
-  case 0x0:
-  case 0x1:
-	   if((A & 0x7FFF) >= 0x6000)
-	    VIP_MA16W8(CHR_RAM, (A & 0x1FFF) | ((A >> 2) & 0x6000), V);
-	   else
-	    FB[(A >> 15) & 1][(A >> 16) & 1][A & 0x7FFF] = V;
-	   break;
+    //VIP_Update(timestamp); 
 
-  case 0x2:
-  case 0x3: VIP_MA16W8(DRAM, A & 0x1FFFF, V);
-	    break;
+    switch(A >> 16)
+    {
+    case 0x0:
+    case 0x1:
+      if((A & 0x7FFF) >= 0x6000)
+      {
+        ret = VIP_MA16R16(CHR_RAM, (A & 0x1FFF) | ((A >> 2) & 0x6000));
+      }
+      else
+      {
+        ret = le16toh(*(uint16 *)&FB[(A >> 15) & 1][(A >> 16) & 1][A & 0x7FFF]);
+      }
+      break;
 
-  case 0x4:
-  case 0x5: if(A >= 0x5E000)
- 	     WriteRegister(timestamp, A, V);
-            else
-             VIP_DBGMSG("Unknown VIP Write: %08x %02x", A, V);
-	    break;
+    case 0x2:
+    case 0x3: ret = VIP_MA16R16(DRAM, A & 0x1FFFF);
+      break;
 
-  case 0x6: VIP_DBGMSG("Unknown VIP Write: %08x %02x", A, V);
-	    break;
+    case 0x4:
+    case 0x5: 
+      if(A >= 0x5E000)
+        ret = ReadRegister(timestamp, A);
+      else
+        VIP_DBGMSG("Unknown VIP Read: %08x", A);
+      break;
 
-  case 0x7: if(A >= 0x8000)
-	     VIP_MA16W8(CHR_RAM, A & 0x7FFF, V);
-	    else
-	     VIP_DBGMSG("Unknown VIP Write: %08x %02x", A, V);
-	    break;
+    case 0x6: break;
 
-  default: VIP_DBGMSG("Unknown VIP Write: %08x %02x", A, V);
-           break;
- }
+    case 0x7: if(A >= 0x8000)
+              {
+                ret = VIP_MA16R16(CHR_RAM, A & 0x7FFF);
+              }
+              else
+                VIP_DBGMSG("Unknown VIP Read: %08x", A);
+      break;
 
- //VB_SetEvent(VB_EVENT_VIP, timestamp + CalcNextEvent());
-}
-
-void VIP_Write16(int32 timestamp, uint32 A, uint16 V)
-{
- //VIP_Update(timestamp); 
-
- //if(A >= 0x3DC00 && A < 0x3E000)
- // printf("%08x %04x\n", A, V);
-
- switch(A >> 16)
- {
-  case 0x0:
-  case 0x1:
-           if((A & 0x7FFF) >= 0x6000)
-            VIP_MA16W16(CHR_RAM, (A & 0x1FFF) | ((A >> 2) & 0x6000), V);
-           else
-            *(uint16 *)&FB[(A >> 15) & 1][(A >> 16) & 1][A & 0x7FFF] = htole16(V);
-           break;
-
-  case 0x2:
-  case 0x3: VIP_MA16W16(DRAM, A & 0x1FFFF, V);
-            break;
-
-  case 0x4:
-  case 0x5: if(A >= 0x5E000)
- 	     WriteRegister(timestamp, A, V);
-            else
-             VIP_DBGMSG("Unknown VIP Write: %08x %04x", A, V);
-            break;
-
-  case 0x6: VIP_DBGMSG("Unknown VIP Write: %08x %04x", A, V);
-	    break;
-
-  case 0x7: if(A >= 0x8000)
-             VIP_MA16W16(CHR_RAM, A & 0x7FFF, V);
-	    else
-	     VIP_DBGMSG("Unknown VIP Write: %08x %04x", A, V);
-            break;
-
-  default: VIP_DBGMSG("Unknown VIP Write: %08x %04x", A, V);
-           break;
- }
+    default: VIP_DBGMSG("Unknown VIP Read: %08x", A);
+      break;
+    }
 
 
- //VB_SetEvent(VB_EVENT_VIP, timestamp + CalcNextEvent());
-}
+    //VB_SetEvent(VB_EVENT_VIP, timestamp + CalcNextEvent());
+    return(ret);
+  }
+
+  void VIP_Write8(int32 timestamp, uint32 A, uint8 V)
+  {
+    //VIP_Update(timestamp); 
+
+    //if(A >= 0x3DC00 && A < 0x3E000)
+    // printf("%08x %02x\n", A, V);
+
+    switch(A >> 16)
+    {
+    case 0x0:
+    case 0x1:
+      if((A & 0x7FFF) >= 0x6000)
+        VIP_MA16W8(CHR_RAM, (A & 0x1FFF) | ((A >> 2) & 0x6000), V);
+      else
+        FB[(A >> 15) & 1][(A >> 16) & 1][A & 0x7FFF] = V;
+      break;
+
+    case 0x2:
+    case 0x3: VIP_MA16W8(DRAM, A & 0x1FFFF, V);
+      break;
+
+    case 0x4:
+    case 0x5: if(A >= 0x5E000)
+                WriteRegister(timestamp, A, V);
+              else
+                VIP_DBGMSG("Unknown VIP Write: %08x %02x", A, V);
+      break;
+
+    case 0x6: VIP_DBGMSG("Unknown VIP Write: %08x %02x", A, V);
+      break;
+
+    case 0x7: if(A >= 0x8000)
+                VIP_MA16W8(CHR_RAM, A & 0x7FFF, V);
+              else
+                VIP_DBGMSG("Unknown VIP Write: %08x %02x", A, V);
+      break;
+
+    default: VIP_DBGMSG("Unknown VIP Write: %08x %02x", A, V);
+      break;
+    }
+
+    //VB_SetEvent(VB_EVENT_VIP, timestamp + CalcNextEvent());
+  }
+
+  void VIP_Write16(int32 timestamp, uint32 A, uint16 V)
+  {
+    //VIP_Update(timestamp); 
+
+    //if(A >= 0x3DC00 && A < 0x3E000)
+    // printf("%08x %04x\n", A, V);
+
+    switch(A >> 16)
+    {
+    case 0x0:
+    case 0x1:
+      if((A & 0x7FFF) >= 0x6000)
+        VIP_MA16W16(CHR_RAM, (A & 0x1FFF) | ((A >> 2) & 0x6000), V);
+      else
+        *(uint16 *)&FB[(A >> 15) & 1][(A >> 16) & 1][A & 0x7FFF] = htole16(V);
+      break;
+
+    case 0x2:
+    case 0x3: VIP_MA16W16(DRAM, A & 0x1FFFF, V);
+      break;
+
+    case 0x4:
+    case 0x5: if(A >= 0x5E000)
+                WriteRegister(timestamp, A, V);
+              else
+                VIP_DBGMSG("Unknown VIP Write: %08x %04x", A, V);
+      break;
+
+    case 0x6: VIP_DBGMSG("Unknown VIP Write: %08x %04x", A, V);
+      break;
+
+    case 0x7: if(A >= 0x8000)
+                VIP_MA16W16(CHR_RAM, A & 0x7FFF, V);
+              else
+                VIP_DBGMSG("Unknown VIP Write: %08x %04x", A, V);
+      break;
+
+    default: VIP_DBGMSG("Unknown VIP Write: %08x %04x", A, V);
+      break;
+    }
+
+
+    //VB_SetEvent(VB_EVENT_VIP, timestamp + CalcNextEvent());
+  }
   static MDFN_Surface *surface;
   static bool skip;
 
+  // Whether to skip the current frame
+  // TODO: Move this to a better location
+  int vb_skip_frame = 0;
+  // The current sum for skipping
+  static int skip_sum = 0;
+
   void VIP_StartFrame(EmulateSpecStruct *espec)
   {
+    vb_skip_frame = 0;
+    int render_rate = wii_get_render_rate();
+    if( render_rate != -1 )
+    {
+      skip_sum += render_rate;
+      if( skip_sum >= 100 )
+      {
+        skip_sum %= 100;
+      }
+      else
+      {
+        vb_skip_frame = 1;      
+      }
+    }
+
     // puts("Start frame");
 
     if(espec->VideoFormatChanged || VidSettingsDirty)
@@ -1421,24 +1443,27 @@ void VIP_Write16(int32 timestamp, uint32 A, uint16 V)
           }
           else
           {
-            VIP_DrawBlock(DrawingBlock, DrawingBuffers[0] + 8, DrawingBuffers[1] + 8);
-
-            for(int lr = 0; lr < 2; lr++)
+            if( !vb_skip_frame )
             {
-              uint8 *FB_Target = FB[DrawingFB][lr] + DrawingBlock * 2;
+              VIP_DrawBlock(DrawingBlock, DrawingBuffers[0] + 8, DrawingBuffers[1] + 8);
 
-              for(int x = 0; x < 384; x++)
+              for(int lr = 0; lr < 2; lr++)
               {
-                FB_Target[64 * x + 0] = (DrawingBuffers[lr][8 + x + 512 * 0] << 0)
-                  | (DrawingBuffers[lr][8 + x + 512 * 1] << 2)
-                  | (DrawingBuffers[lr][8 + x + 512 * 2] << 4)
-                  | (DrawingBuffers[lr][8 + x + 512 * 3] << 6);
+                uint8 *FB_Target = FB[DrawingFB][lr] + DrawingBlock * 2;
 
-                FB_Target[64 * x + 1] = (DrawingBuffers[lr][8 + x + 512 * 4] << 0) 
-                  | (DrawingBuffers[lr][8 + x + 512 * 5] << 2)
-                  | (DrawingBuffers[lr][8 + x + 512 * 6] << 4) 
-                  | (DrawingBuffers[lr][8 + x + 512 * 7] << 6);
+                for(int x = 0; x < 384; x++)
+                {
+                  FB_Target[64 * x + 0] = (DrawingBuffers[lr][8 + x + 512 * 0] << 0)
+                    | (DrawingBuffers[lr][8 + x + 512 * 1] << 2)
+                    | (DrawingBuffers[lr][8 + x + 512 * 2] << 4)
+                    | (DrawingBuffers[lr][8 + x + 512 * 3] << 6);
 
+                  FB_Target[64 * x + 1] = (DrawingBuffers[lr][8 + x + 512 * 4] << 0) 
+                    | (DrawingBuffers[lr][8 + x + 512 * 5] << 2)
+                    | (DrawingBuffers[lr][8 + x + 512 * 6] << 4) 
+                    | (DrawingBuffers[lr][8 + x + 512 * 7] << 6);
+
+                }
               }
             }
           }
@@ -1528,36 +1553,39 @@ void VIP_Write16(int32 timestamp, uint32 A, uint16 V)
               GameFrameCounter = 0;
             }
 
-            if(!skip && InstantDisplayHack)
+            if( !vb_skip_frame )
             {
-              // Ugly kludge, fix in the future.
-              int32 save_DisplayRegion = DisplayRegion;
-              int32 save_Column = Column;
-              uint8 save_Repeat = Repeat;
-
-              for(int lr = 0; lr < 2; lr++)
+              if(!skip && InstantDisplayHack)
               {
-                DisplayRegion = lr << 1;
-                for(Column = 0; Column < 384; Column++)
+                // Ugly kludge, fix in the future.
+                int32 save_DisplayRegion = DisplayRegion;
+                int32 save_Column = Column;
+                uint8 save_Repeat = Repeat;
+
+                for(int lr = 0; lr < 2; lr++)
                 {
-                  if(!(Column & 3))
+                  DisplayRegion = lr << 1;
+                  for(Column = 0; Column < 384; Column++)
                   {
-                    uint16 ctdata = VIP_MA16R16(DRAM, 0x1DFFE - ((Column >> 2) * 2) - (lr ? 0 : 0x200));
-
-                    if((ctdata >> 8) != Repeat)
+                    if(!(Column & 3))
                     {
-                      Repeat = ctdata >> 8;
-                      RecalcBrightnessCache();
-                    }
-                  }
+                      uint16 ctdata = VIP_MA16R16(DRAM, 0x1DFFE - ((Column >> 2) * 2) - (lr ? 0 : 0x200));
 
-                  CopyFBColumnToTarget();
+                      if((ctdata >> 8) != Repeat)
+                      {
+                        Repeat = ctdata >> 8;
+                        RecalcBrightnessCache();
+                      }
+                    }
+
+                    CopyFBColumnToTarget();
+                  }
                 }
+                DisplayRegion = save_DisplayRegion;
+                Column = save_Column;
+                Repeat = save_Repeat;
+                RecalcBrightnessCache();
               }
-              DisplayRegion = save_DisplayRegion;
-              Column = save_Column;
-              Repeat = save_Repeat;
-              RecalcBrightnessCache();
             }
 
             VB_ExitLoop();

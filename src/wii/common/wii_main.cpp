@@ -103,8 +103,8 @@ static char **main_argv;
 static void wii_free_node( TREENODE* node );
 
 /*
- * Test to see if the machine is PAL or NTSC
- */
+* Test to see if the machine is PAL or NTSC
+*/
 static void wii_test_pal()
 {
   // TODO: Can we simply use the current TV mode to determine this?
@@ -129,28 +129,28 @@ static void wii_test_pal()
 }
 
 /*
- * Sets whether to enable VSYNC or not 
- *
- * param    sync Whether to enable VSYNC or not
- */
+* Sets whether to enable VSYNC or not 
+*
+* param    sync Whether to enable VSYNC or not
+*/
 void wii_set_vsync( BOOL sync )
 {
   wii_vsync = ( sync ? VSYNC_ENABLED : VSYNC_DISABLED );
 }
 
 /*
- * Returns the current menu index
- *
- * return   The current menu index
- */
+* Returns the current menu index
+*
+* return   The current menu index
+*/
 s16 wii_menu_get_current_index()
 {
   return menu_cur_idx;
 }
 
 /*
- * Resets the menu indexes when an underlying menu in change (push/pop)
- */
+* Resets the menu indexes when an underlying menu in change (push/pop)
+*/
 void wii_menu_reset_indexes()
 {
   menu_cur_idx = -1;
@@ -158,12 +158,12 @@ void wii_menu_reset_indexes()
 }
 
 /*
- * Creates and returns a new menu tree node
- *
- * type     The type of the node
- * name     The name for the node
- * return   The newly created node
- */
+* Creates and returns a new menu tree node
+*
+* type     The type of the node
+* name     The name for the node
+* return   The newly created node
+*/
 TREENODE* wii_create_tree_node( enum NODETYPE type, const char *name )
 {
   TREENODE* nodep = (TREENODE*)malloc( sizeof( TREENODE ) );
@@ -178,11 +178,11 @@ TREENODE* wii_create_tree_node( enum NODETYPE type, const char *name )
 }
 
 /*
- * Adds the specified child node to the specified parent
- *
- * parent   The parent
- * child    The child to add to the parent
- */
+* Adds the specified child node to the specified parent
+*
+* parent   The parent
+* child    The child to add to the parent
+*/
 void wii_add_child( TREENODE *parent, TREENODE *childp  )
 {
   // Do we have room?
@@ -191,17 +191,17 @@ void wii_add_child( TREENODE *parent, TREENODE *childp  )
     parent->max_children += 10;
     parent->children = (TREENODEPTR*)
       realloc( parent->children, parent->max_children * 
-        sizeof(TREENODEPTR));		
+      sizeof(TREENODEPTR));		
   }
 
   parent->children[parent->child_count++] = childp;
 }
 
 /*
- * Clears the children for the specified node
- *
- * node     The node to clear the children for
- */
+* Clears the children for the specified node
+*
+* node     The node to clear the children for
+*/
 void wii_menu_clear_children( TREENODE* node )
 {
   int i;
@@ -214,10 +214,10 @@ void wii_menu_clear_children( TREENODE* node )
 }
 
 /*
- * Frees the specified tree node
- *
- * node     The node to free
- */
+* Frees the specified tree node
+*
+* node     The node to free
+*/
 static void wii_free_node( TREENODE* node )
 {
   wii_menu_clear_children( node );    
@@ -228,11 +228,11 @@ static void wii_free_node( TREENODE* node )
 }
 
 /*
- * Pushes the specified menu onto the menu stack (occurs when the user
- * navigates to a sub-menu)
- *
- * menu     The menu to push on the stack
- */
+* Pushes the specified menu onto the menu stack (occurs when the user
+* navigates to a sub-menu)
+*
+* menu     The menu to push on the stack
+*/
 void wii_menu_push( TREENODE *menu )
 {    
   wii_menu_stack[++wii_menu_stack_head] = menu;
@@ -242,11 +242,11 @@ void wii_menu_push( TREENODE *menu )
 }
 
 /*
- * Pops the latest menu off of the menu stack (occurs when the user leaves 
- * the current menu.
- *
- * return   The pop'd menu
- */
+* Pops the latest menu off of the menu stack (occurs when the user leaves 
+* the current menu.
+*
+* return   The pop'd menu
+*/
 TREENODE* wii_menu_pop()
 {    
   if( wii_menu_stack_head > 0 )
@@ -261,12 +261,12 @@ TREENODE* wii_menu_pop()
 }
 
 /*
- * Updates the buffer with the header message for the current menu
- *
- * menu     The menu
- * buffer   The buffer to update with the header message for the
- *          current menu.
- */
+* Updates the buffer with the header message for the current menu
+*
+* menu     The menu
+* buffer   The buffer to update with the header message for the
+*          current menu.
+*/
 static void wii_menu_get_header( TREENODE* menu, char *buffer )
 {
   wii_menu_handle_get_header( menu, buffer );
@@ -282,11 +282,11 @@ static void wii_menu_get_header( TREENODE* menu, char *buffer )
 }
 
 /*
- * Returns the number of visible children in the specified menu
- *
- * menu     The menu
- * return   The number of visible children in the specified menu
- */
+* Returns the number of visible children in the specified menu
+*
+* menu     The menu
+* return   The number of visible children in the specified menu
+*/
 static int get_visible_child_count( TREENODE* menu )
 {
   int count = 0;
@@ -303,12 +303,12 @@ static int get_visible_child_count( TREENODE* menu )
 }
 
 /*
- * Updates the buffer with the footer message for the current menu
- *
- * menu     The menu
- * buffer   The buffer to update with the footer message for the
- *          current menu.
- */
+* Updates the buffer with the footer message for the current menu
+*
+* menu     The menu
+* buffer   The buffer to update with the footer message for the
+*          current menu.
+*/
 static void wii_menu_get_footer( TREENODE* menu, char *buffer )
 {    
   buffer[0] = '\0';
@@ -332,7 +332,7 @@ static void wii_menu_get_footer( TREENODE* menu, char *buffer )
         if( end_idx > visible ) end_idx = visible;
         s16 start_idx = ( end_idx - MENU_PAGESIZE ) + 1;
         if( start_idx <= 0 ) start_idx = 1;
-        
+
         snprintf( buffer, WII_MENU_BUFF_SIZE, 
           "%d items found, displaying %d to %d.",
           visible, start_idx, end_idx );                
@@ -342,11 +342,11 @@ static void wii_menu_get_footer( TREENODE* menu, char *buffer )
 }
 
 /*
- * Determines whether the node is selectable
- *
- * node     The node
- * return   Whether the node is selectable
- */
+* Determines whether the node is selectable
+*
+* node     The node
+* return   Whether the node is selectable
+*/
 static BOOL wii_menu_is_node_selectable( TREENODE *node )
 {
   if( !wii_menu_handle_is_node_visible( node ) )
@@ -363,8 +363,8 @@ static BOOL wii_menu_is_node_selectable( TREENODE *node )
 }
 
 /*
- * Renders the specified menu
- */
+* Renders the specified menu
+*/
 static void wii_menu_render( TREENODE *menu )
 {	
   // Swap buffers
@@ -453,7 +453,7 @@ static void wii_menu_render( TREENODE *menu )
         if( value[0] != '\0' )
         {
           sprintf( buffer2, ": %s", value );
-          
+
           wii_ft_drawtext( fb, node->value_x, 
             MENU_STARTY + ( ( displayed + 2 ) * MENU_LINESIZE ), 
             buffer2 );
@@ -485,12 +485,12 @@ static void wii_menu_render( TREENODE *menu )
 }
 
 /*
- * Returns the index to the start of the page from the currently selected
- * index.
- *
- * return   The index to the start of the page from the currently selected
- *          index.
- */
+* Returns the index to the start of the page from the currently selected
+* index.
+*
+* return   The index to the start of the page from the currently selected
+*          index.
+*/
 static s16 get_page_start_idx( TREENODE *menu )
 {
   int count = MENU_PAGESIZE - 1;
@@ -510,11 +510,11 @@ static s16 get_page_start_idx( TREENODE *menu )
 }
 
 /*
- * Move the current selection in the menu by the specified step count
- *
- * menu     The current menu
- * steps    The number of steps to move the selection
- */
+* Move the current selection in the menu by the specified step count
+*
+* menu     The current menu
+* steps    The number of steps to move the selection
+*/
 void wii_menu_move( TREENODE *menu, s16 steps )
 {	
   if( !menu ) return;
@@ -540,7 +540,7 @@ void wii_menu_move( TREENODE *menu, s16 steps )
       new_idx += stepSize;
 
       if( ( new_idx >= menu->child_count ) ||
-          ( new_idx < 0 ) )
+        ( new_idx < 0 ) )
       {
         break;
       }
@@ -616,8 +616,8 @@ void wii_menu_move( TREENODE *menu, s16 steps )
 #define DELAY_MIN 0
 
 /*
- * Displays the menu 
- */
+* Displays the menu 
+*/
 void wii_menu_show()
 {
   // Allows for incremental speed when scrolling the menu 
@@ -679,18 +679,18 @@ void wii_menu_show()
       wii_menu_handle_update( menu );
 
       if( ( ( held & (
-              WII_BUTTON_LEFT | WII_BUTTON_RIGHT | 
-              WII_BUTTON_DOWN | WII_BUTTON_UP |
-              ( isClassic ? 
-                ( WII_CLASSIC_BUTTON_LEFT | WII_CLASSIC_BUTTON_UP ) : 0 ) 
-                  ) ) == 0 ) &&
-            ( ( gcHeld & (
-              GC_BUTTON_LEFT | GC_BUTTON_RIGHT |
-              GC_BUTTON_DOWN | GC_BUTTON_UP ) ) == 0 ) &&
-            ( !wii_analog_left( expX, gcX ) &&
-              !wii_analog_right( expX, gcX ) &&
-              !wii_analog_up( expY, gcY )&&
-              !wii_analog_down( expY, gcY ) ) )
+        WII_BUTTON_LEFT | WII_BUTTON_RIGHT | 
+        WII_BUTTON_DOWN | WII_BUTTON_UP |
+        ( isClassic ? 
+        ( WII_CLASSIC_BUTTON_LEFT | WII_CLASSIC_BUTTON_UP ) : 0 ) 
+        ) ) == 0 ) &&
+        ( ( gcHeld & (
+        GC_BUTTON_LEFT | GC_BUTTON_RIGHT |
+        GC_BUTTON_DOWN | GC_BUTTON_UP ) ) == 0 ) &&
+        ( !wii_analog_left( expX, gcX ) &&
+        !wii_analog_right( expX, gcX ) &&
+        !wii_analog_up( expY, gcY )&&
+        !wii_analog_down( expY, gcY ) ) )
       {
         delay_frames = -1;
         delay_factor = -1;
@@ -750,15 +750,15 @@ void wii_menu_show()
       }
 
       if( ( down & ( WII_BUTTON_A | 
-            ( isClassic ? WII_CLASSIC_BUTTON_A : WII_NUNCHUK_BUTTON_A ) ) ) ||
-          ( gcDown & GC_BUTTON_A ) )
+        ( isClassic ? WII_CLASSIC_BUTTON_A : WII_NUNCHUK_BUTTON_A ) ) ) ||
+        ( gcDown & GC_BUTTON_A ) )
       {	
         wii_menu_handle_select_node( menu->children[menu_cur_idx] );
         wii_menu_force_redraw = 1;            
       }
       if( ( down & ( WII_BUTTON_B | 
-            ( isClassic ? WII_CLASSIC_BUTTON_B : WII_NUNCHUK_BUTTON_B ) ) ) || 
-          ( gcDown & GC_BUTTON_B ) )
+        ( isClassic ? WII_CLASSIC_BUTTON_B : WII_NUNCHUK_BUTTON_B ) ) ) || 
+        ( gcDown & GC_BUTTON_B ) )
       {
         wii_menu_pop();
         wii_menu_force_redraw = 1;
@@ -773,12 +773,12 @@ void wii_menu_show()
 }
 
 /*
- * Used for comparing menu names when sorting (qsort)
- *
- * a        The first tree node to compare
- * b        The second tree node to compare
- * return   The result of the comparison
- */
+* Used for comparing menu names when sorting (qsort)
+*
+* a        The first tree node to compare
+* b        The second tree node to compare
+* return   The result of the comparison
+*/
 int wii_menu_name_compare( const void *a, const void *b )
 {
   TREENODE** aptr = (TREENODE**)a;
@@ -788,14 +788,14 @@ int wii_menu_name_compare( const void *a, const void *b )
 }
 
 /*
- * Returns the standard list footer for snapshots, games, etc.
- *
- * menu     The current menu
- * listname The name of the list (snapshot/game, etc.)
- * buffer   The buffer to write the footer to
- */
+* Returns the standard list footer for snapshots, games, etc.
+*
+* menu     The current menu
+* listname The name of the list (snapshot/game, etc.)
+* buffer   The buffer to write the footer to
+*/
 void wii_get_list_footer( 
-  TREENODE* menu, const char *listname, char *buffer )
+                         TREENODE* menu, const char *listname, char *buffer )
 {
   if( menu->child_count == 0 )
   {
@@ -819,8 +819,8 @@ void wii_get_list_footer(
 }
 
 /*
- * Loads the resource for the menu
- */
+* Loads the resource for the menu
+*/
 static void init_app()
 {
   // Load the about image (header)
@@ -851,7 +851,7 @@ static void init_app()
         about_props.imgHeight, 
         about_buff,
         0
-      );
+        );
 
       PNGU_ReleaseImageContext( about_ctx );
       about_ctx = NULL;
@@ -866,8 +866,8 @@ static void init_app()
 }
 
 /*
- * Frees the menu resources 
- */
+* Frees the menu resources 
+*/
 static void free_resources()
 {
   //
@@ -891,14 +891,14 @@ static void free_resources()
     free( wii_last_rom );
     wii_last_rom = NULL;
   }
-  
+
   // Free application resources
   wii_handle_free_resources();
 }
 
 /*
- * Flush and syncs the video 
- */
+* Flush and syncs the video 
+*/
 void wii_sync_video()
 {     
   if( wii_vsync_enabled() )
@@ -908,29 +908,29 @@ void wii_sync_video()
 }
 
 /*
- * Returns whether VSYNC is enabled
- *
- * return Whether VSYNC is enabled
- */
+* Returns whether VSYNC is enabled
+*
+* return Whether VSYNC is enabled
+*/
 int wii_vsync_enabled()
 {
   return 
     ( wii_vsync == VSYNC_ENABLED ) && 
     ( ( !wii_is_pal && wii_get_max_frames() <= 60 ) ||
-      ( wii_is_pal && wii_get_max_frames() <= 50 ) );
+    ( wii_is_pal && wii_get_max_frames() <= 50 ) );
 }
 
 /*
- * Main 
- */
+* Main 
+*/
 int main(int argc,char *argv[])
 {
 #ifdef WII_NETTRACE
   char localip[16] = {0};
-	char gateway[16] = {0};
-	char netmask[16] = {0};	
-	if_config ( localip, netmask, gateway, TRUE);
-  
+  char gateway[16] = {0};
+  char netmask[16] = {0};	
+  if_config ( localip, netmask, gateway, TRUE);
+
   // First arg represents IP address for remote tracing
   net_print_init( ( argc > 1 ? argv[1] : NULL ), 0 );
 
@@ -952,7 +952,22 @@ int main(int argc,char *argv[])
   wii_set_app_path( argc, argv );  
 
   // Try to mount the file system
-  if( !wii_mount() ) 
+  int retry = 20;
+  BOOL mounted = FALSE;
+  while( retry > 0 )
+  {
+    mounted = wii_mount();
+    if( mounted )
+    {
+      break;
+    }
+
+    usleep( 1000 * 1000 ); // 1 second
+    retry--;
+  }
+
+  // Try to mount the file system
+  if( !mounted ) 
   {
     printf( "Unable to mount %s\n\n", wii_get_fs_prefix() );
     printf( "Press A to exit..." );
@@ -978,7 +993,7 @@ int main(int argc,char *argv[])
 
   // Test for PAL/NTSC
   wii_test_pal();
-  
+
   if( wii_vsync == -1 )
   {
     // Set the vsync based on whether or not we are PAL or NTSC

@@ -2,7 +2,7 @@
 WiirtualBoy : Wii port of the Mednafen Virtual Boy emulator
 
 Copyright (C) 2011
-raz0red (www.twitchasylum.com)
+raz0red and Arikado
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any
@@ -69,15 +69,14 @@ enum NODETYPE
   NODETYPE_CARTRIDGE_SETTINGS_DEFAULT,
   NODETYPE_SAVE_CARTRIDGE_SETTINGS,
   NODETYPE_DELETE_CARTRIDGE_SETTINGS,
-  NODETYPE_CONTROLS_MODE,
   NODETYPE_REVERT_CARTRIDGE_SETTINGS,
-  NODETYPE_MAX_FRAMES,
+  NODETYPE_CONTROLS_MODE,
   NODETYPE_RESIZE_SCREEN,
-  NODETYPE_RESIZE_SCREEN_VERT,
-  NODETYPE_MAX_FRAMES_CART,
-  NODETYPE_CART_ORIENT,
   NODETYPE_WIIMOTE_MENU_ORIENT,
-  NODETYPE_VB_MODE
+  NODETYPE_VB_MODE,
+  NODETYPE_CARTRIDGE_SETTINGS_DISPLAY,
+  NODETYPE_CART_FRAME_SKIP,
+  NODETYPE_CART_RENDER_RATE
 };
 
 #ifdef __cplusplus

@@ -2,7 +2,7 @@
 WiirtualBoy : Wii port of the Mednafen Virtual Boy emulator
 
 Copyright (C) 2011
-raz0red (www.twitchasylum.com)
+raz0red and Arikado
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any
@@ -33,7 +33,7 @@ distribution.
 #include "wii_sdl.h"
 
 #include "wii_vb.h"
-#include "wii_Vb_input.h"
+#include "wii_vb_input.h"
 #include "wii_vb_main.h"
 #include "wii_vb_sdl.h"
 
@@ -150,9 +150,11 @@ void wii_vb_init()
   nf.colorspace = MDFN_COLORSPACE_RGB;
 
   VTBuffer[0] = new MDFN_Surface(NULL, VB_WIDTH, VB_HEIGHT, VB_WIDTH, nf);
-  VTBuffer[1] = new MDFN_Surface(NULL, VB_WIDTH, VB_HEIGHT, VB_WIDTH, nf);
+  //VTBuffer[1] = new MDFN_Surface(NULL, VB_WIDTH, VB_HEIGHT, VB_WIDTH, nf);
+  VTBuffer[1] = VTBuffer[0];
   VTLineWidths[0] = (MDFN_Rect *)calloc(VB_HEIGHT, sizeof(MDFN_Rect));
-  VTLineWidths[1] = (MDFN_Rect *)calloc(VB_HEIGHT, sizeof(MDFN_Rect));
+  //VTLineWidths[1] = (MDFN_Rect *)calloc(VB_HEIGHT, sizeof(MDFN_Rect));
+  VTLineWidths[1] = VTLineWidths[0];
 
   FPS_Init();
 
@@ -169,19 +171,16 @@ void wii_vb_free()
 {
   CloseGame();
 
-  for(int x = 0; x < 2; x++)
+  if(VTBuffer[0])
   {
-    if(VTBuffer[x])
-    {
-      delete VTBuffer[x];
-      VTBuffer[x] = NULL;
-    }
+    delete VTBuffer[0];
+    VTBuffer[0] = NULL;
+  }
 
-    if(VTLineWidths[x])
-    {
-      free(VTLineWidths[x]);
-      VTLineWidths[x] = NULL;
-    }
+  if(VTLineWidths[0])
+  {
+    free(VTLineWidths[0]);
+    VTLineWidths[0] = NULL;
   }
 
   MDFNI_Kill();
@@ -265,7 +264,10 @@ static void gxrender_callback()
     {
       CalcFramerates( virtfps, drawnfps, blitfps, 64 );  
     }
-    sprintf( text, "%s %s %s", virtfps, drawnfps, blitfps );
+    int renderRate = wii_get_render_rate();
+    sprintf( 
+      text, "%s %s %s (%d%%)", 
+      virtfps, drawnfps, blitfps, ( renderRate == -1 ? 100 : renderRate ) );
 
     GXColor color = (GXColor){0x0, 0x0, 0x0, 0x80};                       
     wii_gx_drawrectangle( 

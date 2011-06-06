@@ -101,7 +101,7 @@ void TIMER_Write(const v810_timestamp_t timestamp, uint32 A, uint8 V)
 {
  if(A & 0x3)
  {
-  puts("HWCtrl Bogus Write?");
+  MDFN_PrintError("HWCtrl Bogus Write?");
   return;
  }
 
