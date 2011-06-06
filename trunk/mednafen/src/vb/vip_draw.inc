@@ -21,7 +21,7 @@ static void DrawBG(uint8 *target, uint16 RealY, bool lr, uint8 bgmap_base_raw, b
  if((uint16)(RealY - DestY) > DestHeight)
   return;
 
- //printf("%d, %d, %d, %d\n", overplane, srcXSize, srcYSize, bgmap_base_raw); 
+ //printf("%d, %d, %d, %d\n", overplane, srcXSize, srcYSize, bgmap_base_raw);
 
  DestX = sign_10_to_s16(DestX);
 
@@ -467,5 +467,8 @@ void VIP_DrawBlock(uint8 block_no, uint8 *fb_l, uint8 *fb_r)
   if(bgm == BGM_OBJ)
    if(obj_search_which)
     obj_search_which--;
+
  }
+
+
 }

@@ -782,200 +782,199 @@ namespace MDFN_IEN_VB
   }
 
   //
-  // Don't update the VIP state on reads/writes, the event system will update it with enough precision as far as VB software cares.
-  //
+// Don't update the VIP state on reads/writes, the event system will update it with enough precision as far as VB software cares.
+//
 
-  uint8 MDFN_FASTCALL VIP_Read8(int32 &timestamp, uint32 A)
-  {
-    uint8 ret = 0; //0xFF;
+uint8 VIP_Read8(int32 timestamp, uint32 A)
+{
+ uint8 ret = 0; //0xFF;
 
-    //VIP_Update(timestamp);
+ //VIP_Update(timestamp);
 
-    switch(A >> 16)
-    {
-    case 0x0:
-    case 0x1:
-      if((A & 0x7FFF) >= 0x6000)
-      {
-        ret = VIP_MA16R8(CHR_RAM, (A & 0x1FFF) | ((A >> 2) & 0x6000));
-      }
-      else
-      {
-        ret = FB[(A >> 15) & 1][(A >> 16) & 1][A & 0x7FFF];
-      }
-      break;
+ switch(A >> 16)
+ {
+  case 0x0:
+  case 0x1:
+           if((A & 0x7FFF) >= 0x6000)
+           {
+            ret = VIP_MA16R8(CHR_RAM, (A & 0x1FFF) | ((A >> 2) & 0x6000));
+           }
+           else
+           {
+            ret = FB[(A >> 15) & 1][(A >> 16) & 1][A & 0x7FFF];
+           }
+           break;
 
-    case 0x2:
-    case 0x3: ret = VIP_MA16R8(DRAM, A & 0x1FFFF);
-      break;
+  case 0x2:
+  case 0x3: ret = VIP_MA16R8(DRAM, A & 0x1FFFF);
+            break;
 
-    case 0x4:
-    case 0x5: if(A >= 0x5E000)
-                ret = ReadRegister(timestamp, A);
-              else
-                VIP_DBGMSG("Unknown VIP Read: %08x", A);
-      break;
+  case 0x4:
+  case 0x5: if(A >= 0x5E000)
+	     ret = ReadRegister(timestamp, A);
+	    else
+	     VIP_DBGMSG("Unknown VIP Read: %08x", A);
+            break;
 
-    case 0x6: break;
+  case 0x6: break;
 
-    case 0x7: if(A >= 0x8000)
-              {
-                ret = VIP_MA16R8(CHR_RAM, A & 0x7FFF);
-              }
-              else
-                VIP_DBGMSG("Unknown VIP Read: %08x", A);
-      break;
+  case 0x7: if(A >= 0x8000)
+            {
+             ret = VIP_MA16R8(CHR_RAM, A & 0x7FFF);
+            }
+	    else
+	     VIP_DBGMSG("Unknown VIP Read: %08x", A);
+            break;
 
-    default: VIP_DBGMSG("Unknown VIP Read: %08x", A);
-      break;
-    }
-
-
-    //VB_SetEvent(VB_EVENT_VIP, timestamp + CalcNextEvent());
-
-    return(ret);
-  }
-
-  uint16 MDFN_FASTCALL VIP_Read16(int32 &timestamp, uint32 A)
-  {
-    uint16 ret = 0; //0xFFFF;
-
-    //VIP_Update(timestamp); 
-
-    switch(A >> 16)
-    {
-    case 0x0:
-    case 0x1:
-      if((A & 0x7FFF) >= 0x6000)
-      {
-        ret = VIP_MA16R16(CHR_RAM, (A & 0x1FFF) | ((A >> 2) & 0x6000));
-      }
-      else
-      {
-        ret = le16toh(*(uint16 *)&FB[(A >> 15) & 1][(A >> 16) & 1][A & 0x7FFF]);
-      }
-      break;
-
-    case 0x2:
-    case 0x3: ret = VIP_MA16R16(DRAM, A & 0x1FFFF);
-      break;
-
-    case 0x4:
-    case 0x5: 
-      if(A >= 0x5E000)
-        ret = ReadRegister(timestamp, A);
-      else
-        VIP_DBGMSG("Unknown VIP Read: %08x", A);
-      break;
-
-    case 0x6: break;
-
-    case 0x7: if(A >= 0x8000)
-              {
-                ret = VIP_MA16R16(CHR_RAM, A & 0x7FFF);
-              }
-              else
-                VIP_DBGMSG("Unknown VIP Read: %08x", A);
-      break;
-
-    default: VIP_DBGMSG("Unknown VIP Read: %08x", A);
-      break;
-    }
+  default: VIP_DBGMSG("Unknown VIP Read: %08x", A);
+	   break;
+ }
 
 
-    //VB_SetEvent(VB_EVENT_VIP, timestamp + CalcNextEvent());
-    return(ret);
-  }
+ //VB_SetEvent(VB_EVENT_VIP, timestamp + CalcNextEvent());
 
-  void MDFN_FASTCALL VIP_Write8(int32 &timestamp, uint32 A, uint8 V)
-  {
-    //VIP_Update(timestamp); 
+ return(ret);
+}
 
-    //if(A >= 0x3DC00 && A < 0x3E000)
-    // printf("%08x %02x\n", A, V);
+uint16 VIP_Read16(int32 timestamp, uint32 A)
+{
+ uint16 ret = 0; //0xFFFF;
 
-    switch(A >> 16)
-    {
-    case 0x0:
-    case 0x1:
-      if((A & 0x7FFF) >= 0x6000)
-        VIP_MA16W8(CHR_RAM, (A & 0x1FFF) | ((A >> 2) & 0x6000), V);
-      else
-        FB[(A >> 15) & 1][(A >> 16) & 1][A & 0x7FFF] = V;
-      break;
+ //VIP_Update(timestamp); 
 
-    case 0x2:
-    case 0x3: VIP_MA16W8(DRAM, A & 0x1FFFF, V);
-      break;
+ switch(A >> 16)
+ {
+  case 0x0:
+  case 0x1:
+           if((A & 0x7FFF) >= 0x6000)
+           {
+            ret = VIP_MA16R16(CHR_RAM, (A & 0x1FFF) | ((A >> 2) & 0x6000));
+           }
+           else
+           {
+            ret = le16toh(*(uint16 *)&FB[(A >> 15) & 1][(A >> 16) & 1][A & 0x7FFF]);
+           }
+           break;
 
-    case 0x4:
-    case 0x5: if(A >= 0x5E000)
-                WriteRegister(timestamp, A, V);
-              else
-                VIP_DBGMSG("Unknown VIP Write: %08x %02x", A, V);
-      break;
+  case 0x2:
+  case 0x3: ret = VIP_MA16R16(DRAM, A & 0x1FFFF);
+            break;
 
-    case 0x6: VIP_DBGMSG("Unknown VIP Write: %08x %02x", A, V);
-      break;
+  case 0x4:
+  case 0x5: 
+	    if(A >= 0x5E000)
+	     ret = ReadRegister(timestamp, A);
+            else
+             VIP_DBGMSG("Unknown VIP Read: %08x", A);
+            break;
 
-    case 0x7: if(A >= 0x8000)
-                VIP_MA16W8(CHR_RAM, A & 0x7FFF, V);
-              else
-                VIP_DBGMSG("Unknown VIP Write: %08x %02x", A, V);
-      break;
+  case 0x6: break;
 
-    default: VIP_DBGMSG("Unknown VIP Write: %08x %02x", A, V);
-      break;
-    }
+  case 0x7: if(A >= 0x8000)
+            {
+             ret = VIP_MA16R16(CHR_RAM, A & 0x7FFF);
+            }
+	    else
+	     VIP_DBGMSG("Unknown VIP Read: %08x", A);
+            break;
 
-    //VB_SetEvent(VB_EVENT_VIP, timestamp + CalcNextEvent());
-  }
-
-  void MDFN_FASTCALL VIP_Write16(int32 &timestamp, uint32 A, uint16 V)
-  {
-    //VIP_Update(timestamp); 
-
-    //if(A >= 0x3DC00 && A < 0x3E000)
-    // printf("%08x %04x\n", A, V);
-
-    switch(A >> 16)
-    {
-    case 0x0:
-    case 0x1:
-      if((A & 0x7FFF) >= 0x6000)
-        VIP_MA16W16(CHR_RAM, (A & 0x1FFF) | ((A >> 2) & 0x6000), V);
-      else
-        *(uint16 *)&FB[(A >> 15) & 1][(A >> 16) & 1][A & 0x7FFF] = htole16(V);
-      break;
-
-    case 0x2:
-    case 0x3: VIP_MA16W16(DRAM, A & 0x1FFFF, V);
-      break;
-
-    case 0x4:
-    case 0x5: if(A >= 0x5E000)
-                WriteRegister(timestamp, A, V);
-              else
-                VIP_DBGMSG("Unknown VIP Write: %08x %04x", A, V);
-      break;
-
-    case 0x6: VIP_DBGMSG("Unknown VIP Write: %08x %04x", A, V);
-      break;
-
-    case 0x7: if(A >= 0x8000)
-                VIP_MA16W16(CHR_RAM, A & 0x7FFF, V);
-              else
-                VIP_DBGMSG("Unknown VIP Write: %08x %04x", A, V);
-      break;
-
-    default: VIP_DBGMSG("Unknown VIP Write: %08x %04x", A, V);
-      break;
-    }
+  default: VIP_DBGMSG("Unknown VIP Read: %08x", A);
+           break;
+ }
 
 
-    //VB_SetEvent(VB_EVENT_VIP, timestamp + CalcNextEvent());
-  }
+ //VB_SetEvent(VB_EVENT_VIP, timestamp + CalcNextEvent());
+ return(ret);
+}
 
+void VIP_Write8(int32 timestamp, uint32 A, uint8 V)
+{
+ //VIP_Update(timestamp); 
+
+ //if(A >= 0x3DC00 && A < 0x3E000)
+ // printf("%08x %02x\n", A, V);
+
+ switch(A >> 16)
+ {
+  case 0x0:
+  case 0x1:
+	   if((A & 0x7FFF) >= 0x6000)
+	    VIP_MA16W8(CHR_RAM, (A & 0x1FFF) | ((A >> 2) & 0x6000), V);
+	   else
+	    FB[(A >> 15) & 1][(A >> 16) & 1][A & 0x7FFF] = V;
+	   break;
+
+  case 0x2:
+  case 0x3: VIP_MA16W8(DRAM, A & 0x1FFFF, V);
+	    break;
+
+  case 0x4:
+  case 0x5: if(A >= 0x5E000)
+ 	     WriteRegister(timestamp, A, V);
+            else
+             VIP_DBGMSG("Unknown VIP Write: %08x %02x", A, V);
+	    break;
+
+  case 0x6: VIP_DBGMSG("Unknown VIP Write: %08x %02x", A, V);
+	    break;
+
+  case 0x7: if(A >= 0x8000)
+	     VIP_MA16W8(CHR_RAM, A & 0x7FFF, V);
+	    else
+	     VIP_DBGMSG("Unknown VIP Write: %08x %02x", A, V);
+	    break;
+
+  default: VIP_DBGMSG("Unknown VIP Write: %08x %02x", A, V);
+           break;
+ }
+
+ //VB_SetEvent(VB_EVENT_VIP, timestamp + CalcNextEvent());
+}
+
+void VIP_Write16(int32 timestamp, uint32 A, uint16 V)
+{
+ //VIP_Update(timestamp); 
+
+ //if(A >= 0x3DC00 && A < 0x3E000)
+ // printf("%08x %04x\n", A, V);
+
+ switch(A >> 16)
+ {
+  case 0x0:
+  case 0x1:
+           if((A & 0x7FFF) >= 0x6000)
+            VIP_MA16W16(CHR_RAM, (A & 0x1FFF) | ((A >> 2) & 0x6000), V);
+           else
+            *(uint16 *)&FB[(A >> 15) & 1][(A >> 16) & 1][A & 0x7FFF] = htole16(V);
+           break;
+
+  case 0x2:
+  case 0x3: VIP_MA16W16(DRAM, A & 0x1FFFF, V);
+            break;
+
+  case 0x4:
+  case 0x5: if(A >= 0x5E000)
+ 	     WriteRegister(timestamp, A, V);
+            else
+             VIP_DBGMSG("Unknown VIP Write: %08x %04x", A, V);
+            break;
+
+  case 0x6: VIP_DBGMSG("Unknown VIP Write: %08x %04x", A, V);
+	    break;
+
+  case 0x7: if(A >= 0x8000)
+             VIP_MA16W16(CHR_RAM, A & 0x7FFF, V);
+	    else
+	     VIP_DBGMSG("Unknown VIP Write: %08x %04x", A, V);
+            break;
+
+  default: VIP_DBGMSG("Unknown VIP Write: %08x %04x", A, V);
+           break;
+ }
+
+
+ //VB_SetEvent(VB_EVENT_VIP, timestamp + CalcNextEvent());
+}
   static MDFN_Surface *surface;
   static bool skip;
 

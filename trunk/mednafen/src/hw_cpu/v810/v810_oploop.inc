@@ -42,7 +42,7 @@
 
      assert(timestamp_rl <= next_event_ts);
 
-     if(!WillInterruptOccur())
+     if(!IPendingCache)
      {
       if(Halted)
       {
@@ -58,17 +58,7 @@
 
      while(timestamp_rl < next_event_ts)
      {
-	if(ilevel >= 0)
-	{ 
-	 int temp_clocks = Int(ilevel);
-	 timestamp_rl += temp_clocks;	//ADDCLOCK(temp_clocks);
-	}
-
         P_REG[0] = 0; //Zero the Zero Reg!!!
-
-	//v810_timestamp = timestamp_rl;
-	RB_CPUHOOK(RB_GETPC());
-	//timestamp_rl = v810_timestamp;
 
 	{
 	 //printf("%08x\n", RB_GETPC());
@@ -79,14 +69,14 @@
 
 	  timestamp_rl = timestamp;
 	 }
-       	 opcode = tmpop >> 9;
-	 //printf("%02x\n", opcode >> 1);
-	static const void *const op_goto_table[128] =
-	{
-	 #include "v810_op_table.inc"
-	};
+	 opcode = (tmpop >> 9) | IPendingCache;
 
-	goto *op_goto_table[tmpop >> 9];
+        static const void *const op_goto_table[256] MDFN_SECTION("v810_core") =
+        {
+         #include "v810_op_table.inc"
+        };
+
+	goto *op_goto_table[opcode];
 
 	// Bit string subopcodes
         #define DO_AM_BSTR()							\
@@ -222,11 +212,6 @@
 
             ADDCLOCK(3);
             RB_SETPC((P_REG[arg1] & 0xFFFFFFFE));
-	    if(RB_AccurateMode)
-	    {
-	     BRANCH_ALIGN_CHECK(PC);
-	    }
-	    RB_ADDBT(RB_GETPC());
 	END_OP();
 
 	BEGIN_OP(SAR);
@@ -410,10 +395,10 @@
 	    {
              ADDCLOCK(1);
              S_REG[PSW] = S_REG[PSW] &~ PSW_ID;
+	     RecalcIPendingCache();
 	    }
 	    else
 	    {
-	     puts("EI");
 	     ADDCLOCK(1);
 	     RB_DECPCBY2();
              Exception(INVALID_OP_HANDLER_ADDR, ECODE_INVALID_OP);
@@ -429,10 +414,10 @@
             {
              ADDCLOCK(1);
              S_REG[PSW] |= PSW_ID;
+	     IPendingCache = 0;
 	    }
 	    else
             {
-	     puts("DI");
              ADDCLOCK(1);
 	     RB_DECPCBY2();
              Exception(INVALID_OP_HANDLER_ADDR, ECODE_INVALID_OP);
@@ -446,11 +431,6 @@
 		{ 					\
 		 ADDCLOCK(3);				\
 		 RB_PCRELCHANGE(sign_9(arg1) & 0xFFFFFFFE);	\
-		 if(RB_AccurateMode)			\
-		 {					\
-		  BRANCH_ALIGN_CHECK(PC);		\
-		 }					\
-		 RB_ADDBT(RB_GETPC());			\
 		}					\
 		else					\
 		{					\
@@ -522,22 +502,12 @@
 	BEGIN_OP(JR);
             ADDCLOCK(3);
             RB_PCRELCHANGE(sign_26(arg1) & 0xFFFFFFFE);
-            if(RB_AccurateMode)
-            {
-             BRANCH_ALIGN_CHECK(PC);
-            }
-            RB_ADDBT(RB_GETPC());
 	END_OP();
 
 	BEGIN_OP(JAL);
             ADDCLOCK(3);
 	    P_REG[31] = RB_GETPC() + 4;
             RB_PCRELCHANGE(sign_26(arg1) & 0xFFFFFFFE);
-            if(RB_AccurateMode)
-            {
-             BRANCH_ALIGN_CHECK(PC);
-            }
-            RB_ADDBT(RB_GETPC());
 	END_OP();
 
 	BEGIN_OP(MOVEA);
@@ -632,24 +602,6 @@
 
                         tmp2 = (sign_16(arg1)+P_REG[arg2]) & 0xFFFFFFFC;
 
-	                if(MemReadBus32[tmp2 >> 24])
-			{
-//			 SetPREG(arg3, MemRead32(timestamp, tmp2));
-			
-			 if(lastop >= 0)
-			 {
-				if(lastop == LASTOP_LD)
-				{
-				 ADDCLOCK(1);
-				}
-				else
-				{
-				 ADDCLOCK(2);
-				}
-			 }
-			}
-			else
-			{
                          SetPREG(arg3, MemRead16(timestamp, tmp2) | (MemRead16(timestamp, tmp2 | 2) << 16));
 
                          if(lastop >= 0)
@@ -663,7 +615,6 @@
 				 ADDCLOCK(4);
 				}
                          }
-			}
 			lastop = LASTOP_LD;
 	END_OP_SKIPLO();
 
@@ -697,24 +648,12 @@
              ADDCLOCK(1);
   	     tmp2 = (sign_16(arg2)+P_REG[arg3]) & 0xFFFFFFFC;
 
-	     if(MemWriteBus32[tmp2 >> 24])
-	     {
-//	      MemWrite32(timestamp, tmp2, P_REG[arg1]);
+             MemWrite16(timestamp, tmp2, P_REG[arg1] & 0xFFFF);
+             MemWrite16(timestamp, tmp2 | 2, P_REG[arg1] >> 16);
 
-              if(lastop == LASTOP_ST)
-	      {
-	       ADDCLOCK(1);
-	      }
-	     }
-	     else
+             if(lastop == LASTOP_ST)
 	     {
-              MemWrite16(timestamp, tmp2, P_REG[arg1] & 0xFFFF);
-              MemWrite16(timestamp, tmp2 | 2, P_REG[arg1] >> 16);
-
-              if(lastop == LASTOP_ST)
-	      {
-	       ADDCLOCK(3);
-	      }
+	      ADDCLOCK(3);
 	     }
 	     lastop = LASTOP_ST;
 	END_OP_SKIPLO();
@@ -741,18 +680,12 @@
 
 	// IN.W
 	BEGIN_OP(IN_W);
-	//     if(MemRead32)
-	  //   {
-              ADDCLOCK(3);
-//              SetPREG(arg3, MemRead32(timestamp, (sign_16(arg1)+P_REG[arg2]) & 0xFFFFFFFC));
-	    // }
-	  //   else
-	  //   {
+	     {
 	      uint32 eff_addr = (sign_16(arg1) + P_REG[arg2]) & 0xFFFFFFFC;
 
 	      ADDCLOCK(5);
               SetPREG(arg3, MemRead16(timestamp, eff_addr) | ((MemRead16(timestamp, eff_addr | 2) << 16)));
-	    // }
+	     }
 	     lastop = LASTOP_IN;
 	END_OP_SKIPLO();
 
@@ -787,25 +720,15 @@
 	BEGIN_OP(OUT_W);
              ADDCLOCK(1);
 
-	//     if(MemWrite32)
-//              MemWrite32(timestamp, (sign_16(arg2)+P_REG[arg3])&0xFFFFFFFC,P_REG[arg1]);
-	  //   else
-	    // {
+	     {
 	      uint32 eff_addr = (sign_16(arg2)+P_REG[arg3])&0xFFFFFFFC;
               MemWrite16(timestamp, eff_addr, P_REG[arg1] & 0xFFFF);
               MemWrite16(timestamp, eff_addr | 2, P_REG[arg1] >> 16);
-	     //}
+	     }
 
              if(lastop == LASTOP_OUT)
              {
-	      if(MemWrite32)
-              {
-	       ADDCLOCK(1);
-	      }
-	      else
-	      {
-	       ADDCLOCK(3);
-	      }	      
+	      ADDCLOCK(3);
              }
 	     lastop = LASTOP_OUT;
 	END_OP_SKIPLO();
@@ -829,8 +752,8 @@
             } else { 	//Read the EI Reg Interupt
                 RB_SETPC(S_REG[EIPC] & 0xFFFFFFFE);
                 S_REG[PSW] = S_REG[EIPSW];
+		RecalcIPendingCache();
             }
-            RB_ADDBT(RB_GETPC());
 	END_OP();
 
 	BEGIN_OP(MUL);
@@ -975,10 +898,7 @@
              addr = sign_16(arg1) + P_REG[arg2];
 	     addr &= ~3;
 
-	//     if(MemReadBus32[addr >> 24])
-//	      tmp = MemRead32(timestamp, addr);
-	  //   else
-	      tmp = MemRead16(timestamp, addr) | (MemRead16(timestamp, addr | 2) << 16);
+	     tmp = MemRead16(timestamp, addr) | (MemRead16(timestamp, addr | 2) << 16);
 
              compare_temp = P_REG[arg3] - tmp;
 
@@ -991,13 +911,9 @@
 	     else
 	      to_write = tmp;
 
-	//     if(MemWriteBus32[addr >> 24])
-//	      MemWrite32(timestamp, addr, to_write);
-	  //   else
-	    // {
-              MemWrite16(timestamp, addr, to_write & 0xFFFF);
-              MemWrite16(timestamp, addr | 2, to_write >> 16);
-	     //}
+             MemWrite16(timestamp, addr, to_write & 0xFFFF);
+             MemWrite16(timestamp, addr | 2, to_write >> 16);
+
 	     P_REG[arg3] = tmp;
 	    }
 
@@ -1005,10 +921,49 @@
 
 	END_OP();
 
+
+
+	op_INT_HANDLER:
+	{
+	 int iNum = ilevel;
+
+	 S_REG[EIPC]  = GetPC();
+	 S_REG[EIPSW] = S_REG[PSW];
+
+	 SetPC(0xFFFFFE00 | (iNum << 4));
+    
+	 S_REG[ECR] = 0xFE00 | (iNum << 4);
+
+	 S_REG[PSW] |= PSW_EP;
+	 S_REG[PSW] |= PSW_ID;
+	 S_REG[PSW] &= ~PSW_AE;
+
+	 // Now, set need to set the interrupt enable level to he level that is being processed + 1,
+	 // saturating at 15.
+	 iNum++;
+
+	 if(iNum > 0x0F) 
+	  iNum = 0x0F;
+
+	 S_REG[PSW] &= ~PSW_IA;
+	 S_REG[PSW] |= iNum << 16;
+
+	 // Accepting an interrupt takes us out of normal HALT status, of course!
+	 Halted = HALT_NONE;
+
+	 // Invalidate our bitstring state(forces the instruction to be re-read, and the r/w buffers reloaded).
+	 in_bstr = FALSE;
+	 have_src_cache = FALSE;
+	 have_dst_cache = FALSE;
+
+	 IPendingCache = 0;
+
+ 	 goto OpFinished;
+	}
+
+
 	BEGIN_OP(INVALID);
 	    RB_DECPCBY2();
-	    if(!RB_AccurateMode)
-	    {
 	     RB_SETPC(RB_GETPC());
 	     if((uint32)(RB_RDOP(0, 0) >> 9) != opcode)
 	     {
@@ -1020,13 +975,6 @@
               Exception(INVALID_OP_HANDLER_ADDR, ECODE_INVALID_OP);
               CHECK_HALTED();
 	     }
-	    }
-	    else
-	    {
-	     ADDCLOCK(1);
-	     Exception(INVALID_OP_HANDLER_ADDR, ECODE_INVALID_OP);
-	     CHECK_HALTED();
-	    }
 	END_OP();
 
 	}
