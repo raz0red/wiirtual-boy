@@ -52,32 +52,49 @@ found freely through public domain sources.
 #include "v810_cpu.h"
 #include "v810_cpuD.h"
 
-//#include "fpu-new/softfloat.h"
+INLINE void V810::RecalcIPendingCache(void)
+{
+ IPendingCache = 0;
 
-namespace MDFN_IEN_VB { 
+ // Of course don't generate an interrupt if there's not one pending!
+ if(ilevel < 0)
+  return;
 
-						uint8 MDFN_FASTCALL MemRead8(v810_timestamp_t timestamp, uint32 A);
-						uint16 MDFN_FASTCALL MemRead16(v810_timestamp_t timestamp, uint32 A);
-						uint32 MDFN_FASTCALL MemRead32(v810_timestamp_t timestamp, uint32 A);
-						void MDFN_FASTCALL MemWrite8(v810_timestamp_t timestamp, uint32 A, uint8 V);
-						void MDFN_FASTCALL MemWrite16(v810_timestamp_t timestamp, uint32 A, uint16 V);
-						void MDFN_FASTCALL MemWrite32(v810_timestamp_t timestamp, uint32 A, uint32 V);
-						
-					  };
+ // If CPU is halted because of a fatal exception, don't let an interrupt
+ // take us out of this halted status.
+ if(Halted == HALT_FATAL_EXCEPTION) 
+  return;
+
+ // If the NMI pending, exception pending, and/or interrupt disabled bit
+ // is set, don't accept any interrupts.
+ if(S_REG[PSW] & (PSW_NP | PSW_EP | PSW_ID))
+  return;
+
+ // If the interrupt level is lower than the interrupt enable level, don't
+ // accept it.
+ if(ilevel < (int)((S_REG[PSW] & PSW_IA) >> 16))
+  return;
+
+ IPendingCache = 0xFF;
+}
+
+
+namespace MDFN_IEN_VB
+{
+ uint8 MDFN_FASTCALL MemRead8(v810_timestamp_t timestamp, uint32 A);
+ uint16 MDFN_FASTCALL MemRead16(v810_timestamp_t timestamp, uint32 A);
+
+ void MDFN_FASTCALL MemWrite8(v810_timestamp_t timestamp, uint32 A, uint8 V);
+ void MDFN_FASTCALL MemWrite16(v810_timestamp_t timestamp, uint32 A, uint16 V);
+}
 
 using namespace MDFN_IEN_VB;
 
+//#include "fpu-new/softfloat.h"
+
 V810::V810()
 {
- #ifdef WANT_DEBUGGER
- CPUHook = NULL;
- ADDBT = NULL;
- #endif
-
  memset(FastMap, 0, sizeof(FastMap));
-
- memset(MemReadBus32, 0, sizeof(MemReadBus32));
- memset(MemWriteBus32, 0, sizeof(MemWriteBus32));
 }
 
 V810::~V810()
@@ -85,180 +102,14 @@ V810::~V810()
 
 }
 
-
-// TODO: "An interrupt that occurs during restore/dump/clear operation is internally held and is accepted after the
-// operation in progress is finished. The maskable interrupt is held internally only when the EP, NP, and ID flags
-// of PSW are all 0."
-//
-// This behavior probably doesn't have any relevance on the PC-FX, unless we're sadistic
-// and try to restore cache from an interrupt acknowledge register or dump it to a register
-// controlling interrupt masks...  I wanna be sadistic~
-
-void V810::CacheClear(v810_timestamp_t timestamp, uint32 start, uint32 count)
-{
- //printf("Cache clear: %08x %08x\n", start, count);
- for(uint32 i = 0; i < count && (i + start) < 128; i++)
-  memset(&Cache[i + start], 0, sizeof(V810_CacheEntry_t));
-}
-
-INLINE void V810::CacheOpMemStore(v810_timestamp_t timestamp, uint32 A, uint32 V)
-{
- if(MemWriteBus32[A >> 24])
- {
-  timestamp += 2;
-  //MemWrite32(timestamp, A, V);
- }
- else
- {
-  timestamp += 2;
-  MemWrite16(timestamp, A, V & 0xFFFF);
-
-  timestamp += 2;
-  MemWrite16(timestamp, A | 2, V >> 16);
- }
-}
-
-INLINE uint32 V810::CacheOpMemLoad(v810_timestamp_t timestamp, uint32 A)
-{
- if(MemReadBus32[A >> 24])
- {
-  timestamp += 2;
-  //return(MemRead32(timestamp, A));
- }
- else
- {
-  uint32 ret;
-
-  timestamp += 2;
-  //ret = MemRead16(timestamp, A);
-
-  timestamp += 2;
-  //ret |= MemRead16(timestamp, A | 2) << 16;
-  return(ret);
- }
-}
-
-void V810::CacheDump(v810_timestamp_t timestamp, const uint32 SA)
-{
- printf("Cache dump: %08x\n", SA);
-
- for(int i = 0; i < 128; i++)
- {
-  CacheOpMemStore(timestamp, SA + i * 8 + 0, Cache[i].data[0]);
-  CacheOpMemStore(timestamp, SA + i * 8 + 4, Cache[i].data[1]);
- }
-
- for(int i = 0; i < 128; i++)
- {
-  uint32 icht = Cache[i].tag | ((int)Cache[i].data_valid[0] << 22) | ((int)Cache[i].data_valid[1] << 23);
-
-  CacheOpMemStore(timestamp, SA + 1024 + i * 4, icht);
- }
-
-}
-
-void V810::CacheRestore(v810_timestamp_t timestamp, const uint32 SA)
-{
- printf("Cache restore: %08x\n", SA);
-
- for(int i = 0; i < 128; i++)
- {
-  Cache[i].data[0] = CacheOpMemLoad(timestamp, SA + i * 8 + 0);
-  Cache[i].data[1] = CacheOpMemLoad(timestamp, SA + i * 8 + 4);
- }
-
- for(int i = 0; i < 128; i++)
- {
-  uint32 icht;
-
-  icht = CacheOpMemLoad(timestamp, SA + 1024 + i * 4);
-
-  Cache[i].tag = icht & ((1 << 22) - 1);
-  Cache[i].data_valid[0] = (icht >> 22) & 1;
-  Cache[i].data_valid[1] = (icht >> 23) & 1;
- }
-}
-
-
-INLINE uint32 V810::RDCACHE(v810_timestamp_t timestamp, uint32 addr)
-{
- const int CI = (addr >> 3) & 0x7F;
- const int SBI = (addr & 4) >> 2;
-
- if(Cache[CI].tag == (addr >> 10))
- {
-  if(!Cache[CI].data_valid[SBI])
-  {
-   timestamp += 2;       // or higher?  Penalty for cache miss seems to be higher than having cache disabled.
-   if(MemReadBus32[addr >> 24])
-//    Cache[CI].data[SBI] = MemRead32(timestamp, addr & ~0x3);
-  // else
-   //{
-    timestamp++;
-    Cache[CI].data[SBI] = MemRead16(timestamp, addr & ~0x3) | ((MemRead16(timestamp, (addr & ~0x3) | 0x2) << 16));
-   //}
-   Cache[CI].data_valid[SBI] = TRUE;
-  }
- }
- else
- {
-  Cache[CI].tag = addr >> 10;
-
-  timestamp += 2;	// or higher?  Penalty for cache miss seems to be higher than having cache disabled.
-  //if(MemReadBus32[addr >> 24])
-//   Cache[CI].data[SBI] = MemRead32(timestamp, addr & ~0x3);
-  //else
-  //{
-   timestamp++;
-   Cache[CI].data[SBI] = MemRead16(timestamp, addr & ~0x3) | ((MemRead16(timestamp, (addr & ~0x3) | 0x2) << 16));
-  //}
-  //Cache[CI].data[SBI] = MemRead32(timestamp, addr & ~0x3);
-  Cache[CI].data_valid[SBI] = TRUE;
-  Cache[CI].data_valid[SBI ^ 1] = FALSE;
- }
-
- //{
- // // Caution: This can mess up DRAM page change penalty timings
- // uint32 dummy_timestamp = 0;
- // if(Cache[CI].data[SBI] != mem_rword(addr & ~0x3, dummy_timestamp))
- // {
- //  printf("Cache/Real Memory Mismatch: %08x %08x/%08x\n", addr & ~0x3, Cache[CI].data[SBI], mem_rword(addr & ~0x3, dummy_timestamp));
- // }
- //}
-
- return(Cache[CI].data[SBI]);
-}
-
-INLINE uint16 V810::RDOP(v810_timestamp_t timestamp, uint32 addr, uint32 meow)
-{
- uint16 ret;
-
- if(S_REG[CHCW] & 0x2)
- {
-  uint32 d32 = RDCACHE(timestamp, addr);
-  ret = d32 >> ((addr & 2) * 8);
- }
- else
- {
-  timestamp += meow; //++;
-  ret = MemRead16(timestamp, addr);
- }
- return(ret);
-}
-
-#define BRANCH_ALIGN_CHECK(x)	{ if((S_REG[CHCW] & 0x2) && (x & 0x2)) { ADDCLOCK(1); } }
-
 // Reinitialize the defaults in the CPU
 void V810::Reset() 
 {
  v810_timestamp = 0;
  next_event_ts = 0x7FFFFFFF; // fixme
 
- memset(&Cache, 0, sizeof(Cache));
-
  memset(P_REG, 0, sizeof(P_REG));
  memset(S_REG, 0, sizeof(S_REG));
- memset(Cache, 0, sizeof(Cache));
 
  P_REG[0]      =  0x00000000;
  SetPC(0xFFFFFFF0);
@@ -278,6 +129,8 @@ void V810::Reset()
  lastop = 0;
 
  in_bstr = FALSE;
+
+ RecalcIPendingCache();
 }
 
 bool V810::Init(V810_Emu_Mode mode, bool vb_mode)
@@ -318,6 +171,7 @@ void V810::SetInt(int level)
  assert(level >= -1 && level <= 15);
 
  ilevel = level;
+ RecalcIPendingCache();
 }
 
 uint8 *V810::SetFastMap(uint32 addresses[], uint32 length, unsigned int num_addresses, const char *name)
@@ -357,47 +211,6 @@ uint8 *V810::SetFastMap(uint32 addresses[], uint32 length, unsigned int num_addr
 }
 
 
-void V810::SetMemReadBus32(uint8 A, bool value)
-{
- MemReadBus32[A] = value;
-}
-
-void V810::SetMemWriteBus32(uint8 A, bool value)
-{
- MemWriteBus32[A] = value;
-}
-
-/*
-void V810::SetMemReadHandlers(uint8 MDFN_FASTCALL (*read8)(v810_timestamp_t, uint32), uint16 MDFN_FASTCALL (*read16)(v810_timestamp_t, uint32), uint32 MDFN_FASTCALL (*read32)(v810_timestamp_t, uint32))
-{
- MemRead8 = read8;
- MemRead16 = read16;
- MemRead32 = read32;
-}
-
-void V810::SetMemWriteHandlers(void MDFN_FASTCALL (*write8)(v810_timestamp_t, uint32, uint8), void MDFN_FASTCALL (*write16)(v810_timestamp_t, uint32, uint16), void MDFN_FASTCALL (*write32)(v810_timestamp_t, uint32, uint32))
-{
- MemWrite8 = write8;
- MemWrite16 = write16;
- MemWrite32 = write32;
-}
-
-void V810::SetIOReadHandlers(uint8 MDFN_FASTCALL (*read8)(v810_timestamp_t, uint32), uint16 MDFN_FASTCALL (*read16)(v810_timestamp_t, uint32), uint32 MDFN_FASTCALL (*read32)(v810_timestamp_t, uint32))
-{
- IORead8 = read8;
- IORead16 = read16;
- IORead32 = read32;
-}
-
-void V810::SetIOWriteHandlers(void MDFN_FASTCALL (*write8)(v810_timestamp_t, uint32, uint8), void MDFN_FASTCALL (*write16)(v810_timestamp_t, uint32, uint16), void MDFN_FASTCALL (*write32)(v810_timestamp_t, uint32, uint32))
-{
- IOWrite8 = write8;
- IOWrite16 = write16;
- IOWrite32 = write32;
-}
-*/
-
-
 INLINE void V810::SetFlag(uint32 n, bool condition)
 {
  S_REG[PSW] &= ~n;
@@ -412,58 +225,13 @@ INLINE void V810::SetSZ(uint32 value)
  SetFlag(PSW_S, value & 0x80000000);
 }
 
-#ifdef WANT_DEBUGGER
-void V810::CheckBreakpoints(void (*callback)(int type, uint32 address, unsigned int len), uint16 MDFN_FASTCALL (*peek16)(const v810_timestamp_t, uint32), uint32 MDFN_FASTCALL (*peek32)(const v810_timestamp_t, uint32))
-{
- unsigned int opcode;
- uint16 tmpop;
- uint16 tmpop_high;
- int32 ws_dummy = v810_timestamp;
- uint32 tmp_PC = GetPC();
-
- tmpop      = peek16(ws_dummy, tmp_PC);
- tmpop_high = peek16(ws_dummy, tmp_PC + 2);
-
- opcode = tmpop >> 10;
-
- // Uncomment this out later if necessary.
- //if((tmpop & 0xE000) == 0x8000)        // Special opcode format for
- // opcode = (tmpop >> 9) & 0x7F;    // type III instructions.
-
- switch(opcode)
- {
-	case CAXI: break;
-
-	default: break;
-
-	case LD_B: callback(BPOINT_READ, (sign_16(tmpop_high)+P_REG[tmpop & 0x1F])&0xFFFFFFFF, 1); break;
-	case LD_H: callback(BPOINT_READ, (sign_16(tmpop_high)+P_REG[tmpop & 0x1F])&0xFFFFFFFE, 2); break;
-	case LD_W: callback(BPOINT_READ, (sign_16(tmpop_high)+P_REG[tmpop & 0x1F])&0xFFFFFFFC, 4); break;
-
-	case ST_B: callback(BPOINT_WRITE, (sign_16(tmpop_high)+P_REG[tmpop & 0x1F])&0xFFFFFFFF, 1); break;
-	case ST_H: callback(BPOINT_WRITE, (sign_16(tmpop_high)+P_REG[tmpop & 0x1F])&0xFFFFFFFE, 2); break;
-	case ST_W: callback(BPOINT_WRITE, (sign_16(tmpop_high)+P_REG[tmpop & 0x1F])&0xFFFFFFFC, 4); break;
-
-	case IN_B: callback(BPOINT_IO_READ, (sign_16(tmpop_high)+P_REG[tmpop & 0x1F])&0xFFFFFFFF, 1); break;
-	case IN_H: callback(BPOINT_IO_READ, (sign_16(tmpop_high)+P_REG[tmpop & 0x1F])&0xFFFFFFFE, 2); break;
-	case IN_W: callback(BPOINT_IO_READ, (sign_16(tmpop_high)+P_REG[tmpop & 0x1F])&0xFFFFFFFC, 4); break;
-
-	case OUT_B: callback(BPOINT_IO_WRITE, (sign_16(tmpop_high)+P_REG[tmpop & 0x1F])&0xFFFFFFFF, 1); break; 
-	case OUT_H: callback(BPOINT_IO_WRITE, (sign_16(tmpop_high)+P_REG[tmpop & 0x1F])&0xFFFFFFFE, 2); break;
-	case OUT_W: callback(BPOINT_IO_WRITE, (sign_16(tmpop_high)+P_REG[tmpop & 0x1F])&0xFFFFFFFC, 4); break;
- }
-
-}
-#endif
-
 #define SetPREG(n, val) { P_REG[n] = val; }
 
-INLINE void V810::SetSREG(v810_timestamp_t timestamp, unsigned int which, uint32 value)
+INLINE void V810::SetSREG(v810_timestamp_t &timestamp, unsigned int which, uint32 value)
 {
 	switch(which)
 	{
 	 default:	// Reserved
-		printf("LDSR to reserved system register: 0x%02x : 0x%08x\n", which, value);
 		break;
 
          case ECR:      // Read-only
@@ -477,8 +245,12 @@ INLINE void V810::SetSREG(v810_timestamp_t timestamp, unsigned int which, uint32
 
 	 case EIPSW:
 	 case FEPSW:
+              	S_REG[which] = value & 0xFF3FF;
+		break;
+
 	 case PSW:
               	S_REG[which] = value & 0xFF3FF;
+		RecalcIPendingCache();
 		break;
 
 	 case EIPC:
@@ -488,12 +260,11 @@ INLINE void V810::SetSREG(v810_timestamp_t timestamp, unsigned int which, uint32
 
 	 case ADDTRE:
   	        S_REG[ADDTRE] = value & 0xFFFFFFFE;
-        	printf("Address trap(unemulated): %08x\n", value);
 		break;
 
 	 case CHCW:
               	S_REG[CHCW] = value & 0x2;
-
+/*
               	switch(value & 0x31)
               	{
               	 default: printf("Undefined cache control bit combination: %08x\n", value);
@@ -511,17 +282,13 @@ INLINE void V810::SetSREG(v810_timestamp_t timestamp, unsigned int which, uint32
                             break;
                	}
 		break;
+*/
 	}
 }
 
 INLINE uint32 V810::GetSREG(unsigned int which)
 {
 	uint32 ret;
-
-	if(which != 24 && which != 25 && which >= 8)
-	{
-	 printf("STSR from reserved system register: 0x%02x", which);
-        }
 
 	ret = S_REG[which];
 
@@ -531,9 +298,6 @@ INLINE uint32 V810::GetSREG(unsigned int which)
 #define RB_SETPC(new_pc_raw) 										\
 			  {										\
 			   const uint32 new_pc = new_pc_raw;	/* So RB_SETPC(RB_GETPC()) won't mess up */	\
-			   if(RB_AccurateMode)								\
-			    PC = new_pc;								\
-			   else										\
 			   {										\
 			    PC_ptr = &FastMap[(new_pc) >> V810_FAST_MAP_SHIFT][(new_pc)];		\
 			    PC_base = PC_ptr - (new_pc);						\
@@ -541,9 +305,6 @@ INLINE uint32 V810::GetSREG(unsigned int which)
 			  }
 
 #define RB_PCRELCHANGE(delta) { 				\
-				if(RB_AccurateMode)		\
-				 PC += (delta);			\
-				else				\
 				{				\
 				 uint32 PC_tmp = RB_GETPC();	\
 				 PC_tmp += (delta);		\
@@ -551,53 +312,11 @@ INLINE uint32 V810::GetSREG(unsigned int which)
 				}					\
 			      }
 
-#define RB_INCPCBY2()	{ if(RB_AccurateMode) PC += 2; else PC_ptr += 2; }
-#define RB_INCPCBY4()   { if(RB_AccurateMode) PC += 4; else PC_ptr += 4; }
+#define RB_INCPCBY2()	{ PC_ptr += 2; }
+#define RB_INCPCBY4()   { PC_ptr += 4; }
 
-#define RB_DECPCBY2()   { if(RB_AccurateMode) PC -= 2; else PC_ptr -= 2; }
-#define RB_DECPCBY4()   { if(RB_AccurateMode) PC -= 4; else PC_ptr -= 4; }
-
-
-// Define accurate mode defines
-#define RB_GETPC()      PC
-#define RB_RDOP(PC_offset, ...) RDOP(timestamp, PC + PC_offset, ## __VA_ARGS__)
-
-
-void V810::Run_Accurate(int32 MDFN_FASTCALL (*event_handler)(const v810_timestamp_t timestamp))
-{
- const bool RB_AccurateMode = true;
-
- #define RB_ADDBT(n)
- #define RB_CPUHOOK(n)
-
- #include "v810_oploop.inc"
-
- #undef RB_CPUHOOK
- #undef RB_ADDBT
-}
-
-#ifdef WANT_DEBUGGER
-void V810::Run_Accurate_Debug(int32 MDFN_FASTCALL (*event_handler)(const v810_timestamp_t timestamp))
-{
- const bool RB_AccurateMode = true;
-
- #define RB_ADDBT(n) ADDBT(n)
- #define RB_CPUHOOK(n) {if(CPUHook) CPUHook(n); }
-
- #include "v810_oploop.inc"
-
- #undef RB_CPUHOOK
- #undef RB_ADDBT
-}
-#endif
-
-//
-// Undefine accurate mode defines
-//
-#undef RB_GETPC
-#undef RB_RDOP
-
-
+#define RB_DECPCBY2()   { PC_ptr -= 2; }
+#define RB_DECPCBY4()   { PC_ptr -= 4; }
 
 //
 // Define fast mode defines
@@ -610,9 +329,9 @@ void V810::Run_Accurate_Debug(int32 MDFN_FASTCALL (*event_handler)(const v810_ti
 #define RB_RDOP(PC_offset, ...) (*(uint16 *)&PC_ptr[PC_offset])
 #endif
 
-void V810::Run_Fast(int32 MDFN_FASTCALL (*event_handler)(const v810_timestamp_t timestamp))
+v810_timestamp_t V810::Run(int32 MDFN_FASTCALL (*event_handler)(const v810_timestamp_t timestamp))
 {
- const bool RB_AccurateMode = false;
+ Running = true;
 
  #define RB_ADDBT(n)
  #define RB_CPUHOOK(n)
@@ -621,49 +340,7 @@ void V810::Run_Fast(int32 MDFN_FASTCALL (*event_handler)(const v810_timestamp_t 
 
  #undef RB_CPUHOOK
  #undef RB_ADDBT
-}
 
-#ifdef WANT_DEBUGGER
-void V810::Run_Fast_Debug(int32 MDFN_FASTCALL (*event_handler)(const v810_timestamp_t timestamp))
-{
- const bool RB_AccurateMode = false;
-
- #define RB_ADDBT(n) ADDBT(n)
- #define RB_CPUHOOK(n) { if(CPUHook) CPUHook(n); }
-
- #include "v810_oploop.inc"
-
- #undef RB_CPUHOOK
- #undef RB_ADDBT
-}
-#endif
-
-//
-// Undefine fast mode defines
-//
-#undef RB_GETPC
-#undef RB_RDOP
-
-v810_timestamp_t V810::Run(int32 MDFN_FASTCALL (*event_handler)(const v810_timestamp_t timestamp))
-{
- Running = true;
-
- #ifdef WANT_DEBUGGER
- if(CPUHook)
- {
-  if(EmuMode == V810_EMU_MODE_FAST)
-   Run_Fast_Debug(event_handler);
-  else
-   Run_Accurate_Debug(event_handler);
- }
- else
- #endif
- {
-  if(EmuMode == V810_EMU_MODE_FAST)
-   Run_Fast(event_handler);
-  else
-   Run_Accurate(event_handler);
- }
  return(v810_timestamp);
 }
 
@@ -672,39 +349,20 @@ void V810::Exit(void)
  Running = false;
 }
 
-#ifdef WANT_DEBUGGER
-void V810::SetCPUHook(void (*newhook)(uint32 PC), void (*new_ADDBT)(uint32 PC))
-{
- CPUHook = newhook;
- ADDBT = new_ADDBT;
-}
-#endif
-
 uint32 V810::GetPC(void)
 {
- if(EmuMode == V810_EMU_MODE_ACCURATE)
-  return(PC);
- else
- {
-  return(PC_ptr - PC_base);
- }
+ return(PC_ptr - PC_base);
 }
 
 void V810::SetPC(uint32 new_pc)
 {
- if(EmuMode == V810_EMU_MODE_ACCURATE)
-  PC = new_pc;
- else
- {
-  PC_ptr = &FastMap[new_pc >> V810_FAST_MAP_SHIFT][new_pc];
-  PC_base = PC_ptr - new_pc;
- }
+ PC_ptr = &FastMap[new_pc >> V810_FAST_MAP_SHIFT][new_pc];
+ PC_base = PC_ptr - new_pc;
 }
 
 uint32 V810::GetPR(const unsigned int which)
 {
  assert(which <= 0x1F);
-
 
  return(which ? P_REG[which] : 0);
 }
@@ -743,14 +401,8 @@ void V810::SetSR(const unsigned int which, uint32 value)
 #define BSTR_OP_ORN dst_cache |= (((src_cache >> srcoff) & 1) ^ 1) << dstoff;
 #define BSTR_OP_ANDN dst_cache &= ~(((src_cache >> srcoff) & 1) << dstoff);
 
-INLINE uint32 V810::BSTR_RWORD(v810_timestamp_t timestamp, uint32 A)
+INLINE uint32 V810::BSTR_RWORD(v810_timestamp_t &timestamp, uint32 A)
 {
- if(MemReadBus32[A >> 24])
- {
-  timestamp += 2;
-//  return(MemRead32(timestamp, A));
- }
- else
  {
   uint32 ret;
 
@@ -763,14 +415,8 @@ INLINE uint32 V810::BSTR_RWORD(v810_timestamp_t timestamp, uint32 A)
  }
 }
 
-INLINE void V810::BSTR_WWORD(v810_timestamp_t timestamp, uint32 A, uint32 V)
+INLINE void V810::BSTR_WWORD(v810_timestamp_t &timestamp, uint32 A, uint32 V)
 {
- if(MemWriteBus32[A >> 24])
- {
-  timestamp += 2;
-//  MemWrite32(timestamp, A, V);
- }
- else
  {
   timestamp += 2;
   MemWrite16(timestamp, A, V & 0xFFFF);
@@ -819,7 +465,7 @@ INLINE void V810::BSTR_WWORD(v810_timestamp_t timestamp, uint32 A, uint32 V)
                  BSTR_WWORD(timestamp, dst, dst_cache);		\
 		}
 
-INLINE bool V810::Do_BSTR_Search(v810_timestamp_t timestamp, const int inc_mul, unsigned int bit_test)
+INLINE bool V810::Do_BSTR_Search(v810_timestamp_t &timestamp, const int inc_mul, unsigned int bit_test)
 {
         uint32 srcoff = (P_REG[27] & 0x1F);
         uint32 len = P_REG[28];
@@ -888,7 +534,7 @@ INLINE bool V810::Do_BSTR_Search(v810_timestamp_t timestamp, const int inc_mul, 
         return((bool)len);      // Continue the search if any bits are left to search.
 }
 
-bool V810::bstr_subop(v810_timestamp_t timestamp, int sub_op, int arg1)
+bool V810::bstr_subop(v810_timestamp_t &timestamp, int sub_op, int arg1)
 {
  if((sub_op >= 0x10) || (!(sub_op & 0x8) && sub_op >= 0x4))
  {
@@ -1105,7 +751,7 @@ INLINE void V810::FPU_Math_Template(float32 (*func)(float32, float32), uint32 ar
  }
 }
 
-void V810::fpu_subop(v810_timestamp_t timestamp, int sub_op, int arg1, int arg2)
+void V810::fpu_subop(v810_timestamp_t &timestamp, int sub_op, int arg1, int arg2)
 {
  //printf("FPU: %02x\n", sub_op);
  if(VBMode)
@@ -1122,7 +768,6 @@ void V810::fpu_subop(v810_timestamp_t timestamp, int sub_op, int arg1, int arg2)
 
    // Does REV use arg1 or arg2 for the source register?
    case REV: timestamp++;	// Unknown
-		printf("Revvie bits\n");
 	     {
 	      // Public-domain code snippet from: http://graphics.stanford.edu/~seander/bithacks.html#ReverseParallel
       	      uint32 v = P_REG[arg2]; // 32-bit word to reverse bit order
@@ -1279,77 +924,6 @@ void V810::fpu_subop(v810_timestamp_t timestamp, int sub_op, int arg1, int arg2)
 	}
 }
 
-bool V810::WillInterruptOccur(void)
-{
- if(ilevel < 0)
-  return(false);
-
- if(Halted == HALT_FATAL_EXCEPTION)
-  return(false);
-
- if(S_REG[PSW] & (PSW_NP | PSW_EP | PSW_ID))
-  return(false);
-
- // If the interrupt level is lower than the interrupt enable level, don't
- // accept it.
- if((unsigned int)ilevel < ((S_REG[PSW] & PSW_IA) >> 16))
-  return(false);
-
- return(true);
-}
-
-// Process interrupt level iNum
-int V810::Int(uint32 iNum) 
-{
- // If CPU is halted because of a fatal exception, don't let an interrupt
- // take us out of this halted status.
- if(Halted == HALT_FATAL_EXCEPTION) 
-  return(0);
-
- // If the NMI pending, exception pending, and/or interrupt disabled bit
- // is set, don't accept any interrupts.
- if(S_REG[PSW] & (PSW_NP | PSW_EP | PSW_ID))
-  return(0);
-
- // If the interrupt level is lower than the interrupt enable level, don't
- // accept it.
- if(iNum < ((S_REG[PSW] & PSW_IA) >> 16))
-  return(0);
-
- S_REG[EIPC]  = GetPC();
- S_REG[EIPSW] = S_REG[PSW];
-
- SetPC(0xFFFFFE00 | (iNum << 4));
-    
- S_REG[ECR] = 0xFE00 | (iNum << 4);
-
- S_REG[PSW] |= PSW_EP;
- S_REG[PSW] |= PSW_ID;
- S_REG[PSW] &= ~PSW_AE;
-
- // Now, set need to set the interrupt enable level to he level that is being processed + 1,
- // saturating at 15.
- iNum++;
-
- if(iNum > 0x0F) 
-  iNum = 0x0F;
-
- S_REG[PSW] &= ~PSW_IA;
- S_REG[PSW] |= iNum << 16;
-
- // Accepting an interrupt takes us out of normal HALT status, of course!
- Halted = HALT_NONE;
-
- // Invalidate our bitstring state(forces the instruction to be re-read, and the r/w buffers reloaded).
- in_bstr = FALSE;
- have_src_cache = FALSE;
- have_dst_cache = FALSE;
-
- // Interrupt overhead is unknown...
- return(0);
-}
-
-
 // Generate exception
 void V810::Exception(uint32 handler, uint16 eCode) 
 {
@@ -1366,6 +940,7 @@ void V810::Exception(uint32 handler, uint16 eCode)
     {
      printf("Fatal exception; Code: %08x, ECR: %08x, PSW: %08x, PC: %08x\n", eCode, S_REG[ECR], S_REG[PSW], PC);
      Halted = HALT_FATAL_EXCEPTION;
+     IPendingCache = 0;
      return;
     }
     else if(S_REG[PSW] & PSW_EP)  //Double Exception
@@ -1379,6 +954,7 @@ void V810::Exception(uint32 handler, uint16 eCode)
      S_REG[PSW] &= ~PSW_AE;
 
      SetPC(0xFFFFFFD0);
+     IPendingCache = 0;
      return;
     }
     else 	// Regular exception
@@ -1391,59 +967,14 @@ void V810::Exception(uint32 handler, uint16 eCode)
      S_REG[PSW] &= ~PSW_AE;
 
      SetPC(handler);
+     IPendingCache = 0;
      return;
     }
 }
 
 int V810::StateAction(StateMem *sm, int load, int data_only)
 {
- uint32 *cache_tag_temp = NULL;
- uint32 *cache_data_temp = NULL;
- bool *cache_data_valid_temp = NULL;
  uint32 PC_tmp = GetPC();
-
- if(EmuMode == V810_EMU_MODE_ACCURATE)
- {
-  cache_tag_temp = (uint32 *)malloc(sizeof(uint32 *) * 128);
-  cache_data_temp = (uint32 *)malloc(sizeof(uint32 *) * 128 * 2);
-  cache_data_valid_temp = (bool *)malloc(sizeof(bool *) * 128 * 2);
-
-  if(!cache_tag_temp || !cache_data_temp || !cache_data_valid_temp)
-  {
-   if(cache_tag_temp)
-    free(cache_tag_temp);
-
-   if(cache_data_temp)
-    free(cache_data_temp);
-
-   if(cache_data_valid_temp)
-    free(cache_data_valid_temp);
-
-   return(0);
-  }
-  if(!load)
-  {
-   for(int i = 0; i < 128; i++)
-   {
-    cache_tag_temp[i] = Cache[i].tag;
-
-    cache_data_temp[i * 2 + 0] = Cache[i].data[0];
-    cache_data_temp[i * 2 + 1] = Cache[i].data[1];
-
-    cache_data_valid_temp[i * 2 + 0] = Cache[i].data_valid[0];
-    cache_data_valid_temp[i * 2 + 1] = Cache[i].data_valid[1];
-   }
-  }
-  else // If we're loading, go ahead and clear the cache temporaries,
-       // in case the save state was saved while in fast mode
-       // and the cache data isn't present and thus won't be loaded.
-  {
-   memset(cache_tag_temp, 0, sizeof(uint32) * 128);
-   memset(cache_data_temp, 0, sizeof(uint32) * 128 * 2);
-   memset(cache_data_valid_temp, 0, sizeof(bool) * 128 * 2);
-  }
- }
-
  SFORMAT StateRegs[] =
  {
   SFARRAY32(P_REG, 32),
@@ -1452,10 +983,6 @@ int V810::StateAction(StateMem *sm, int load, int data_only)
   SFVAR(Halted),
 
   SFVAR(lastop),
-
-  SFARRAY32(cache_tag_temp, 128),
-  SFARRAY32(cache_data_temp, 128 * 2),
-  SFARRAYB(cache_data_valid_temp, 128 * 2),
 
   SFVAR(ilevel),	// Perhaps remove in future?
   SFVAR(next_event_ts),	// This too
@@ -1478,31 +1005,9 @@ int V810::StateAction(StateMem *sm, int load, int data_only)
 
  if(load)
  {
+  RecalcIPendingCache();
   //clamp(&PCFX_V810.v810_timestamp, 0, 30 * 1000 * 1000);
-
   SetPC(PC_tmp);
-  if(EmuMode == V810_EMU_MODE_ACCURATE)
-  {
-   for(int i = 0; i < 128; i++)
-   {
-    Cache[i].tag = cache_tag_temp[i];
-
-    Cache[i].data[0] = cache_data_temp[i * 2 + 0];
-    Cache[i].data[1] = cache_data_temp[i * 2 + 1];
-
-    Cache[i].data_valid[0] = cache_data_valid_temp[i * 2 + 0];
-    Cache[i].data_valid[1] = cache_data_valid_temp[i * 2 + 1];
-
-    //printf("%d %08x %08x %08x %d %d\n", i, Cache[i].tag << 10, Cache[i].data[0], Cache[i].data[1], Cache[i].data_valid[0], Cache[i].data_valid[1]);
-   }
-  }
- }
-
- if(EmuMode == V810_EMU_MODE_ACCURATE)
- {
-  free(cache_tag_temp);
-  free(cache_data_temp);
-  free(cache_data_valid_temp);
  }
 
  return(ret);

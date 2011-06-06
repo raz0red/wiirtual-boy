@@ -34,13 +34,13 @@ namespace MDFN_IEN_VB
   static uint8 SCR;
   static uint16 SDR;
 
-#define SCR_S_ABT_DIS	0x01
-#define SCR_SI_STAT	0x02
-#define SCR_HW_SI	0x04
-#define SCR_SOFT_CLK	0x10
+#define SCR_S_ABT_DIS   0x01
+#define SCR_SI_STAT     0x02
+#define SCR_HW_SI       0x04
+#define SCR_SOFT_CLK    0x10
 
-#define SCR_PARA_SI	0x20
-#define SCR_K_INT_INH	0x80
+#define SCR_PARA_SI     0x20
+#define SCR_K_INT_INH   0x80
 
   static uint32 ReadBitPos;
   static int32 ReadCounter;
@@ -63,82 +63,81 @@ namespace MDFN_IEN_VB
     data_ptr = (uint8 *)ptr;
   }
 
-  uint8 VBINPUT_Read(v810_timestamp_t &timestamp, uint32 A)
-  {
-    uint8 ret = 0;
+  uint8 VBINPUT_Read(v810_timestamp_t timestamp, uint32 A)
+{
+ uint8 ret = 0;
+ 
+ 
+ VBINPUT_Update(timestamp);
 
+ //if(((A & 0xFF) == 0x10 || (A & 0xFF) == 0x14))
+ // printf("Read %d\n", timestamp);
 
-    VBINPUT_Update(timestamp);
+ //if(((A & 0xFF) == 0x10 || (A & 0xFF) == 0x14) && ReadCounter > 0)
+ //{
+ // printf("Input port read during hardware transfer: %08x %d\n", A, timestamp);
+ //}
+  
+ switch(A & 0xFF)
+ {
+  case 0x10: if(InstantReadHack)
+	      ret = PadData;
+	     else
+	      ret = SDR & 0xFF;
+	     break;
 
-    //if(((A & 0xFF) == 0x10 || (A & 0xFF) == 0x14))
-    // printf("Read %d\n", timestamp);
+  case 0x14: if(InstantReadHack)
+	      ret = PadData >> 8;
+	     else
+	      ret = SDR >> 8;
+	     break;
 
-    //if(((A & 0xFF) == 0x10 || (A & 0xFF) == 0x14) && ReadCounter > 0)
-    //{
-    // printf("Input port read during hardware transfer: %08x %d\n", A, timestamp);
-    //}
+  case 0x28: ret = SCR | (0x40 | 0x08 | SCR_HW_SI);
+	     if(ReadCounter > 0)
+	      ret |= SCR_SI_STAT;
+	     break;
+ }
 
-    switch(A & 0xFF)
-    {
-    case 0x10: if(InstantReadHack)
-                 ret = PadData;
-               else
-                 ret = SDR & 0xFF;
-      break;
+// printf("Input Read: %08x %02x\n", A, ret);
+ VB_SetEvent(VB_EVENT_INPUT, (ReadCounter > 0) ? (timestamp + ReadCounter) : VB_EVENT_NONONO);
 
-    case 0x14: if(InstantReadHack)
-                 ret = PadData >> 8;
-               else
-                 ret = SDR >> 8;
-      break;
+ return(ret);
+}
 
-    case 0x28: ret = SCR | (0x40 | 0x08 | SCR_HW_SI);
-      if(ReadCounter > 0)
-        ret |= SCR_SI_STAT;
-      break;
-    }
+void VBINPUT_Write(v810_timestamp_t timestamp, uint32 A, uint8 V)
+{
+ VBINPUT_Update(timestamp);
 
-    // printf("Input Read: %08x %02x\n", A, ret);
-    VB_SetEvent(VB_EVENT_INPUT, (ReadCounter > 0) ? (timestamp + ReadCounter) : VB_EVENT_NONONO);
+ //printf("Input write: %d, %08x %02x\n", timestamp, A, V);
+ switch(A & 0xFF)
+ {
+  case 0x28:
+	    if((V & SCR_HW_SI) && !(SCR & SCR_S_ABT_DIS) && ReadCounter <= 0)
+	    {
+	     //printf("Start Read: %d\n", timestamp);
+	     PadLatched = PadData;
+	     ReadBitPos = 0;
+	     ReadCounter = 640;
+	    }
 
-    return(ret);
-  }
+	    if(V & SCR_S_ABT_DIS)
+	    {
+	     ReadCounter = 0;
+	     ReadBitPos = 0;
+	    }
 
-  void VBINPUT_Write(v810_timestamp_t &timestamp, uint32 A, uint8 V)
-  {
-    VBINPUT_Update(timestamp);
+	    if(V & SCR_K_INT_INH)
+	    {
+ 	     IntPending = false;
+	     VBIRQ_Assert(VBIRQ_SOURCE_INPUT, IntPending);
+	    }
 
-    //printf("Input write: %d, %08x %02x\n", timestamp, A, V);
-    switch(A & 0xFF)
-    {
-    case 0x28:
-      if((V & SCR_HW_SI) && !(SCR & SCR_S_ABT_DIS) && ReadCounter <= 0)
-      {
-        //printf("Start Read: %d\n", timestamp);
-        PadLatched = PadData;
-        ReadBitPos = 0;
-        ReadCounter = 640;
-      }
+	    SCR = V & (0x80 | 0x20 | 0x10 | 1);
+	    break;
+ }
 
-      if(V & SCR_S_ABT_DIS)
-      {
-        ReadCounter = 0;
-        ReadBitPos = 0;
-      }
-
-      if(V & SCR_K_INT_INH)
-      {
-        IntPending = false;
-        VBIRQ_Assert(VBIRQ_SOURCE_INPUT, IntPending);
-      }
-
-      SCR = V & (0x80 | 0x20 | 0x10 | 1);
-      break;
-    }
-
-    VB_SetEvent(VB_EVENT_INPUT, (ReadCounter > 0) ? (timestamp + ReadCounter) : VB_EVENT_NONONO);
-  }
-
+ VB_SetEvent(VB_EVENT_INPUT, (ReadCounter > 0) ? (timestamp + ReadCounter) : VB_EVENT_NONONO);
+}
   void VBINPUT_Frame(void)
   {
 #ifdef WII
@@ -232,3 +231,4 @@ namespace MDFN_IEN_VB
 
 
 }
+

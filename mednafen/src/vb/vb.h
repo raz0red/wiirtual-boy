@@ -1,9 +1,7 @@
 #ifndef __VB_VB_H
 #define __VB_VB_H
 
-//#include <mednafen/mednafen.h>
 #include "../mednafen.h"
-//#include <mednafen/hw_cpu/v810/v810_cpu.h>
 #include "../hw_cpu/v810/v810_cpu.h"
 #include <trio/trio.h>
 
@@ -48,11 +46,11 @@ void VBIRQ_Assert(int source, bool assert);
 void VB_ExitLoop(void);
 
 
-uint8 MDFN_FASTCALL MemRead8(v810_timestamp_t &timestamp, uint32 A);
-uint16 MDFN_FASTCALL MemRead16(v810_timestamp_t &timestamp, uint32 A);
+uint8 MDFN_FASTCALL MemRead8(v810_timestamp_t timestamp, uint32 A);
+uint16 MDFN_FASTCALL MemRead16(v810_timestamp_t timestamp, uint32 A);
 
-void MDFN_FASTCALL MemWrite8(v810_timestamp_t &timestamp, uint32 A, uint8 V);
-void MDFN_FASTCALL MemWrite16(v810_timestamp_t &timestamp, uint32 A, uint16 V);
+void MDFN_FASTCALL MemWrite8(v810_timestamp_t timestamp, uint32 A, uint8 V);
+void MDFN_FASTCALL MemWrite16(v810_timestamp_t timestamp, uint32 A, uint16 V);
 
 
 

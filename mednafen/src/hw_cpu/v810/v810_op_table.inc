@@ -16,3 +16,21 @@
 &&op_IN_B, &&op_IN_B, &&op_IN_H, &&op_IN_H, &&op_CAXI, &&op_CAXI, &&op_IN_W, &&op_IN_W, 
 &&op_OUT_B, &&op_OUT_B, &&op_OUT_H, &&op_OUT_H, &&op_FPP, &&op_FPP, &&op_OUT_W, &&op_OUT_W, 
 
+&&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, 
+&&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, 
+&&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, 
+&&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, 
+&&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, 
+&&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, 
+&&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, 
+&&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, 
+
+&&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, 
+&&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, 
+&&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, 
+&&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, 
+&&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, 
+&&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, 
+&&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, 
+&&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INVALID, &&op_INT_HANDLER
+
