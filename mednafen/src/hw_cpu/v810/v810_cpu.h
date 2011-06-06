@@ -159,11 +159,11 @@ class V810
  void SetMemWriteBus32(uint8 A, bool value);
  void SetMemReadBus32(uint8 A, bool value);
 
- void SetMemReadHandlers(uint8 MDFN_FASTCALL (*read8)(v810_timestamp_t &, uint32), uint16 MDFN_FASTCALL (*read16)(v810_timestamp_t &, uint32), uint32 MDFN_FASTCALL (*read32)(v810_timestamp_t &, uint32));
- void SetMemWriteHandlers(void MDFN_FASTCALL (*write8)(v810_timestamp_t &, uint32, uint8), void MDFN_FASTCALL (*write16)(v810_timestamp_t &, uint32, uint16), void MDFN_FASTCALL (*write32)(v810_timestamp_t &, uint32, uint32));
+ void SetMemReadHandlers(uint8 MDFN_FASTCALL (read8)(v810_timestamp_t, uint32), uint16 MDFN_FASTCALL (read16)(v810_timestamp_t, uint32), uint32 MDFN_FASTCALL (read32)(v810_timestamp_t, uint32));
+ void SetMemWriteHandlers(void MDFN_FASTCALL (write8)(v810_timestamp_t, uint32, uint8), void MDFN_FASTCALL (write16)(v810_timestamp_t, uint32, uint16), void MDFN_FASTCALL (write32)(v810_timestamp_t, uint32, uint32));
 
- void SetIOReadHandlers(uint8 MDFN_FASTCALL (*read8)(v810_timestamp_t &, uint32), uint16 MDFN_FASTCALL (*read16)(v810_timestamp_t &, uint32), uint32 MDFN_FASTCALL (*read32)(v810_timestamp_t &, uint32));
- void SetIOWriteHandlers(void MDFN_FASTCALL (*write8)(v810_timestamp_t &, uint32, uint8), void MDFN_FASTCALL (*write16)(v810_timestamp_t &, uint32, uint16), void MDFN_FASTCALL (*write32)(v810_timestamp_t &, uint32, uint32));
+ void SetIOReadHandlers(uint8 MDFN_FASTCALL (read8)(v810_timestamp_t, uint32), uint16 MDFN_FASTCALL (read16)(v810_timestamp_t, uint32), uint32 MDFN_FASTCALL (read32)(v810_timestamp_t, uint32));
+ void SetIOWriteHandlers(void MDFN_FASTCALL (write8)(v810_timestamp_t, uint32, uint8), void MDFN_FASTCALL (write16)(v810_timestamp_t, uint32, uint16), void MDFN_FASTCALL (write32)(v810_timestamp_t, uint32, uint32));
 
  // Length specifies the number of bytes to map in, at each location specified by addresses[] (for mirroring)
  uint8 *SetFastMap(uint32 addresses[], uint32 length, unsigned int num_addresses, const char *name);
@@ -243,21 +243,22 @@ class V810
  void Run_Accurate_Debug(int32 MDFN_FASTCALL (*event_handler)(const v810_timestamp_t timestamp)) NO_INLINE;
  #endif
 
- uint8 MDFN_FASTCALL (*MemRead8)(v810_timestamp_t &timestamp, uint32 A);
- uint16 MDFN_FASTCALL (*MemRead16)(v810_timestamp_t &timestamp, uint32 A);
- uint32 MDFN_FASTCALL (*MemRead32)(v810_timestamp_t &timestamp, uint32 A);
+/*
+ uint8 MDFN_FASTCALL (*MemRead8)(v810_timestamp_t timestamp, uint32 A);
+ uint16 MDFN_FASTCALL (*MemRead16)(v810_timestamp_t timestamp, uint32 A);
+ uint32 MDFN_FASTCALL (*MemRead32)(v810_timestamp_t timestamp, uint32 A);
 
- void MDFN_FASTCALL (*MemWrite8)(v810_timestamp_t &timestamp, uint32 A, uint8 V);
- void MDFN_FASTCALL (*MemWrite16)(v810_timestamp_t &timestamp, uint32 A, uint16 V);
- void MDFN_FASTCALL (*MemWrite32)(v810_timestamp_t &timestamp, uint32 A, uint32 V);
+ void MDFN_FASTCALL (*MemWrite8)(v810_timestamp_t timestamp, uint32 A, uint8 V);
+ void MDFN_FASTCALL (*MemWrite16)(v810_timestamp_t timestamp, uint32 A, uint16 V);
+ void MDFN_FASTCALL (*MemWrite32)(v810_timestamp_t timestamp, uint32 A, uint32 V);
 
- uint8 MDFN_FASTCALL (*IORead8)(v810_timestamp_t &timestamp, uint32 A);
- uint16 MDFN_FASTCALL (*IORead16)(v810_timestamp_t &timestamp, uint32 A);
- uint32 MDFN_FASTCALL (*IORead32)(v810_timestamp_t &timestamp, uint32 A);
+ uint8 MDFN_FASTCALL (*IORead8)(v810_timestamp_t timestamp, uint32 A);
+ uint16 MDFN_FASTCALL (*IORead16)(v810_timestamp_t timestamp, uint32 A);
+ uint32 MDFN_FASTCALL (*IORead32)(v810_timestamp_t timestamp, uint32 A);
 
- void MDFN_FASTCALL (*IOWrite8)(v810_timestamp_t &timestamp, uint32 A, uint8 V);
- void MDFN_FASTCALL (*IOWrite16)(v810_timestamp_t &timestamp, uint32 A, uint16 V);
- void MDFN_FASTCALL (*IOWrite32)(v810_timestamp_t &timestamp, uint32 A, uint32 V);
+ void MDFN_FASTCALL (*IOWrite8)(v810_timestamp_t timestamp, uint32 A, uint8 V);
+ void MDFN_FASTCALL (*IOWrite16)(v810_timestamp_t timestamp, uint32 A, uint16 V);
+ void MDFN_FASTCALL (*IOWrite32)(v810_timestamp_t timestamp, uint32 A, uint32 V);*/
 
  bool MemReadBus32[256];      // Corresponding to the upper 8 bits of the memory address map.
  bool MemWriteBus32[256];
@@ -285,8 +286,8 @@ class V810
  bool in_bstr;
  uint16 in_bstr_to;
 
- bool bstr_subop(v810_timestamp_t &timestamp, int sub_op, int arg1);
- void fpu_subop(v810_timestamp_t &timestamp, int sub_op, int arg1, int arg2);
+ bool bstr_subop(v810_timestamp_t timestamp, int sub_op, int arg1);
+ void fpu_subop(v810_timestamp_t timestamp, int sub_op, int arg1, int arg2);
 
  void Exception(uint32 handler, uint16 eCode);
  bool WillInterruptOccur(void);
@@ -318,23 +319,23 @@ class V810
 
 
  // For CacheDump and CacheRestore
- void CacheOpMemStore(v810_timestamp_t &timestamp, uint32 A, uint32 V);
- uint32 CacheOpMemLoad(v810_timestamp_t &timestamp, uint32 A);
+ void CacheOpMemStore(v810_timestamp_t timestamp, uint32 A, uint32 V);
+ uint32 CacheOpMemLoad(v810_timestamp_t timestamp, uint32 A);
 
- void CacheClear(v810_timestamp_t &timestamp, uint32 start, uint32 count);
- void CacheDump(v810_timestamp_t &timestamp, const uint32 SA);
- void CacheRestore(v810_timestamp_t &timestamp, const uint32 SA);
+ void CacheClear(v810_timestamp_t timestamp, uint32 start, uint32 count);
+ void CacheDump(v810_timestamp_t timestamp, const uint32 SA);
+ void CacheRestore(v810_timestamp_t timestamp, const uint32 SA);
 
- uint32 RDCACHE(v810_timestamp_t &timestamp, uint32 addr);
+ uint32 RDCACHE(v810_timestamp_t timestamp, uint32 addr);
  //
  // End caching related
  //
 
- uint16 RDOP(v810_timestamp_t &timestamp, uint32 addr, uint32 meow = 2);
+ uint16 RDOP(v810_timestamp_t timestamp, uint32 addr, uint32 meow = 2);
  void SetFlag(uint32 n, bool condition);
  void SetSZ(uint32 value);
 
- void SetSREG(v810_timestamp_t &timestamp, unsigned int which, uint32 value);
+ void SetSREG(v810_timestamp_t timestamp, unsigned int which, uint32 value);
  uint32 GetSREG(unsigned int which);
 
 
@@ -346,9 +347,9 @@ class V810
  void SetFPUOPNonFPUFlags(uint32 result);
 
 
- uint32 BSTR_RWORD(v810_timestamp_t &timestamp, uint32 A);
- void BSTR_WWORD(v810_timestamp_t &timestamp, uint32 A, uint32 V);
- bool Do_BSTR_Search(v810_timestamp_t &timestamp, const int inc_mul, unsigned int bit_test);
+ uint32 BSTR_RWORD(v810_timestamp_t timestamp, uint32 A);
+ void BSTR_WWORD(v810_timestamp_t timestamp, uint32 A, uint32 V);
+ bool Do_BSTR_Search(v810_timestamp_t timestamp, const int inc_mul, unsigned int bit_test);
 
 
  uint8 DummyRegion[V810_FAST_MAP_PSIZE + V810_FAST_MAP_TRAMPOLINE_SIZE];

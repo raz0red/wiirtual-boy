@@ -54,28 +54,25 @@ found freely through public domain sources.
 
 //#include "fpu-new/softfloat.h"
 
+namespace MDFN_IEN_VB { 
+
+						uint8 MDFN_FASTCALL MemRead8(v810_timestamp_t timestamp, uint32 A);
+						uint16 MDFN_FASTCALL MemRead16(v810_timestamp_t timestamp, uint32 A);
+						uint32 MDFN_FASTCALL MemRead32(v810_timestamp_t timestamp, uint32 A);
+						void MDFN_FASTCALL MemWrite8(v810_timestamp_t timestamp, uint32 A, uint8 V);
+						void MDFN_FASTCALL MemWrite16(v810_timestamp_t timestamp, uint32 A, uint16 V);
+						void MDFN_FASTCALL MemWrite32(v810_timestamp_t timestamp, uint32 A, uint32 V);
+						
+					  };
+
+using namespace MDFN_IEN_VB;
+
 V810::V810()
 {
  #ifdef WANT_DEBUGGER
  CPUHook = NULL;
  ADDBT = NULL;
  #endif
-
- MemRead8 = NULL;
- MemRead16 = NULL;
- MemRead32 = NULL;
-
- IORead8 = NULL;
- IORead16 = NULL;
- IORead32 = NULL;
-
- MemWrite8 = NULL;
- MemWrite16 = NULL;
- MemWrite32 = NULL;
-
- IOWrite8 = NULL;
- IOWrite16 = NULL;
- IOWrite32 = NULL;
 
  memset(FastMap, 0, sizeof(FastMap));
 
@@ -97,19 +94,19 @@ V810::~V810()
 // and try to restore cache from an interrupt acknowledge register or dump it to a register
 // controlling interrupt masks...  I wanna be sadistic~
 
-void V810::CacheClear(v810_timestamp_t &timestamp, uint32 start, uint32 count)
+void V810::CacheClear(v810_timestamp_t timestamp, uint32 start, uint32 count)
 {
  //printf("Cache clear: %08x %08x\n", start, count);
  for(uint32 i = 0; i < count && (i + start) < 128; i++)
   memset(&Cache[i + start], 0, sizeof(V810_CacheEntry_t));
 }
 
-INLINE void V810::CacheOpMemStore(v810_timestamp_t &timestamp, uint32 A, uint32 V)
+INLINE void V810::CacheOpMemStore(v810_timestamp_t timestamp, uint32 A, uint32 V)
 {
  if(MemWriteBus32[A >> 24])
  {
   timestamp += 2;
-  MemWrite32(timestamp, A, V);
+  //MemWrite32(timestamp, A, V);
  }
  else
  {
@@ -121,27 +118,27 @@ INLINE void V810::CacheOpMemStore(v810_timestamp_t &timestamp, uint32 A, uint32 
  }
 }
 
-INLINE uint32 V810::CacheOpMemLoad(v810_timestamp_t &timestamp, uint32 A)
+INLINE uint32 V810::CacheOpMemLoad(v810_timestamp_t timestamp, uint32 A)
 {
  if(MemReadBus32[A >> 24])
  {
   timestamp += 2;
-  return(MemRead32(timestamp, A));
+  //return(MemRead32(timestamp, A));
  }
  else
  {
   uint32 ret;
 
   timestamp += 2;
-  ret = MemRead16(timestamp, A);
+  //ret = MemRead16(timestamp, A);
 
   timestamp += 2;
-  ret |= MemRead16(timestamp, A | 2) << 16;
+  //ret |= MemRead16(timestamp, A | 2) << 16;
   return(ret);
  }
 }
 
-void V810::CacheDump(v810_timestamp_t &timestamp, const uint32 SA)
+void V810::CacheDump(v810_timestamp_t timestamp, const uint32 SA)
 {
  printf("Cache dump: %08x\n", SA);
 
@@ -160,7 +157,7 @@ void V810::CacheDump(v810_timestamp_t &timestamp, const uint32 SA)
 
 }
 
-void V810::CacheRestore(v810_timestamp_t &timestamp, const uint32 SA)
+void V810::CacheRestore(v810_timestamp_t timestamp, const uint32 SA)
 {
  printf("Cache restore: %08x\n", SA);
 
@@ -183,7 +180,7 @@ void V810::CacheRestore(v810_timestamp_t &timestamp, const uint32 SA)
 }
 
 
-INLINE uint32 V810::RDCACHE(v810_timestamp_t &timestamp, uint32 addr)
+INLINE uint32 V810::RDCACHE(v810_timestamp_t timestamp, uint32 addr)
 {
  const int CI = (addr >> 3) & 0x7F;
  const int SBI = (addr & 4) >> 2;
@@ -194,12 +191,12 @@ INLINE uint32 V810::RDCACHE(v810_timestamp_t &timestamp, uint32 addr)
   {
    timestamp += 2;       // or higher?  Penalty for cache miss seems to be higher than having cache disabled.
    if(MemReadBus32[addr >> 24])
-    Cache[CI].data[SBI] = MemRead32(timestamp, addr & ~0x3);
-   else
-   {
+//    Cache[CI].data[SBI] = MemRead32(timestamp, addr & ~0x3);
+  // else
+   //{
     timestamp++;
     Cache[CI].data[SBI] = MemRead16(timestamp, addr & ~0x3) | ((MemRead16(timestamp, (addr & ~0x3) | 0x2) << 16));
-   }
+   //}
    Cache[CI].data_valid[SBI] = TRUE;
   }
  }
@@ -208,13 +205,13 @@ INLINE uint32 V810::RDCACHE(v810_timestamp_t &timestamp, uint32 addr)
   Cache[CI].tag = addr >> 10;
 
   timestamp += 2;	// or higher?  Penalty for cache miss seems to be higher than having cache disabled.
-  if(MemReadBus32[addr >> 24])
-   Cache[CI].data[SBI] = MemRead32(timestamp, addr & ~0x3);
-  else
-  {
+  //if(MemReadBus32[addr >> 24])
+//   Cache[CI].data[SBI] = MemRead32(timestamp, addr & ~0x3);
+  //else
+  //{
    timestamp++;
    Cache[CI].data[SBI] = MemRead16(timestamp, addr & ~0x3) | ((MemRead16(timestamp, (addr & ~0x3) | 0x2) << 16));
-  }
+  //}
   //Cache[CI].data[SBI] = MemRead32(timestamp, addr & ~0x3);
   Cache[CI].data_valid[SBI] = TRUE;
   Cache[CI].data_valid[SBI ^ 1] = FALSE;
@@ -232,7 +229,7 @@ INLINE uint32 V810::RDCACHE(v810_timestamp_t &timestamp, uint32 addr)
  return(Cache[CI].data[SBI]);
 }
 
-INLINE uint16 V810::RDOP(v810_timestamp_t &timestamp, uint32 addr, uint32 meow)
+INLINE uint16 V810::RDOP(v810_timestamp_t timestamp, uint32 addr, uint32 meow)
 {
  uint16 ret;
 
@@ -370,33 +367,35 @@ void V810::SetMemWriteBus32(uint8 A, bool value)
  MemWriteBus32[A] = value;
 }
 
-void V810::SetMemReadHandlers(uint8 MDFN_FASTCALL (*read8)(v810_timestamp_t &, uint32), uint16 MDFN_FASTCALL (*read16)(v810_timestamp_t &, uint32), uint32 MDFN_FASTCALL (*read32)(v810_timestamp_t &, uint32))
+/*
+void V810::SetMemReadHandlers(uint8 MDFN_FASTCALL (*read8)(v810_timestamp_t, uint32), uint16 MDFN_FASTCALL (*read16)(v810_timestamp_t, uint32), uint32 MDFN_FASTCALL (*read32)(v810_timestamp_t, uint32))
 {
  MemRead8 = read8;
  MemRead16 = read16;
  MemRead32 = read32;
 }
 
-void V810::SetMemWriteHandlers(void MDFN_FASTCALL (*write8)(v810_timestamp_t &, uint32, uint8), void MDFN_FASTCALL (*write16)(v810_timestamp_t &, uint32, uint16), void MDFN_FASTCALL (*write32)(v810_timestamp_t &, uint32, uint32))
+void V810::SetMemWriteHandlers(void MDFN_FASTCALL (*write8)(v810_timestamp_t, uint32, uint8), void MDFN_FASTCALL (*write16)(v810_timestamp_t, uint32, uint16), void MDFN_FASTCALL (*write32)(v810_timestamp_t, uint32, uint32))
 {
  MemWrite8 = write8;
  MemWrite16 = write16;
  MemWrite32 = write32;
 }
 
-void V810::SetIOReadHandlers(uint8 MDFN_FASTCALL (*read8)(v810_timestamp_t &, uint32), uint16 MDFN_FASTCALL (*read16)(v810_timestamp_t &, uint32), uint32 MDFN_FASTCALL (*read32)(v810_timestamp_t &, uint32))
+void V810::SetIOReadHandlers(uint8 MDFN_FASTCALL (*read8)(v810_timestamp_t, uint32), uint16 MDFN_FASTCALL (*read16)(v810_timestamp_t, uint32), uint32 MDFN_FASTCALL (*read32)(v810_timestamp_t, uint32))
 {
  IORead8 = read8;
  IORead16 = read16;
  IORead32 = read32;
 }
 
-void V810::SetIOWriteHandlers(void MDFN_FASTCALL (*write8)(v810_timestamp_t &, uint32, uint8), void MDFN_FASTCALL (*write16)(v810_timestamp_t &, uint32, uint16), void MDFN_FASTCALL (*write32)(v810_timestamp_t &, uint32, uint32))
+void V810::SetIOWriteHandlers(void MDFN_FASTCALL (*write8)(v810_timestamp_t, uint32, uint8), void MDFN_FASTCALL (*write16)(v810_timestamp_t, uint32, uint16), void MDFN_FASTCALL (*write32)(v810_timestamp_t, uint32, uint32))
 {
  IOWrite8 = write8;
  IOWrite16 = write16;
  IOWrite32 = write32;
 }
+*/
 
 
 INLINE void V810::SetFlag(uint32 n, bool condition)
@@ -459,7 +458,7 @@ void V810::CheckBreakpoints(void (*callback)(int type, uint32 address, unsigned 
 
 #define SetPREG(n, val) { P_REG[n] = val; }
 
-INLINE void V810::SetSREG(v810_timestamp_t &timestamp, unsigned int which, uint32 value)
+INLINE void V810::SetSREG(v810_timestamp_t timestamp, unsigned int which, uint32 value)
 {
 	switch(which)
 	{
@@ -744,12 +743,12 @@ void V810::SetSR(const unsigned int which, uint32 value)
 #define BSTR_OP_ORN dst_cache |= (((src_cache >> srcoff) & 1) ^ 1) << dstoff;
 #define BSTR_OP_ANDN dst_cache &= ~(((src_cache >> srcoff) & 1) << dstoff);
 
-INLINE uint32 V810::BSTR_RWORD(v810_timestamp_t &timestamp, uint32 A)
+INLINE uint32 V810::BSTR_RWORD(v810_timestamp_t timestamp, uint32 A)
 {
  if(MemReadBus32[A >> 24])
  {
   timestamp += 2;
-  return(MemRead32(timestamp, A));
+//  return(MemRead32(timestamp, A));
  }
  else
  {
@@ -764,12 +763,12 @@ INLINE uint32 V810::BSTR_RWORD(v810_timestamp_t &timestamp, uint32 A)
  }
 }
 
-INLINE void V810::BSTR_WWORD(v810_timestamp_t &timestamp, uint32 A, uint32 V)
+INLINE void V810::BSTR_WWORD(v810_timestamp_t timestamp, uint32 A, uint32 V)
 {
  if(MemWriteBus32[A >> 24])
  {
   timestamp += 2;
-  MemWrite32(timestamp, A, V);
+//  MemWrite32(timestamp, A, V);
  }
  else
  {
@@ -820,7 +819,7 @@ INLINE void V810::BSTR_WWORD(v810_timestamp_t &timestamp, uint32 A, uint32 V)
                  BSTR_WWORD(timestamp, dst, dst_cache);		\
 		}
 
-INLINE bool V810::Do_BSTR_Search(v810_timestamp_t &timestamp, const int inc_mul, unsigned int bit_test)
+INLINE bool V810::Do_BSTR_Search(v810_timestamp_t timestamp, const int inc_mul, unsigned int bit_test)
 {
         uint32 srcoff = (P_REG[27] & 0x1F);
         uint32 len = P_REG[28];
@@ -889,7 +888,7 @@ INLINE bool V810::Do_BSTR_Search(v810_timestamp_t &timestamp, const int inc_mul,
         return((bool)len);      // Continue the search if any bits are left to search.
 }
 
-bool V810::bstr_subop(v810_timestamp_t &timestamp, int sub_op, int arg1)
+bool V810::bstr_subop(v810_timestamp_t timestamp, int sub_op, int arg1)
 {
  if((sub_op >= 0x10) || (!(sub_op & 0x8) && sub_op >= 0x4))
  {
@@ -1106,7 +1105,7 @@ INLINE void V810::FPU_Math_Template(float32 (*func)(float32, float32), uint32 ar
  }
 }
 
-void V810::fpu_subop(v810_timestamp_t &timestamp, int sub_op, int arg1, int arg2)
+void V810::fpu_subop(v810_timestamp_t timestamp, int sub_op, int arg1, int arg2)
 {
  //printf("FPU: %02x\n", sub_op);
  if(VBMode)
