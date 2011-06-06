@@ -42,49 +42,52 @@ IO::SD sd;
 IO::USB usb;
 
 /*
- * Unmounts the file system
- */
+* Unmounts the file system
+*/
 void wii_unmount()
 {
   if( mounted )
   {
-    usb.Unmount();
-	sd.Unmount();
+    if( wii_is_usb )
+    {
+      usb.Unmount();
+    }
+    else
+    {
+      sd.Unmount();
+    }
 
-    wii_is_usb = FALSE;
     mounted = FALSE;
   }
 }
 
 /*
- * Mounts the file system
- *
- * return    Whether we mounted the file system successfully
- */
+* Mounts the file system
+*
+* return    Whether we mounted the file system successfully
+*/
 bool wii_mount()
 {
   bool ret = false;
   if( !mounted )
   {
-    mounted = sd.Mount();
-	usb.Startup();
-	if(!mounted){
-		mounted = usb.Mount();
-		if(mounted)
-             wii_is_usb = TRUE;
-	}
-	else
-		ret = usb.Mount();
-        if(ret)
-             wii_is_usb = TRUE;
+    if( wii_is_usb )
+    {
+      usb.Startup();
+      mounted = usb.Mount();
+    }
+    else
+    {
+      mounted = sd.Mount();
+    }
   }
-  
+
   return mounted;
 }
 
 /*
- * Remounts the file system
- */
+* Remounts the file system
+*/
 void wii_remount()
 {
   wii_unmount();

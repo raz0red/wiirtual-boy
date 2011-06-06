@@ -2,7 +2,7 @@
 WiirtualBoy : Wii port of the Mednafen Virtual Boy emulator
 
 Copyright (C) 2011
-raz0red (www.twitchasylum.com)
+raz0red and Arikado
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any
@@ -82,8 +82,16 @@ void wii_vb_menu_init()
   child = wii_create_tree_node( NODETYPE_LOAD_ROM, "Load cartridge" );
   wii_add_child( wii_menu_root, child );
 
+  child = wii_create_tree_node( NODETYPE_CARTRIDGE_SETTINGS_CURRENT_SPACER, "" );
+  wii_add_child( wii_menu_root, child );
+
+  TREENODE *cart_settings = wii_create_tree_node( 
+    NODETYPE_CARTRIDGE_SETTINGS_CURRENT, "Cartridge settings (current cartridge)" );
+  wii_add_child( wii_menu_root, cart_settings );    
+
   child = wii_create_tree_node( NODETYPE_SPACER, "" );
   wii_add_child( wii_menu_root, child );
+
 
   //
   // Save state management
@@ -123,6 +131,50 @@ void wii_vb_menu_init()
 
   child = wii_create_tree_node( NODETYPE_SPACER, "" );
   wii_add_child( wii_menu_root, child );
+
+  //
+  // The cartridge settings (current) menu
+  //   
+
+  // Display sub-menu
+
+  TREENODE *cartDisplay = wii_create_tree_node( 
+    NODETYPE_CARTRIDGE_SETTINGS_DISPLAY, "Display settings" );                                                        
+  wii_add_child( cart_settings, cartDisplay );
+
+  child = wii_create_tree_node( NODETYPE_CART_FRAME_SKIP, 
+    "Frame skip " );
+  child->x = -2; child->value_x = -3;
+  wii_add_child( cartDisplay, child );
+
+  child = wii_create_tree_node( NODETYPE_CART_RENDER_RATE, 
+    "Render rate (%) " );
+  child->x = -2; child->value_x = -3;
+  wii_add_child( cartDisplay, child );
+
+#if 0
+  child = wii_create_tree_node( NODETYPE_MAX_FRAMES_CART, 
+    "Maximum frame rate " );
+  child->x = -2; child->value_x = -3;
+  wii_add_child( cart_settings, child );
+#endif
+
+  // Save/Revert/Delete
+
+  child = wii_create_tree_node( NODETYPE_SPACER, "" );
+  wii_add_child( cart_settings, child );
+
+  child = wii_create_tree_node( 
+    NODETYPE_SAVE_CARTRIDGE_SETTINGS, "Save settings" );
+  wii_add_child( cart_settings, child );  
+
+  child = wii_create_tree_node( 
+    NODETYPE_REVERT_CARTRIDGE_SETTINGS, "Revert to saved settings" );
+  wii_add_child( cart_settings, child );  
+
+  child = wii_create_tree_node( 
+    NODETYPE_DELETE_CARTRIDGE_SETTINGS, "Delete settings" );
+  wii_add_child( cart_settings, child );  
 
   //
   // The display settings menu
@@ -257,18 +309,20 @@ void wii_menu_handle_get_node_name(
 
   switch( node->node_type )
   {
+    case NODETYPE_CART_RENDER_RATE:
+      snprintf( 
+        value, WII_MENU_BUFF_SIZE, "%d", wii_vb_db_entry.renderRate );
+      break;
     case NODETYPE_RESIZE_SCREEN:
       snprintf( value, WII_MENU_BUFF_SIZE, "%s", 
         ( ( wii_screen_x == DEFAULT_SCREEN_X && 
           wii_screen_y == DEFAULT_SCREEN_Y ) ? "(default)" : "Custom" ) );
       break;
-    case NODETYPE_MAX_FRAMES:
-      snprintf( value, WII_MENU_BUFF_SIZE, "%d", wii_max_frames );
-      break;
     case NODETYPE_DEBUG_MODE:
     case NODETYPE_TOP_MENU_EXIT:
     case NODETYPE_AUTO_LOAD_STATE:
     case NODETYPE_AUTO_SAVE_STATE:
+    case NODETYPE_CART_FRAME_SKIP:
     case NODETYPE_VSYNC:
       {
         BOOL enabled = FALSE;
@@ -288,6 +342,9 @@ void wii_menu_handle_get_node_name(
             break;
           case NODETYPE_AUTO_SAVE_STATE:
             enabled = wii_auto_save_state;
+            break;
+          case NODETYPE_CART_FRAME_SKIP:
+            enabled = wii_vb_db_entry.frameSkip;
             break;
           default:
             /* do nothing */
@@ -327,6 +384,13 @@ void wii_menu_handle_select_node( TREENODE *node )
 
   switch( node->node_type )
   {
+    case NODETYPE_CART_RENDER_RATE:
+      wii_vb_db_entry.renderRate--;
+      if( wii_vb_db_entry.renderRate < MIN_RENDER_RATE )
+      {
+        wii_vb_db_entry.renderRate = MAX_RENDER_RATE;
+      }
+      break;
     case NODETYPE_RESIZE_SCREEN:
       {
         wii_resize_screen_draw_border( back_surface, 0, back_surface->h );
@@ -337,13 +401,6 @@ void wii_menu_handle_select_node( TREENODE *node )
         wii_resize_screen_gui( &rinfo );
         wii_screen_x = rinfo.currentX;
         wii_screen_y = rinfo.currentY;
-      }
-      break;
-    case NODETYPE_MAX_FRAMES:
-      ++wii_max_frames;
-      if( wii_max_frames > 80 )
-      {
-        wii_max_frames = 30;
       }
       break;
     case NODETYPE_VSYNC:
@@ -392,10 +449,15 @@ void wii_menu_handle_select_node( TREENODE *node )
     case NODETYPE_AUTO_SAVE_STATE:
       wii_auto_save_state ^= 1;
       break;
+    case NODETYPE_CART_FRAME_SKIP:
+      wii_vb_db_entry.frameSkip ^= 1;
+      break;
     case NODETYPE_SAVE_STATE_MANAGEMENT:
     case NODETYPE_ADVANCED:
-    case NODETYPE_LOAD_ROM:     
+    case NODETYPE_LOAD_ROM:               
     case NODETYPE_DISPLAY_SETTINGS:
+    case NODETYPE_CARTRIDGE_SETTINGS_CURRENT:
+    case NODETYPE_CARTRIDGE_SETTINGS_DISPLAY:
       wii_menu_push( node );
       if( node->node_type == NODETYPE_LOAD_ROM )
       {
@@ -413,6 +475,48 @@ void wii_menu_handle_select_node( TREENODE *node )
     case NODETYPE_DELETE_STATE:
       wii_delete_snapshot();
       break;
+    case NODETYPE_SAVE_CARTRIDGE_SETTINGS:
+      if( wii_vb_db_entry.name[0] == '\0' )
+      {
+        char cartname[WII_MAX_PATH];        
+        Util_splitpath( wii_last_rom, NULL, cartname );
+        char *ptr = strrchr( cartname, '.' );
+        if( ptr ) *ptr = '\0';
+        Util_strlcpy( 
+          wii_vb_db_entry.name, cartname, 
+          sizeof( wii_vb_db_entry.name ) );
+      }
+      if( wii_vb_db_write_entry( 
+        wii_cartridge_hash, &wii_vb_db_entry ) )
+      {
+        wii_vb_db_entry.loaded = 1;
+        wii_set_status_message( "Successfully saved cartridge settings." );
+      }
+      else
+      {
+        wii_set_status_message( 
+          "An error occurred saving cartridge settings." );
+      }
+      break;
+    case NODETYPE_DELETE_CARTRIDGE_SETTINGS:
+      if( wii_vb_db_delete_entry( wii_cartridge_hash ) )
+      {
+        wii_menu_reset_indexes();
+        wii_menu_move( wii_menu_stack[wii_menu_stack_head], 1 );
+        wii_set_status_message( "Successfully deleted cartridge settings." );
+      }
+      else
+      {
+        wii_set_status_message( 
+          "An error occurred deleting cartridge settings." );
+      }
+      // Load the values for the entry
+      wii_vb_db_get_entry( wii_cartridge_hash, &wii_vb_db_entry );
+      break;
+    case NODETYPE_REVERT_CARTRIDGE_SETTINGS:
+      wii_vb_db_get_entry( wii_cartridge_hash, &wii_vb_db_entry );
+      wii_set_status_message( "Successfully reverted to saved settings." );
+      break;
     default:
       /* do nothing */
       break;
@@ -429,10 +533,19 @@ BOOL wii_menu_handle_is_node_visible( TREENODE *node )
 {
   switch( node->node_type )
   {
+    case NODETYPE_CART_RENDER_RATE:
+      return wii_vb_db_entry.frameSkip;
+      break;
     case NODETYPE_SAVE_STATE:
     case NODETYPE_RESET:
     case NODETYPE_RESUME:
+    case NODETYPE_CARTRIDGE_SETTINGS_CURRENT:
+    case NODETYPE_CARTRIDGE_SETTINGS_CURRENT_SPACER:
       return wii_last_rom != NULL;
+      break;
+    case NODETYPE_DELETE_CARTRIDGE_SETTINGS:
+    case NODETYPE_REVERT_CARTRIDGE_SETTINGS:
+      return wii_last_rom != NULL && wii_vb_db_entry.loaded;
       break;
     case NODETYPE_DELETE_STATE:
       if( wii_last_rom != NULL )
@@ -459,12 +572,10 @@ BOOL wii_menu_handle_is_node_visible( TREENODE *node )
  */
 BOOL wii_menu_handle_is_node_selectable( TREENODE *node )
 {
-#if 0
   if( node->node_type == NODETYPE_CARTRIDGE_SETTINGS_CURRENT_SPACER )
   {
     return FALSE;
   }
-#endif
 
   return TRUE;
 }

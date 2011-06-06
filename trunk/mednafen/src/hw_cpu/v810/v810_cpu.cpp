@@ -538,7 +538,7 @@ bool V810::bstr_subop(v810_timestamp_t &timestamp, int sub_op, int arg1)
 {
  if((sub_op >= 0x10) || (!(sub_op & 0x8) && sub_op >= 0x4))
  {
-  printf("%08x\tBSR Error: %04x\n", PC,sub_op);
+  MDFN_PrintError("%08x\tBSR Error: %04x\n", PC,sub_op);
 
   SetPC(GetPC() - 2);
   Exception(INVALID_OP_HANDLER_ADDR, ECODE_INVALID_OP);
@@ -585,7 +585,7 @@ bool V810::bstr_subop(v810_timestamp_t &timestamp, int sub_op, int arg1)
  }
  else
  {
-  printf("BSTR Search: %02x\n", sub_op);
+  MDFN_PrintError("BSTR Search: %02x\n", sub_op);
   return(Do_BSTR_Search(timestamp, ((sub_op & 1) ? -1 : 1), (sub_op & 0x2) >> 1));
  }
  assert(0);
@@ -818,7 +818,7 @@ void V810::fpu_subop(v810_timestamp_t &timestamp, int sub_op, int arg1, int arg2
 		 }
 		 else
 		 {
-		  puts("Exception on CVT.WS?????");	// This shouldn't happen, but just in case there's a bug...
+		  MDFN_PrintError("Exception on CVT.WS?????");	// This shouldn't happen, but just in case there's a bug...
 		 }
 		 FPU_DoException();
 		}
@@ -929,7 +929,7 @@ void V810::Exception(uint32 handler, uint16 eCode)
 {
  // Exception overhead is unknown.
 
-    printf("Exception: %08x %04x\n", handler, eCode);
+    MDFN_PrintError("Exception: %08x %04x\n", handler, eCode);
 
     // Invalidate our bitstring state(forces the instruction to be re-read, and the r/w buffers reloaded).
     in_bstr = FALSE;
@@ -938,7 +938,7 @@ void V810::Exception(uint32 handler, uint16 eCode)
 
     if(S_REG[PSW] & PSW_NP) // Fatal exception
     {
-     printf("Fatal exception; Code: %08x, ECR: %08x, PSW: %08x, PC: %08x\n", eCode, S_REG[ECR], S_REG[PSW], PC);
+     MDFN_PrintError("Fatal exception; Code: %08x, ECR: %08x, PSW: %08x, PC: %08x\n", eCode, S_REG[ECR], S_REG[PSW], PC);
      Halted = HALT_FATAL_EXCEPTION;
      IPendingCache = 0;
      return;

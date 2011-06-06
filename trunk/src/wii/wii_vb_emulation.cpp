@@ -2,7 +2,7 @@
 WiirtualBoy : Wii port of the Mednafen Virtual Boy emulator
 
 Copyright (C) 2011
-raz0red (www.twitchasylum.com)
+raz0red and Arikado
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any
@@ -80,48 +80,49 @@ void wii_start_emulation( char *romfile, const char *savefile, bool reset, bool 
   // Start emulation
   if( !resume )
   {
-#if 0
     // Clear the DB entry
-    memset( &wii_handy_db_entry, 0x0, sizeof( HandyDBEntry ) );
-#endif
+    memset( &wii_vb_db_entry, 0x0, sizeof( VbDbEntry ) );
     wii_cartridge_hash[0] = '\0'; // Reset the cartridge hash
 
-    succeeded = ( wii_vb_load_game( romfile ) != 0 );      
+    succeeded = ( wii_vb_load_game( romfile ) != 0 );    
 
-    // Look up the cartridge in the database
-    //wii_handy_db_get_entry( wii_cartridge_hash, &wii_handy_db_entry );
-
-    // Load the save if applicable
-    if( !reset && succeeded &&
-        ( savefile != NULL && strlen( savefile ) > 0 ) )
+    if( succeeded )
     {
-      // Ensure the save is valid
-      int sscheck = wii_check_snapshot( savefile );
-      if( sscheck < 0 )
+      // Look up the cartridge in the database
+      wii_vb_db_get_entry( wii_cartridge_hash, &wii_vb_db_entry );
+
+      // Load the save if applicable
+      if( !reset && succeeded &&
+          ( savefile != NULL && strlen( savefile ) > 0 ) )
       {
-        if( sscheck == -2 )            
+        // Ensure the save is valid
+        int sscheck = wii_check_snapshot( savefile );
+        if( sscheck < 0 )
         {
-          wii_set_status_message(
-            "The save specified is not valid." );                
+          if( sscheck == -2 )            
+          {
+            wii_set_status_message(
+              "The save specified is not valid." );                
+          }
+          else
+          {
+            wii_set_status_message(
+              "Unable to find the specified save state file." );                
+          }
+
+          succeeded = false;
         }
         else
         {
-          wii_set_status_message(
-            "Unable to find the specified save state file." );                
-        }
+  #if 0
+          succeeded = mpLynx->ContextLoad( savefile );                    
+  #endif
 
-        succeeded = false;
-      }
-      else
-      {
-#if 0
-        succeeded = mpLynx->ContextLoad( savefile );                    
-#endif
-
-        if( !succeeded )
-        {
-          wii_set_status_message(
-            "Error loading the specified save state file." );                
+          if( !succeeded )
+          {
+            wii_set_status_message(
+              "Error loading the specified save state file." );                
+          }
         }
       }
     }

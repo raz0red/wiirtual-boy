@@ -363,11 +363,11 @@ int InitVideo(MDFNGI *gi)
 
   vinf=SDL_GetVideoInfo();
 
-  //if(vinf->hw_available)
-    flags|=SDL_HWSURFACE;
+//  if(vinf->hw_available)
+//    flags|=SDL_HWSURFACE;
 
-  //if(_fullscreen)
-    flags|=SDL_FULLSCREEN;
+//  if(_fullscreen)
+//    flags|=SDL_FULLSCREEN;
 
   vdriver = MDFN_GetSettingI("video.driver");
 
@@ -390,7 +390,7 @@ int InitVideo(MDFNGI *gi)
       vdriver = 0;
     }
 
-    //SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1 );
+   // SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1 );
 
     if(MDFN_GetSettingB("video.glvsync"))
     {
@@ -535,7 +535,7 @@ int InitVideo(MDFNGI *gi)
     #endif
   #endif
 #endif
-  //SDL_WM_SetIcon(IconSurface,0);
+//SDL_WM_SetIcon(IconSurface,0);
 
   int rs, gs, bs, as;
 
@@ -710,7 +710,7 @@ static bool IsInternalMessageActive(void)
 
 static bool BlitInternalMessage(void)
 {
-#ifndef WII
+#ifndef WII  
   if(howlong < MDFND_GetTime())
   {
     if(CurrentMessage)
@@ -731,7 +731,7 @@ static bool BlitInternalMessage(void)
   }
 
   BlitRaw(SMSurface, &SMRect, &SMDRect);
-#endif
+#endif  
   return(1);
 }
 
@@ -930,8 +930,19 @@ static void SubBlit(const bool alpha_blend, const SDL_Rect &src_rect, const SDL_
 }
 #endif
 
+namespace MDFN_IEN_VB
+{
+  // Whether we are skipping the current frame
+  // TODO: Move this to a better location
+  extern int vb_skip_frame;
+}
+
 void BlitScreen(MDFN_Surface *msurface, const MDFN_Rect *DisplayRect, const MDFN_Rect *LineWidths)
 {
+  // Whether we are skipping the current frame
+  // TODO: Move this to a better location
+  if( MDFN_IEN_VB::vb_skip_frame ) return;
+
   if(!screen) return;
 
   if(NeedClear)

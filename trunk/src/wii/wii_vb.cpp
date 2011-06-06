@@ -2,7 +2,7 @@
 WiirtualBoy : Wii port of the Mednafen Virtual Boy emulator
 
 Copyright (C) 2011
-raz0red (www.twitchasylum.com)
+raz0red and Arikado
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any
@@ -43,6 +43,10 @@ extern "C" {
 
 // The last cartridge hash
 char wii_cartridge_hash[33];
+// The cartridge hash with header (may be the same)
+char wii_cartridge_hash_with_header[33];
+// The database entry for current game
+VbDbEntry wii_vb_db_entry;
 // Whether to display debug info (FPS, etc.)
 BOOL wii_debug = FALSE;
 // Auto save state?
@@ -53,8 +57,6 @@ BOOL wii_auto_load_state = TRUE;
 int wii_screen_x = DEFAULT_SCREEN_X;
 // The screen Y size
 int wii_screen_y = DEFAULT_SCREEN_Y;
-// Maximum frame rate
-u8 wii_max_frames = DEFAULT_FPS;
 
 // The list of available 3d modes
 Vb3dMode wii_vb_modes[] =
@@ -63,6 +65,7 @@ Vb3dMode wii_vb_modes[] =
   { "red_black", "Red/black (2d)", 0xFF0000, 0x000000, false },
   { "red_blue", "Red/blue (3d)", 0xFF0000, 0x0000FF, true },
   { "red_green", "Red/green (3d)", 0xFF0000, 0x00FF00, true },
+  { "green_red", "Green/red (3d)", 0x00FF00, 0xFF0000, true },
   { "yellow_blue", "Yellow/blue (3d)", 0xFFFF00, 0x0000FF, true },
 };
 
@@ -115,6 +118,20 @@ int wii_get_vb_mode_index()
 Vb3dMode wii_get_vb_mode()
 {
   return wii_vb_modes[wii_get_vb_mode_index()];
+}
+
+/*
+ * Returns the render rate
+ *
+ * return   The render rate (or -1 if we are rendering at 100%)
+ */
+int wii_get_render_rate()
+{
+  return
+    wii_vb_db_entry.frameSkip &&
+      ( wii_vb_db_entry.renderRate >= MIN_RENDER_RATE &&
+        wii_vb_db_entry.renderRate <= MAX_RENDER_RATE ) ?
+    wii_vb_db_entry.renderRate : - 1;
 }
 
 /*
