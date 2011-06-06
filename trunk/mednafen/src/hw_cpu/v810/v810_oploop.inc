@@ -634,7 +634,7 @@
 
 	                if(MemReadBus32[tmp2 >> 24])
 			{
-			 SetPREG(arg3, MemRead32(timestamp, tmp2));
+//			 SetPREG(arg3, MemRead32(timestamp, tmp2));
 			
 			 if(lastop >= 0)
 			 {
@@ -699,7 +699,7 @@
 
 	     if(MemWriteBus32[tmp2 >> 24])
 	     {
-	      MemWrite32(timestamp, tmp2, P_REG[arg1]);
+//	      MemWrite32(timestamp, tmp2, P_REG[arg1]);
 
               if(lastop == LASTOP_ST)
 	      {
@@ -723,7 +723,7 @@
 	BEGIN_OP(IN_B);
 	    {
              ADDCLOCK(3);
-             SetPREG(arg3, IORead8(timestamp, sign_16(arg1)+P_REG[arg2]));
+             SetPREG(arg3, MemRead8(timestamp, sign_16(arg1)+P_REG[arg2]));
 	    }
 	    lastop = LASTOP_IN;
 	END_OP_SKIPLO();
@@ -733,7 +733,7 @@
 	BEGIN_OP(IN_H);
 	    {
              ADDCLOCK(3);
-             SetPREG(arg3, IORead16(timestamp, (sign_16(arg1)+P_REG[arg2]) & 0xFFFFFFFE));
+             SetPREG(arg3, MemRead16(timestamp, (sign_16(arg1)+P_REG[arg2]) & 0xFFFFFFFE));
 	    }
 	    lastop = LASTOP_IN;
 	END_OP_SKIPLO();
@@ -741,18 +741,18 @@
 
 	// IN.W
 	BEGIN_OP(IN_W);
-	     if(IORead32)
-	     {
+	//     if(MemRead32)
+	  //   {
               ADDCLOCK(3);
-              SetPREG(arg3, IORead32(timestamp, (sign_16(arg1)+P_REG[arg2]) & 0xFFFFFFFC));
-	     }
-	     else
-	     {
+//              SetPREG(arg3, MemRead32(timestamp, (sign_16(arg1)+P_REG[arg2]) & 0xFFFFFFFC));
+	    // }
+	  //   else
+	  //   {
 	      uint32 eff_addr = (sign_16(arg1) + P_REG[arg2]) & 0xFFFFFFFC;
 
 	      ADDCLOCK(5);
-              SetPREG(arg3, IORead16(timestamp, eff_addr) | ((IORead16(timestamp, eff_addr | 2) << 16)));
-	     }
+              SetPREG(arg3, MemRead16(timestamp, eff_addr) | ((MemRead16(timestamp, eff_addr | 2) << 16)));
+	    // }
 	     lastop = LASTOP_IN;
 	END_OP_SKIPLO();
 
@@ -760,7 +760,7 @@
 	// OUT.B
 	BEGIN_OP(OUT_B);
              ADDCLOCK(1);
-             IOWrite8(timestamp, sign_16(arg2)+P_REG[arg3],P_REG[arg1]&0xFF);
+             MemWrite8(timestamp, sign_16(arg2)+P_REG[arg3],P_REG[arg1]&0xFF);
 
 	     if(lastop == LASTOP_OUT)
 	     {
@@ -773,7 +773,7 @@
 	// OUT.H
 	BEGIN_OP(OUT_H);
              ADDCLOCK(1);
-             IOWrite16(timestamp, (sign_16(arg2)+P_REG[arg3])&0xFFFFFFFE,P_REG[arg1]&0xFFFF);
+             MemWrite16(timestamp, (sign_16(arg2)+P_REG[arg3])&0xFFFFFFFE,P_REG[arg1]&0xFFFF);
 
              if(lastop == LASTOP_OUT)
              {
@@ -787,18 +787,18 @@
 	BEGIN_OP(OUT_W);
              ADDCLOCK(1);
 
-	     if(IOWrite32)
-              IOWrite32(timestamp, (sign_16(arg2)+P_REG[arg3])&0xFFFFFFFC,P_REG[arg1]);
-	     else
-	     {
+	//     if(MemWrite32)
+//              MemWrite32(timestamp, (sign_16(arg2)+P_REG[arg3])&0xFFFFFFFC,P_REG[arg1]);
+	  //   else
+	    // {
 	      uint32 eff_addr = (sign_16(arg2)+P_REG[arg3])&0xFFFFFFFC;
-              IOWrite16(timestamp, eff_addr, P_REG[arg1] & 0xFFFF);
-              IOWrite16(timestamp, eff_addr | 2, P_REG[arg1] >> 16);
-	     }
+              MemWrite16(timestamp, eff_addr, P_REG[arg1] & 0xFFFF);
+              MemWrite16(timestamp, eff_addr | 2, P_REG[arg1] >> 16);
+	     //}
 
              if(lastop == LASTOP_OUT)
              {
-	      if(IOWrite32)
+	      if(MemWrite32)
               {
 	       ADDCLOCK(1);
 	      }
@@ -975,9 +975,9 @@
              addr = sign_16(arg1) + P_REG[arg2];
 	     addr &= ~3;
 
-	     if(MemReadBus32[addr >> 24])
-	      tmp = MemRead32(timestamp, addr);
-	     else
+	//     if(MemReadBus32[addr >> 24])
+//	      tmp = MemRead32(timestamp, addr);
+	  //   else
 	      tmp = MemRead16(timestamp, addr) | (MemRead16(timestamp, addr | 2) << 16);
 
              compare_temp = P_REG[arg3] - tmp;
@@ -991,13 +991,13 @@
 	     else
 	      to_write = tmp;
 
-	     if(MemWriteBus32[addr >> 24])
-	      MemWrite32(timestamp, addr, to_write);
-	     else
-	     {
+	//     if(MemWriteBus32[addr >> 24])
+//	      MemWrite32(timestamp, addr, to_write);
+	  //   else
+	    // {
               MemWrite16(timestamp, addr, to_write & 0xFFFF);
               MemWrite16(timestamp, addr | 2, to_write >> 16);
-	     }
+	     //}
 	     P_REG[arg3] = tmp;
 	    }
 
