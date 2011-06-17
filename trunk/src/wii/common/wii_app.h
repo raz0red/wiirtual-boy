@@ -70,6 +70,13 @@ extern void wii_set_app_path( int argc, char *argv[] );
 extern void wii_pause();
 
 /*
+ * Checks whether a button was pressed
+ *
+ * return   1 if a button was pressed, -1 if home/hadware was pressed
+ */
+extern int wii_check_button_pressed();
+
+/*
  * Writes the specified string to the VT display
  */
 extern void wii_write_vt( char *buffer );

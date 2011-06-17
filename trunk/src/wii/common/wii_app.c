@@ -29,7 +29,9 @@ distribution.
 
 #include "wii_input.h"
 #include "wii_main.h"
+#include "wii_hw_buttons.h"
 
+#include "wii_app.h"
 #include "wii_app_common.h"
 
 #ifdef WII_NETTRACE
@@ -140,24 +142,51 @@ void wii_pause()
   int done = 0;
   while( !done )
   {		
-    WPAD_ScanPads();
-    PAD_ScanPads();
-
-    expansion_t exp;
-    WPAD_Expansion( 0, &exp );        
-    bool isClassic = ( exp.type == WPAD_EXP_CLASSIC );
-
-    u32 down = WPAD_ButtonsDown(0);
-    u32 gcDown = PAD_ButtonsDown(0);
-
-    if( ( down & ( WII_BUTTON_A | 
-          ( isClassic ? 
-            WII_CLASSIC_BUTTON_A : WII_NUNCHUK_BUTTON_A ) ) ) || 
-        ( gcDown & GC_BUTTON_A ) )
+    if( wii_check_button_pressed() )
     {	
       done = 1;
     }
   }
+}
+
+/*
+ * Checks whether a button was pressed
+ *
+ * return   1 if a button was pressed, -1 if home/hadware was pressed
+ */
+int wii_check_button_pressed()
+{
+  WPAD_ScanPads();
+  PAD_ScanPads();
+
+  expansion_t exp;
+  WPAD_Expansion( 0, &exp );        
+  bool isClassic = ( exp.type == WPAD_EXP_CLASSIC );
+
+  u32 pressed = WPAD_ButtonsDown( 0 );
+  u32 held = WPAD_ButtonsHeld( 0 );  
+  u32 gcPressed = PAD_ButtonsDown( 0 );
+  u32 gcHeld = PAD_ButtonsHeld( 0 );
+
+  if( ( pressed & WII_BUTTON_HOME ) ||
+    ( gcPressed & GC_BUTTON_HOME ) || 
+    ( wii_hw_button ) )
+  {
+    return -1;
+  }
+
+  return ( 
+    ( held & 
+      ( WPAD_BUTTON_A | WPAD_BUTTON_B | WPAD_BUTTON_1 | 
+          WPAD_BUTTON_2 | 
+      ( isClassic ? 
+          ( WPAD_CLASSIC_BUTTON_X | WPAD_CLASSIC_BUTTON_A	| 
+              WPAD_CLASSIC_BUTTON_Y	| WPAD_CLASSIC_BUTTON_B	) : 
+          ( WPAD_NUNCHUK_BUTTON_Z	| WPAD_NUNCHUK_BUTTON_C	) ) ) ) || 
+    ( gcHeld & 
+        ( PAD_BUTTON_A	| PAD_BUTTON_B | PAD_BUTTON_X | 
+            PAD_BUTTON_Y ) )
+  );
 }
 
 /*

@@ -31,15 +31,118 @@ distribution.
 
 #include "wii_vb.h"
 #include "wii_vb_db.h"
+#include "wii_vb_input.h"
 
 #ifdef WII_NETTRACE
 #include <network.h>
 #include "net_print.h"  
 #endif
 
-#define DB_FILE_PATH WII_FILES_DIR "wiivb.db"
-#define DB_TMP_FILE_PATH WII_FILES_DIR "wiivb.db.tmp"
-#define DB_OLD_FILE_PATH WII_FILES_DIR "wiivb.db.old"
+/*
+ * The virtual boy values and their associated names
+ */
+VbButton VbButtons[VB_BUTTON_COUNT] =
+{ 
+  { "(none)",   VB_NONE        },
+  { "A",        VB_KEY_A       }, 
+  { "B",        VB_KEY_B       }, 
+  { "L",        VB_KEY_L       },
+  { "R",        VB_KEY_R       },
+  { "Start",    VB_KEY_START   },
+  { "Select",   VB_KEY_SELECT  },
+  { "L-Left",   VB_L_LEFT      },
+  { "L-Right",  VB_L_RIGHT     },
+  { "L-Up",     VB_L_UP        },
+  { "L-Down",   VB_L_DOWN      },
+  { "R-Left",   VB_R_LEFT      },
+  { "R-Right",  VB_R_RIGHT     },
+  { "R-Up",     VB_R_UP        },
+  { "R-Down",   VB_R_DOWN      }
+};
+
+#define VBK_MAP_NONE    0
+#define VBK_MAP_A       1
+#define VBK_MAP_B       2
+#define VBK_MAP_L       3
+#define VBK_MAP_R       4
+#define VBK_MAP_START   5
+#define VBK_MAP_SELECT  6
+#define VBK_MAP_LLEFT   7
+#define VBK_MAP_LRIGHT  8
+#define VBK_MAP_LUP     9
+#define VBK_MAP_LDOWN   10
+#define VBK_MAP_RLEFT   11
+#define VBK_MAP_RRIGHT  12
+#define VBK_MAP_RUP     13
+#define VBK_MAP_RDOWN   14
+
+/*
+ * The names of the Wii controllers 
+ */
+const char* WiiControllerNames[WII_CONTROLLER_COUNT] =
+{
+  "Wiimote", "Wiimote + Nunchuk", "Classic", "GameCube"
+};
+
+/*
+ * Descriptions of the different Wii mappable buttons. 
+ */
+WiiButton WiiButtons[WII_CONTROLLER_COUNT][WII_MAP_BUTTON_COUNT] =
+{ 
+  {
+    { "Plus",   WPAD_BUTTON_PLUS,   VBK_MAP_START  },
+    { "Minus",  WPAD_BUTTON_MINUS,  VBK_MAP_SELECT },
+    { "2",      WPAD_BUTTON_2,      VBK_MAP_A      }, 
+    { "1",      WPAD_BUTTON_1,      VBK_MAP_B      },
+    { "A",      WPAD_BUTTON_A,      VBK_MAP_R      },
+    { "B",      WPAD_BUTTON_B,      VBK_MAP_L      },
+    { NULL,     0,                  VBK_MAP_NONE   },
+    { NULL,     0,                  VBK_MAP_NONE   },
+    { NULL,     0,                  VBK_MAP_NONE   },
+    { NULL,     0,                  VBK_MAP_NONE   }
+  },
+  {
+    { "Plus",   WPAD_BUTTON_PLUS,       VBK_MAP_START  },
+    { "Minus",  WPAD_BUTTON_MINUS,      VBK_MAP_SELECT },
+    { "2",      WPAD_BUTTON_2,          VBK_MAP_NONE   }, 
+    { "1",      WPAD_BUTTON_1,          VBK_MAP_NONE   },
+    { "A",      WPAD_BUTTON_A,          VBK_MAP_A      },
+    { "B",      WPAD_BUTTON_B,          VBK_MAP_R      },
+    { "C",      WPAD_NUNCHUK_BUTTON_C,  VBK_MAP_B      },
+    { "Z",      WPAD_NUNCHUK_BUTTON_Z,  VBK_MAP_L      },
+    { NULL,     0,                      VBK_MAP_NONE   },
+    { NULL,     0,                      VBK_MAP_NONE   }
+
+  },
+  {
+    { "Plus",   WPAD_CLASSIC_BUTTON_PLUS,     VBK_MAP_START  },
+    { "Minus",  WPAD_CLASSIC_BUTTON_MINUS,    VBK_MAP_SELECT },
+    { "A",      WPAD_CLASSIC_BUTTON_A,        VBK_MAP_A      }, 
+    { "B",      WPAD_CLASSIC_BUTTON_B,        VBK_MAP_B      },
+    { "X",      WPAD_CLASSIC_BUTTON_X,        VBK_MAP_NONE   },
+    { "Y",      WPAD_CLASSIC_BUTTON_Y,        VBK_MAP_NONE   },
+    { "R",      WPAD_CLASSIC_BUTTON_FULL_R,   VBK_MAP_R      },
+    { "L",      WPAD_CLASSIC_BUTTON_FULL_L,   VBK_MAP_L      },
+    { "zR",     WPAD_CLASSIC_BUTTON_ZR,       VBK_MAP_R      },
+    { "zL",     WPAD_CLASSIC_BUTTON_ZL,       VBK_MAP_L      }
+  },
+  {
+    { "Start",  PAD_BUTTON_START,             VBK_MAP_START  },
+    { "A",      PAD_BUTTON_A,                 VBK_MAP_A      },
+    { "B",      PAD_BUTTON_B,                 VBK_MAP_B      }, 
+    { "X",      PAD_BUTTON_X,                 VBK_MAP_SELECT },
+    { "Y",      PAD_BUTTON_Y,                 VBK_MAP_SELECT },
+    { "R",      PAD_TRIGGER_R,                VBK_MAP_R      },
+    { "L",      PAD_TRIGGER_L,                VBK_MAP_L      },
+    { NULL,     0,                            VBK_MAP_NONE   },
+    { NULL,     0,                            VBK_MAP_NONE   },
+    { NULL,     0,                            VBK_MAP_NONE   },
+  }
+};
+
+#define DB_FILE_PATH WII_FILES_DIR      "wiivb.db"
+#define DB_TMP_FILE_PATH WII_FILES_DIR  "wiivb.db.tmp"
+#define DB_OLD_FILE_PATH WII_FILES_DIR  "wiivb.db.old"
 
 // The database file
 static char db_file[WII_MAX_PATH] = "";
@@ -109,6 +212,43 @@ void wii_vb_db_get_defaults( VbDbEntry* entry )
 {
   entry->frameSkip = 0;
   entry->renderRate = MAX_RENDER_RATE;
+  entry->wiimoteSupported = 1;
+  memset( entry->buttonMap, 0x0, sizeof(entry->buttonMap) );
+
+  // Set the default button map values
+  for( int i = 0; i < WII_CONTROLLER_COUNT; i++ )
+  {
+    for( int j = 0; j < WII_MAP_BUTTON_COUNT; j++ )
+    {
+      entry->buttonMap[i][j] = WiiButtons[i][j].defaultMapping;
+    }
+  }
+
+  wii_vb_db_apply_button_map( entry );
+}
+
+
+/*
+ * Applies (expands) the wii button values for the currently mapped 
+ * buttons. The result is stored in the "appliedButtonMap".
+ *
+ * entry      The entry to apply the button map to
+ */
+void wii_vb_db_apply_button_map( VbDbEntry* entry )
+{
+  memset( entry->appliedButtonMap, 0x0, sizeof(entry->appliedButtonMap) );
+
+  for( int i = 0; i < WII_CONTROLLER_COUNT; i++ )
+  {
+    for( int j = 0; j < WII_MAP_BUTTON_COUNT; j++ )
+    {
+      u8 mappedButton = entry->buttonMap[i][j];
+      if( mappedButton != VBK_MAP_NONE )
+      {
+        entry->appliedButtonMap[i][mappedButton] |= WiiButtons[i][j].button;
+      }
+    }
+  }
 }
 
 /*
@@ -161,6 +301,29 @@ static void write_entry( FILE* file, char* hash, VbDbEntry *entry )
   fprintf( file, "name=%s\n", entry->name );
   fprintf( file, "frameSkip=%d\n", entry->frameSkip );
   fprintf( file, "renderRate=%d\n", entry->renderRate );
+  fprintf( file, "wiimoteSupported=%d\n", entry->wiimoteSupported );
+
+
+  for( int i = 0; i < WII_CONTROLLER_COUNT; i++ )
+  {
+    for( int j = 0; j < WII_MAP_BUTTON_COUNT; j++ )
+    {
+      u8 val = entry->buttonMap[i][j];
+      if( val != WiiButtons[i][j].defaultMapping )
+      {
+        fprintf( file, "btn.%d.%d=%d\n", i, j, val );
+      }
+    }
+  }
+
+  for( i = 1; i < VB_BUTTON_COUNT; i++ )
+  {
+    char* desc = entry->buttonDesc[i];
+    if( desc[0] != '\0' )
+    {      
+      fprintf( file, "btnDesc%d=%s\n", i, desc );
+    }
+  }
 }
 
 /*
@@ -182,14 +345,6 @@ void wii_vb_db_get_entry( char* hash, VbDbEntry* entry )
   wii_vb_db_get_defaults( entry );  
 
   db_file = fopen( get_db_path(), "r" );
-
-#ifdef WII_NETTRACE
-#if 0
-  char val[256];
-  sprintf( val, "fopen %s=%p\n", get_db_path(), db_file );
-  net_print_string(__FILE__,__LINE__, val );
-#endif
-#endif
 
   if( db_file != 0 )
   {	
@@ -222,6 +377,40 @@ void wii_vb_db_get_entry( char* hash, VbDbEntry* entry )
           else if( !strcmp( buff, "renderRate" ) )
           {
             entry->renderRate = Util_sscandec( ptr );
+          }
+          else if( !strcmp( buff, "wiimoteSupported" ) )
+          {
+            entry->wiimoteSupported = Util_sscandec( ptr );
+          }
+
+          int i;
+          bool btnFound = false;
+          for( i = 0; !btnFound && i < WII_CONTROLLER_COUNT; i++ )
+          {
+            for( int j = 0; !btnFound && j < WII_MAP_BUTTON_COUNT; j++ )
+            {
+              char btnName[64];
+              sprintf( btnName, "btn.%d.%d", i, j );
+              if( !strcmp( buff, btnName ) )
+              {
+                entry->buttonMap[i][j] = Util_sscandec( ptr );
+                btnFound = true;
+              }
+            }
+          }
+
+          btnFound = false;
+          for( i = 1; !btnFound && i < VB_BUTTON_COUNT; i++ )
+          {
+            char button[255];
+            snprintf( button, 
+              sizeof(button), "btnDesc%d", i );
+            if( !strcmp( buff, button ) )
+            {
+              Util_strlcpy( entry->buttonDesc[i], 
+                ptr, sizeof(entry->buttonDesc[i]) );
+              btnFound = true;
+            }          
           }
         }                
       }

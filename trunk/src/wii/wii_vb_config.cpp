@@ -82,6 +82,18 @@ extern "C" void wii_config_handle_read_value( char *name, char* value )
   {
     Util_strlcpy( wii_vb_mode_key, value, sizeof(wii_vb_mode_key) );
   }
+  else if( strcmp( name, "CUSTOM.L" ) == 0 )
+  {
+    Util_hextorgba( value, &wii_custom_colors[0] );
+  }
+  else if( strcmp( name, "CUSTOM.R" ) == 0 )
+  {
+    Util_hextorgba( value, &wii_custom_colors[1] );
+  }
+  else if( strcmp( name, "CUSTOM.PARALLAX" ) == 0 )
+  {
+    wii_custom_colors_parallax = Util_sscandec( value );
+  }
 }
 
 /*
@@ -101,6 +113,16 @@ extern "C" void wii_config_handle_write_config( FILE *fp )
   fprintf( fp, "SCREEN_X=%d\n", wii_screen_x );
   fprintf( fp, "SCREEN_Y=%d\n", wii_screen_y );
   fprintf( fp, "SCREEN_MODE=%s\n", wii_vb_mode_key );
+
+  for( int i = 0; i < 2; i++ )
+  {
+    char hex[16];
+    Util_rgbatohex( &wii_custom_colors[i], hex );
+    hex[6] = '\0'; // Ignore alpha
+    fprintf( fp, 
+      ( !i ? "CUSTOM.L=%s\n" : "CUSTOM.R=%s\n"  ), hex );
+  }
+  fprintf( fp, "CUSTOM.PARALLAX=%d\n", wii_custom_colors_parallax  );
 }
 
 /*

@@ -31,8 +31,36 @@ distribution.
 
 #include "wii_util.h"
 
-#define MAX_RENDER_RATE 99
-#define MIN_RENDER_RATE 1
+#define MAX_RENDER_RATE   99
+#define MIN_RENDER_RATE   1
+
+/*
+ * Structure for a virtual boy button 
+ */
+typedef struct VbButton
+{ 
+  const char *name;   // The button name
+  u32 button;   // The button value
+} VbButton;
+
+/*
+ * Structure for a Wii button 
+ */
+typedef struct WiiButton
+{
+  const char *name;   // The button name
+  u32 button;         // The button value
+  u8 defaultMapping;  // The default button mapping
+} WiiButton;
+
+#define VB_BUTTON_COUNT       15
+#define WII_CONTROLLER_COUNT  4
+#define WII_MAP_BUTTON_COUNT  10
+
+#define WII_CONTROLLER_MOTE     0
+#define WII_CONTROLLER_CHUK     1
+#define WII_CONTROLLER_CLASSIC  2
+#define WII_CONTROLLER_CUBE     3
 
 /*
  * VB database entry 
@@ -43,7 +71,20 @@ typedef struct VbDbEntry
   u8 frameSkip;         // Whether frame skipping is enabled
   u8 renderRate;        // The render rate (if skipping enabled)
   u8 loaded;            // Whether the settings were loaded 
+  u8 wiimoteSupported;  // Whether the Wiimote is supported
+  u8 buttonMap[WII_CONTROLLER_COUNT][WII_MAP_BUTTON_COUNT];
+  u32 appliedButtonMap[WII_CONTROLLER_COUNT][VB_BUTTON_COUNT];
+  char buttonDesc[VB_BUTTON_COUNT][255]; // Button description
 } VbDbEntry;
+
+// The virtual boy values and their associated names
+extern VbButton VbButtons[VB_BUTTON_COUNT];
+
+// The names of the Wii controllers 
+extern const char* WiiControllerNames[WII_CONTROLLER_COUNT];
+
+// Descriptions of the different Wii mappable buttons. 
+extern WiiButton WiiButtons[WII_CONTROLLER_COUNT][WII_MAP_BUTTON_COUNT];
 
 /*
  * Returns the database entry for the game with the specified hash

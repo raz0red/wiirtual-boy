@@ -136,6 +136,31 @@ void wii_vb_menu_init()
   // The cartridge settings (current) menu
   //   
 
+  // Controls sub-menu
+
+  TREENODE *controls = wii_create_tree_node( 
+    NODETYPE_CARTRIDGE_SETTINGS_CONTROLS, "Control settings" );                                                        
+  wii_add_child( cart_settings, controls );
+
+  child = wii_create_tree_node( NODETYPE_CONTROLLER, "Controller " );
+  child->x = -2; child->value_x = -3;
+  wii_add_child( controls, child );
+
+  child = wii_create_tree_node( NODETYPE_SPACER, "" );
+  wii_add_child( controls, child );
+  
+  child = wii_create_tree_node( NODETYPE_WIIMOTE_SUPPORTED, "Supported " );
+  child->x = -2; child->value_x = -3;
+  wii_add_child( controls, child );
+
+  int button;
+  for( button = NODETYPE_BUTTON1; button <= NODETYPE_BUTTON10; button++ )
+  {
+    child = wii_create_tree_node( (NODETYPE)button, "Button " );
+    child->x = -2; child->value_x = -3;
+    wii_add_child( controls, child );
+  }
+
   // Display sub-menu
 
   TREENODE *cartDisplay = wii_create_tree_node( 
@@ -151,13 +176,6 @@ void wii_vb_menu_init()
     "Render rate (%) " );
   child->x = -2; child->value_x = -3;
   wii_add_child( cartDisplay, child );
-
-#if 0
-  child = wii_create_tree_node( NODETYPE_MAX_FRAMES_CART, 
-    "Maximum frame rate " );
-  child->x = -2; child->value_x = -3;
-  wii_add_child( cart_settings, child );
-#endif
 
   // Save/Revert/Delete
 
@@ -354,6 +372,10 @@ void wii_menu_handle_get_node_name(
           enabled ? "Enabled" : "Disabled" );
         break;
     }
+    case NODETYPE_WIIMOTE_SUPPORTED:
+      snprintf( value, WII_MENU_BUFF_SIZE, "%s",
+        ( wii_vb_db_entry.wiimoteSupported ? "Yes" : "No" ) );
+      break;
     case NODETYPE_WIIMOTE_MENU_ORIENT:
       if( wii_mote_menu_vertical )
       {
@@ -366,8 +388,48 @@ void wii_menu_handle_get_node_name(
       snprintf( value, WII_MENU_BUFF_SIZE, "%s", strmode );
       break;
     case NODETYPE_VB_MODE:
-      snprintf( value, WII_MENU_BUFF_SIZE, "%s", wii_get_vb_mode().name );
+      {
+        Vb3dMode mode = wii_get_vb_mode();
+        snprintf( value, WII_MENU_BUFF_SIZE, "%s", mode.name );
+      }
       break;
+    case NODETYPE_CONTROLLER:
+      snprintf( value, WII_MENU_BUFF_SIZE, "%s",
+        WiiControllerNames[wii_current_controller] );
+      break;
+    case NODETYPE_BUTTON1:
+    case NODETYPE_BUTTON2:
+    case NODETYPE_BUTTON3:
+    case NODETYPE_BUTTON4:
+    case NODETYPE_BUTTON5:
+    case NODETYPE_BUTTON6:
+    case NODETYPE_BUTTON7:
+    case NODETYPE_BUTTON8:
+    case NODETYPE_BUTTON9:
+    case NODETYPE_BUTTON10:
+      {
+        int index = ( node->node_type - NODETYPE_BUTTON1 );
+        const char* name = WiiButtons[wii_current_controller][index].name;
+        if( name != NULL )
+        {
+          snprintf( buffer, WII_MENU_BUFF_SIZE, "%s ",
+            WiiButtons[wii_current_controller][index].name );
+
+          u8 btn = wii_vb_db_entry.buttonMap[wii_current_controller][index];
+          const char* name = VbButtons[ btn ].name;
+          const char* desc = 
+            ( btn != 0 ? wii_vb_db_entry.buttonDesc[btn] : "" );
+          if( desc[0] != '\0' )
+          {
+            snprintf( value, WII_MENU_BUFF_SIZE, "%s (%s)", name, desc );
+          }
+          else
+          {
+            snprintf( value, WII_MENU_BUFF_SIZE, "%s", name );
+          }
+        }
+      }
+      break;     
     default:
       break;
   }
@@ -408,13 +470,24 @@ void wii_menu_handle_select_node( TREENODE *node )
       break;
     case NODETYPE_VB_MODE:
       {
+        const Vb3dMode* mode = NULL;
         int index = wii_get_vb_mode_index();
-        index++;
-        if( index >= wii_vb_mode_count )
+        while( 1 )
         {
-          index = 0;
+          index++;
+          if( index >= wii_vb_mode_count )
+          {
+            index = 0;
+          }
+          
+          mode = &wii_vb_modes[index];
+          if( !wii_is_custom_mode( mode ) ||
+              wii_has_custom_colors() )
+          { 
+            break;
+          }                   
         }
-        strcpy( wii_vb_mode_key, wii_vb_modes[index].key );
+        strcpy( wii_vb_mode_key, mode->key );
       }
       break;
     case NODETYPE_ROM:            
@@ -452,12 +525,16 @@ void wii_menu_handle_select_node( TREENODE *node )
     case NODETYPE_CART_FRAME_SKIP:
       wii_vb_db_entry.frameSkip ^= 1;
       break;
+    case NODETYPE_WIIMOTE_SUPPORTED:
+      wii_vb_db_entry.wiimoteSupported ^= 1;
+      break;
     case NODETYPE_SAVE_STATE_MANAGEMENT:
     case NODETYPE_ADVANCED:
     case NODETYPE_LOAD_ROM:               
     case NODETYPE_DISPLAY_SETTINGS:
     case NODETYPE_CARTRIDGE_SETTINGS_CURRENT:
     case NODETYPE_CARTRIDGE_SETTINGS_DISPLAY:
+    case NODETYPE_CARTRIDGE_SETTINGS_CONTROLS:
       wii_menu_push( node );
       if( node->node_type == NODETYPE_LOAD_ROM )
       {
@@ -517,6 +594,42 @@ void wii_menu_handle_select_node( TREENODE *node )
       wii_vb_db_get_entry( wii_cartridge_hash, &wii_vb_db_entry );
       wii_set_status_message( "Successfully reverted to saved settings." );
       break;
+    case NODETYPE_CONTROLLER:
+      wii_current_controller++; 
+      if( wii_current_controller >= WII_CONTROLLER_COUNT )
+      {
+        wii_current_controller = 0;
+      }
+      break;
+    case NODETYPE_BUTTON1:
+    case NODETYPE_BUTTON2:
+    case NODETYPE_BUTTON3:
+    case NODETYPE_BUTTON4:
+    case NODETYPE_BUTTON5:
+    case NODETYPE_BUTTON6:
+    case NODETYPE_BUTTON7:
+    case NODETYPE_BUTTON8:
+    case NODETYPE_BUTTON9:
+    case NODETYPE_BUTTON10:
+      {
+        int index = ( node->node_type - NODETYPE_BUTTON1 );
+        const char* name = WiiButtons[wii_current_controller][index].name;
+        if( name != NULL )
+        {
+          u8 mappedBtn = 
+            wii_vb_db_entry.buttonMap[wii_current_controller][index];
+
+          mappedBtn++;
+          if( mappedBtn >= VB_BUTTON_COUNT )
+          {
+            mappedBtn = 0;
+          }
+
+          wii_vb_db_entry.buttonMap[
+            wii_current_controller][index] = mappedBtn;
+        }
+      }
+      break;     
     default:
       /* do nothing */
       break;
@@ -555,7 +668,24 @@ BOOL wii_menu_handle_is_node_visible( TREENODE *node )
         return Util_fileexists( savename );
       }
       return FALSE;
-      break;          
+      break;       
+    case NODETYPE_WIIMOTE_SUPPORTED:
+      return wii_current_controller == WII_CONTROLLER_MOTE;
+      break;
+    case NODETYPE_BUTTON1:
+    case NODETYPE_BUTTON2:
+    case NODETYPE_BUTTON3:
+    case NODETYPE_BUTTON4:
+    case NODETYPE_BUTTON5:
+    case NODETYPE_BUTTON6:
+    case NODETYPE_BUTTON7:
+    case NODETYPE_BUTTON8:
+    case NODETYPE_BUTTON9:
+    case NODETYPE_BUTTON10:
+      return 
+        WiiButtons[wii_current_controller][
+          node->node_type - NODETYPE_BUTTON1].name != NULL;      
+      break;     
     default:
       /* do nothing */
       break;

@@ -31,6 +31,13 @@ distribution.
 #include "wii_main.h"
 #include "wii_vb_db.h"
 
+// Wii information
+#define WII_WIDTH 640
+#define WII_HEIGHT 480
+
+#define WII_WIDTH_DIV2 320
+#define WII_HEIGHT_DIV2 240
+
 // Virtual boy size
 #define VB_WIDTH 384
 #define VB_HEIGHT 224
@@ -39,26 +46,7 @@ distribution.
 #define DEFAULT_SCREEN_X ((int)(VB_WIDTH*1.3))
 #define DEFAULT_SCREEN_Y ((int)(VB_HEIGHT*1.3))
 
-#define WII_BUTTON_VB_START ( WPAD_BUTTON_PLUS | WPAD_CLASSIC_BUTTON_PLUS )
-#define GC_BUTTON_VB_START ( PAD_BUTTON_START )
-#define WII_BUTTON_VB_SELECT ( WPAD_BUTTON_MINUS | WPAD_CLASSIC_BUTTON_MINUS )
-#define GC_BUTTON_VB_SELECT ( PAD_BUTTON_Y )
-
-#define WII_BUTTON_VB_L ( WPAD_BUTTON_B | WPAD_CLASSIC_BUTTON_FULL_L )
-#define GC_BUTTON_VB_L ( PAD_TRIGGER_L )
-#define WII_BUTTON_VB_R ( WPAD_BUTTON_A | WPAD_CLASSIC_BUTTON_FULL_R )
-#define GC_BUTTON_VB_R ( PAD_TRIGGER_R )
-
-#define WII_BUTTON_VB_A ( WPAD_BUTTON_2 )
-#define WII_CLASSIC_VB_A ( WPAD_CLASSIC_BUTTON_A )
-#define WII_NUNCHUK_VB_A ( WPAD_NUNCHUK_BUTTON_C )
-#define GC_BUTTON_VB_A ( PAD_BUTTON_A )
-#define WII_BUTTON_VB_B ( WPAD_BUTTON_1 ) 
-#define WII_CLASSIC_VB_B ( WPAD_CLASSIC_BUTTON_B )
-#define WII_NUNCHUK_VB_B ( WPAD_NUNCHUK_BUTTON_Z )
-#define GC_BUTTON_VB_B ( PAD_BUTTON_B )
-
-#define DEFAULT_VB_MODE_KEY "white_black"
+#define DEFAULT_VB_MODE_KEY "red_black"
 
 /*
  * The 3d display mode
@@ -97,6 +85,12 @@ extern char wii_vb_mode_key[255];
 extern Vb3dMode wii_vb_modes[];
 // The number of 3d modes
 extern int wii_vb_mode_count;
+// The curent controller (for mapping buttons, etc.)
+extern int wii_current_controller;
+// The custom anaglyph colors
+extern RGBA wii_custom_colors[2];
+// Whether parallax is enabled
+extern BOOL wii_custom_colors_parallax;
 
 /*
  * Returns the index of the specified 3d mode key
@@ -119,6 +113,21 @@ extern int wii_get_vb_mode_index();
  * return   The current 3d mode
  */
 extern Vb3dMode wii_get_vb_mode();
+
+/*
+ * Whether the specified mode is the custom mode
+ *
+ * mode   The mode
+ * return Whether the mode is the custom mode
+ */
+extern BOOL wii_is_custom_mode(  const Vb3dMode* mode );
+
+/*
+ * Whether custom colors are available
+ *
+ * return   Whether custom colors are available
+ */
+extern BOOL wii_has_custom_colors();
 
 /*
  * Returns the render rate
@@ -147,4 +156,13 @@ extern char* wii_get_saves_dir();
  * return   The bae directory
  */
 extern char* wii_get_base_dir();
+
+/*
+ * Applies (expands) the wii button values for the currently mapped 
+ * buttons. The result is stored in the "appliedButtonMap".
+ *
+ * entry      The entry to apply the button map to
+ */
+void wii_vb_db_apply_button_map( VbDbEntry* entry );
+
 #endif

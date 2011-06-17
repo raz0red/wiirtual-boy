@@ -407,7 +407,9 @@ void VIP_DrawBlock(uint8 block_no, uint8 *fb_l, uint8 *fb_r)
 
   if(((512 << scx) + (512 << scy)) > 4096)
   {
+#ifdef VB_DEBUG_MESSAGES  
    MDFN_PrintError("BG Size too large for world: %d(scx=%d, scy=%d)\n", world, scx, scy);
+#endif   
   }
 
 //  if(world != 2)
@@ -422,8 +424,12 @@ void VIP_DrawBlock(uint8 block_no, uint8 *fb_l, uint8 *fb_r)
 
    if(bgm == BGM_OBJ)
    {
-    if(!lron[0] || !lron[1])
+    if(!lron[0] || !lron[1])   
+    {
+#ifdef VB_DEBUG_MESSAGES    
      MDFN_PrintError("Bad OBJ World? %d(%d/%d) %d~%d\n", world, lron[0], lron[1], SPT[obj_search_which], obj_search_which ? (SPT[obj_search_which - 1] + 1) : 0);
+#endif     
+    }
     
     DrawOBJ(fb, (block_no * 8) + y, lron);
    }

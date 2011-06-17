@@ -119,13 +119,18 @@ namespace MDFN_IEN_VB
 
     if(A & 0x3)
     { 
+#ifdef VB_DEBUG_MESSAGES
       MDFN_PrintError("HWCtrl Bogus Read?");
+#endif
       return(ret);
     }
 
     switch(A & 0xFF)
     {
-    default: MDFN_PrintError("Unknown HWCTRL Read: %08x\n", A);
+    default: 
+#ifdef VB_DEBUG_MESSAGES
+      MDFN_PrintError("Unknown HWCTRL Read: %08x\n", A);
+#endif
       break;
 
     case 0x18:
@@ -150,13 +155,18 @@ namespace MDFN_IEN_VB
   {
     if(A & 0x3)
     {
+#ifdef VB_DEBUG_MESSAGES
       MDFN_PrintError("HWCtrl Bogus Write?");
+#endif
       return;
     }
 
     switch(A & 0xFF)
     {
-    default: MDFN_PrintError("Unknown HWCTRL Write: %08x %02x\n", A, V);
+    default: 
+#ifdef VB_DEBUG_MESSAGES
+      MDFN_PrintError("Unknown HWCTRL Write: %08x %02x\n", A, V);
+#endif
       break;
 
     case 0x18:

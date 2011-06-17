@@ -2,29 +2,57 @@
 WiirtualBoy v0.0 release README
 --------------------------------------------
 
-Ported by raz0red 
+Ported by raz0red and Arikado
+
 [http://www.twitchasylum.com]
+[http://arikadosblog.blogspot.com/]
 
 --------------------------------------------
 Overview
 --------------------------------------------
 
-TODO
+WiirtualBoy is a Wii port of the Mednafen Virtual Boy Emulator
+[http://mednafen.sourceforge.net/].
 
 --------------------------------------------
 Installation
 --------------------------------------------
 
-TODO
+To install WiirtualBoy, simply extract the zip file directly to your SD card
+or USB device (retain the hierarchical structure exactly).
+
+Cartridge images must be placed in the roms directory (/wiivb/roms).
+
+--------------------------------------------
+Known Issues 
+--------------------------------------------
+
+  - Colors are not 100% accurate in 3D display modes (2D modes are accurate).
+  - Sound may not be 100% accurate
+  - Due to the current emulation speed, several games require frame
+      skipping to run at full speed (see cartridge compatibility).
+  - Frame skipping may cause graphical corruption. Some games do not run at
+      full speed as adding frame skipping causes too much corruption (see 
+      cartridge compatibility).
 
 --------------------------------------------
 Cartridge Database 
 --------------------------------------------
 
-TODO
+WiirtualBoy ships with a database that contains recommended settings for most
+commercial cartridges. These settings cover control mappings, display 
+settings including frame skipping, etc.
+
+To view/edit the settings applied for a particular cartridge perform the
+following steps:
+
+  * Load the cartridge (via the "Load cartridge" menu item)
+  * Return to the WiirtualBoy menu
+  * Select the "Cartridge settings (current cartridge)" menu item
+  * Examine the "Control" and "Display" settings for the cartridge 
 
 --------------------------------------------
-Cartridge/ROM Compatibility 
+Cartridge Compatibility 
 --------------------------------------------
 
 TODO
@@ -33,22 +61,120 @@ TODO
 Controls
 --------------------------------------------
 
-TODO
+The following section contains the "default" control mappings for WiirtualBoy.
+
+It is important to note that if the cartridge that is being loaded exists in
+the Cartridge Database it may contain non-default mappings. 
+
+  WiirtualBoy menu:
+  -----------------
+
+    Wiimote:
+
+      Left/Right  : Scroll (if sideways orientation)
+      Up/Down     : Scroll (if upright orientation)
+      A/2         : Select 
+      B/1         : Back
+      Home        : Exit to Homebrew Channel
+      Power       : Power off
+
+    Classic controller/Pro:
+
+      Up/Down     : Scroll
+      A           : Select 
+      B           : Back
+      Home        : Exit to Homebrew Channel
+            
+    Nunchuk controller:
+
+      Up/Down     : Scroll
+      C           : Select 
+      Z           : Back
+                  
+    GameCube controller:
+
+      Up/Down     : Scroll
+      A           : Select 
+      B           : Back
+      Z           : Exit to Homebrew Channel
+      
+  In-game (Defaults):
+  -------------------
+
+    Wiimote:
+
+      D-pad          : Left control pad
+      2              : A button
+      1              : B button
+      A              : R button
+      B              : L button
+      +              : Start
+      -              : Select
+      Home           : Display WiirtualBoy menu (see above)
+      
+    Wiimote + Nunchuk:
+
+      D-pad          : Right control pad
+      Analog         : Left control pad
+      A              : A button
+      B              : R button
+      C              : B button
+      Z              : L button
+      +              : Start
+      -              : Select      
+      Home           : Display WiirtualBoy menu (see above)
+      
+    Classic controller/Pro:
+
+      D-pad          : Left control pad
+      Left analog    : Left control pad
+      Right analog   : Right control pad
+      A              : A button
+      B              : B button
+      R/zR           : R button
+      L/zL           : L button
+      +              : Start
+      -              : Select
+      Home           : Display WiirtualBoy menu (see above)
+                              
+    GameCube controller:
+
+      D-pad          : Left control pad
+      Left analog    : Left control pad
+      Right analog   : Right control pad
+      A              : A button
+      B              : B button
+      R              : R button
+      L              : L button
+      Start          : Start
+      X/Y            : Select
+      Z              : Display WiirtualBoy menu (see above)
 
 --------------------------------------------
 WiirtualBoy crashes, code dumps, etc.
 --------------------------------------------
 
-TODO
+If you are having issues with WiirtualBoy, please let us know about it via one
+of the following locations:
+
+[http://www.wiibrew.org/wiki/Talk:WiirtualBoy]
+[http://www.twitchasylum.com/forum/viewtopic.php?t=1253]
 
 --------------------------------------------
 Special Thanks
 --------------------------------------------
 
-TODO
+Tantric       : Menu example code and SDL enhancements
+Mednafen team : Providing valuable insights and suggestions
 
 --------------------------------------------
 Change Log
 --------------------------------------------
 
-TODO
+06/13/11 (0.0)
+-------------------
+  - Preliminary release
+    - Several people have asked for access to this port, so we decided to go
+      ahead and put together what we consider a preliminary (or possibly 
+      preview) release. A lot of work is still taking place in an effort to
+      optimize the emulator performance.

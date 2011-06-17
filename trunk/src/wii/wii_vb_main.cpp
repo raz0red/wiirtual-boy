@@ -37,6 +37,8 @@ distribution.
 #include "wii_vb_main.h"
 #include "wii_vb_sdl.h"
 
+#include "wiimotenotsupported_png.h"
+
 #ifdef WII_NETTRACE
 #include <network.h>
 #include "net_print.h"  
@@ -89,6 +91,9 @@ extern void DeleteInternalArgs(void);
 extern void KillInputSettings(void);
 extern void CalcFramerates(char *virtfps, char *drawnfps, char *blitfps, size_t maxlen);
 
+// The wiimote not supported image data
+static gx_imagedata* mote_not_supported_idata = NULL;
+
 /*
  * Initializes the emulator
  */
@@ -119,17 +124,6 @@ void wii_vb_init()
   if(!(MDFNI_Initialize(DrBaseDirectory, NeoDriverSettings))) 
   {
     MDFN_PrintError( "Error during initialization" );
-    exit( 0 );
-  }
-
-  //
-  // TODO: I don't think we need to create dirs...
-  //
-  if(!CreateDirs())
-  {
-    ErrnoHolder ene(errno);	// TODO: Maybe we should have CreateDirs() return this instead?
-
-    MDFN_PrintError(_("Error creating directories: %s\n"), ene.StrError());
     exit( 0 );
   }
 
@@ -199,17 +193,41 @@ int wii_vb_load_game( char* game )
   return LoadGame( NULL, game );
 }
 
+
+namespace MDFN_IEN_VB
+{
+  extern int vb_skip_frame;
+  extern int vb_skip_sum;
+}
+
 /*
  * The emulation loop
  */
 void wii_vb_emu_loop()
 {
+  // Reset frame skip information
+  MDFN_IEN_VB::vb_skip_frame = 0;
+  MDFN_IEN_VB::vb_skip_sum = wii_get_render_rate();
+
+  wii_vb_db_apply_button_map( &wii_vb_db_entry );
+
   for(int i = 0; i < 2; i++)
     ((MDFN_Surface *)VTBuffer[i])->Fill(0, 0, 0, 0);
 
-  Vb3dMode mode = wii_get_vb_mode();
-  MDFN_IEN_VB::VIP_SetParallaxDisable( !mode.isParallax );
-  MDFN_IEN_VB::VIP_SetAnaglyphColors( mode.lColor, mode.rColor );
+  const Vb3dMode mode = wii_get_vb_mode();
+  if( wii_is_custom_mode( &mode ) )
+  {
+    MDFN_IEN_VB::VIP_SetParallaxDisable( !wii_custom_colors_parallax );
+    MDFN_IEN_VB::VIP_SetAnaglyphColors( 
+      Util_rgbatovalue( &wii_custom_colors[0], FALSE ),      
+      Util_rgbatovalue( &wii_custom_colors[1], FALSE )
+    );
+  }
+  else
+  {
+    MDFN_IEN_VB::VIP_SetParallaxDisable( !mode.isParallax );
+    MDFN_IEN_VB::VIP_SetAnaglyphColors( mode.lColor, mode.rColor );
+  }
   //MDFN_IEN_VB::VIP_Set3DMode( 0, false, 1, 0 );
 
   wii_sdl_black_back_surface();
@@ -266,8 +284,9 @@ static void gxrender_callback()
     }
     int renderRate = wii_get_render_rate();
     sprintf( 
-      text, "%s %s %s (%d%%)", 
-      virtfps, drawnfps, blitfps, ( renderRate == -1 ? 100 : renderRate ) );
+      text, "%s %s %s (%d%%) hash:%s%s", 
+      virtfps, drawnfps, blitfps, ( renderRate == -1 ? 100 : renderRate ),
+      wii_cartridge_hash, ( wii_vb_db_entry.loaded ? " (db)" : "" ) );
 
     GXColor color = (GXColor){0x0, 0x0, 0x0, 0x80};                       
     wii_gx_drawrectangle( 
@@ -279,4 +298,132 @@ static void gxrender_callback()
 
     wii_gx_drawtext( CB_X, CB_Y, CB_PIXELSIZE, text, ftgxWhite, FTGX_ALIGN_BOTTOM ); 
   }
+}
+
+// The current direction of the controls screen alpha
+static int controls_alpha_dir = 0;
+// The current alpha level for the controls screen
+static int controls_alpha = 0;
+
+/*
+ * Callback used to display an image indicating the control configuration
+ * for the current cartridge
+ */
+static void controls_render_callback()
+{
+  GX_SetVtxDesc( GX_VA_POS, GX_DIRECT );
+  GX_SetVtxDesc( GX_VA_CLR0, GX_DIRECT );
+  GX_SetVtxDesc( GX_VA_TEX0, GX_NONE );
+
+  Mtx m;    // model matrix.
+  Mtx mv;   // modelview matrix.
+
+  guMtxIdentity( m ); 
+  guMtxTransApply( m, m, 0, 0, -100 );
+  guMtxConcat( gx_view, m, mv );
+  GX_LoadPosMtxImm( mv, GX_PNMTX0 ); 
+
+  if( mote_not_supported_idata == NULL )
+  {
+    mote_not_supported_idata =
+      wii_gx_loadimagefrombuff( wiimotenotsupported_png );
+  }
+
+  wii_gx_drawimage( 
+    -(mote_not_supported_idata->width>>1), 
+    (mote_not_supported_idata->height>>1), 
+    mote_not_supported_idata->width, 
+    mote_not_supported_idata->height, 
+    mote_not_supported_idata->data, 
+    0, 1.0, 1.0, controls_alpha );
+}
+
+/*
+ * Displays a screen indicating the controls configuration for the current
+ * cartridge
+ *
+ * return   Returns 1 if we should continue past the screen
+ */
+int wii_vb_show_controls_screen()
+{ 
+  controls_alpha = controls_alpha_dir = 0;
+
+  if( wii_vb_db_entry.wiimoteSupported )
+  {
+    // Wiimote is supported
+    return 1;
+  }
+
+  WPAD_ScanPads();
+  PAD_ScanPads();
+
+  expansion_t exp;
+  WPAD_Expansion( 0, &exp );
+
+  if( exp.type == WPAD_EXP_CLASSIC || exp.type == WPAD_EXP_NUNCHUK )
+  {
+    // The classic or nunchuk is plugged in
+    return 1;
+  }
+
+  const int ALPHA_INC = 10;
+  const int MAX_TIME = 5 * 1000; // 5 seconds
+
+  wii_sdl_black_back_surface();
+  WII_SetRenderCallback( &controls_render_callback );  
+  WII_VideoStart();  
+
+  u32 startTime = SDL_GetTicks();
+
+  int retVal = 1;
+  do
+  {
+    int nextVal = controls_alpha;
+    if( !controls_alpha_dir )
+    {
+      if( nextVal < 0xff )
+      {
+        nextVal+=ALPHA_INC;
+      }
+    }
+    else
+    {
+      if( nextVal > 0 )
+      {
+        nextVal-=ALPHA_INC;
+      }
+    }
+
+    if( nextVal >= 0xff )
+    {
+      nextVal = 0xff;
+    }
+    else if( nextVal < 0 )
+    {
+      nextVal = 0;
+    }
+
+    controls_alpha = nextVal;
+
+    int pressed = wii_check_button_pressed();
+    if( pressed == -1 )
+    {
+      retVal = 0;
+      break;
+    }
+
+    if( pressed || 
+        ( ( SDL_GetTicks() - startTime ) > MAX_TIME ) )
+    {
+      controls_alpha_dir = 1;
+    }
+
+    VIDEO_WaitVSync();
+  }
+  while( controls_alpha > 0 );
+
+  WII_VideoStop();
+  WII_SetRenderCallback( NULL );  
+
+  return retVal;
 }
