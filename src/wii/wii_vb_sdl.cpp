@@ -32,6 +32,10 @@ distribution.
 SDL_Palette orig_8bpp_palette;
 SDL_Color orig_8bpp_colors[512];
 
+#if 0
+extern "C" void WII_SetWidescreen(int wide);
+#endif
+
 /*
  * Initializes the SDL
  */
@@ -60,6 +64,14 @@ int wii_sdl_handle_init()
 #endif
       SDL_HWSURFACE
     );
+
+#if 0
+  if( CONF_GetAspectRatio() )
+  {
+    WII_SetWidescreen( 1 );
+  }
+  WII_SetWidescreen( 0 );
+#endif
 
   if( !back_surface) 
   {

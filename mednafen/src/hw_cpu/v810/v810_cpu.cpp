@@ -538,7 +538,9 @@ bool V810::bstr_subop(v810_timestamp_t &timestamp, int sub_op, int arg1)
 {
  if((sub_op >= 0x10) || (!(sub_op & 0x8) && sub_op >= 0x4))
  {
+#ifdef VB_DEBUG_MESSAGES
   MDFN_PrintError("%08x\tBSR Error: %04x\n", PC,sub_op);
+#endif
 
   SetPC(GetPC() - 2);
   Exception(INVALID_OP_HANDLER_ADDR, ECODE_INVALID_OP);
@@ -585,7 +587,9 @@ bool V810::bstr_subop(v810_timestamp_t &timestamp, int sub_op, int arg1)
  }
  else
  {
+#ifdef VB_DEBUG_MESSAGES
   MDFN_PrintError("BSTR Search: %02x\n", sub_op);
+#endif
   return(Do_BSTR_Search(timestamp, ((sub_op & 1) ? -1 : 1), (sub_op & 0x2) >> 1));
  }
  assert(0);
@@ -818,7 +822,9 @@ void V810::fpu_subop(v810_timestamp_t &timestamp, int sub_op, int arg1, int arg2
 		 }
 		 else
 		 {
+#ifdef VB_DEBUG_MESSAGES
 		  MDFN_PrintError("Exception on CVT.WS?????");	// This shouldn't happen, but just in case there's a bug...
+#endif
 		 }
 		 FPU_DoException();
 		}
@@ -929,7 +935,9 @@ void V810::Exception(uint32 handler, uint16 eCode)
 {
  // Exception overhead is unknown.
 
+#ifdef VB_DEBUG_MESSAGES
     MDFN_PrintError("Exception: %08x %04x\n", handler, eCode);
+#endif
 
     // Invalidate our bitstring state(forces the instruction to be re-read, and the r/w buffers reloaded).
     in_bstr = FALSE;
@@ -938,7 +946,9 @@ void V810::Exception(uint32 handler, uint16 eCode)
 
     if(S_REG[PSW] & PSW_NP) // Fatal exception
     {
+#ifdef VB_DEBUG_MESSAGES
      MDFN_PrintError("Fatal exception; Code: %08x, ECR: %08x, PSW: %08x, PC: %08x\n", eCode, S_REG[ECR], S_REG[PSW], PC);
+#endif
      Halted = HALT_FATAL_EXCEPTION;
      IPendingCache = 0;
      return;

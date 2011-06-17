@@ -8,8 +8,8 @@ void MDFNI_SelectState(int);
 
 /* "fname" overrides the default save state filename code if non-NULL. */
 /* If suffix is set, just override the default suffix(nc0-nc9) */
-void MDFNI_SaveState(const char *fname, const char *suffix, const MDFN_Surface *surface, const MDFN_Rect *DisplayRect, const MDFN_Rect *LineWidths);
-void MDFNI_LoadState(const char *fname, const char *suffix);
+int MDFNI_SaveState(const char *fname, const char *suffix, const MDFN_Surface *surface, const MDFN_Rect *DisplayRect, const MDFN_Rect *LineWidths);
+int MDFNI_LoadState(const char *fname, const char *suffix);
 void MDFNI_EnableStateRewind(int enable);
 
 

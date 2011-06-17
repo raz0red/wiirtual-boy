@@ -39,6 +39,11 @@ stereo L/R sample pairs.
 
 #include <SDL.h>
 
+#ifdef WII_NETTRACE
+#include <network.h>
+#include "net_print.h"  
+#endif
+
 static int64_t Time64(void)
 {
   // Don't use gettimeofday(), it's not monotonic.
@@ -83,7 +88,9 @@ static void fillaudio(void *udata, uint8_t *stream, int len)
   sw->last_time = Time64();
 
   if(tocopy > sw->BufferIn)
+  {
     tocopy = sw->BufferIn;
+  }
 
   //printf("%d\n", len);
 
@@ -93,8 +100,11 @@ static void fillaudio(void *udata, uint8_t *stream, int len)
     {
       int maxcopy = tocopy;
 
+
       if((maxcopy + sw->BufferRead) > sw->RealBufferSize_Raw)
+      {
         maxcopy = sw->RealBufferSize_Raw - sw->BufferRead;
+      }
 
       memcpy(stream, (char *)sw->Buffer + sw->BufferRead, maxcopy);
 

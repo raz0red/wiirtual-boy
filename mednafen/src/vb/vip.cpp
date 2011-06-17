@@ -519,8 +519,7 @@ namespace MDFN_IEN_VB
       puts("IRQ not asserted"); 
 #endif
   }
-
-
+  
   bool VIP_Init(void)
   {
     InstantDisplayHack = false;
@@ -983,7 +982,7 @@ namespace MDFN_IEN_VB
   // TODO: Move this to a better location
   int vb_skip_frame = 0;
   // The current sum for skipping
-  static int skip_sum = 0;
+  int vb_skip_sum = 0;
 
   void VIP_StartFrame(EmulateSpecStruct *espec)
   {
@@ -991,14 +990,14 @@ namespace MDFN_IEN_VB
     int render_rate = wii_get_render_rate();
     if( render_rate != -1 )
     {
-      skip_sum += render_rate;
-      if( skip_sum >= 100 )
+      vb_skip_sum += render_rate;
+      if( vb_skip_sum >= 100 )
       {
-        skip_sum %= 100;
+        vb_skip_sum %= 100;
       }
       else
       {
-        vb_skip_frame = 1;      
+        vb_skip_frame = 1;              
       }
     }
 
@@ -1120,7 +1119,13 @@ namespace MDFN_IEN_VB
     }
   }
 
-  static uint32 AnaSlowBuf[384][224];
+#if BPP == 8
+    static uint8 AnaSlowBuf[384][224];
+#elif BPP == 16
+    static uin16 AnaSlowBuf[384][224];
+#else
+    static uint32 AnaSlowBuf[384][224];
+#endif  
 
   static INLINE void CopyFBColumnToTarget_AnaglyphSlow_BASE(const bool DisplayActive_arg, const int lr)
   {
@@ -1129,7 +1134,13 @@ namespace MDFN_IEN_VB
 
     if(!lr)
     {
+#if BPP == 8
+      uint8 *target = AnaSlowBuf[Column];
+#elif BPP == 16
+      uint16 *target = AnaSlowBuf[Column];
+#else
       uint32 *target = AnaSlowBuf[Column];
+#endif       
 
       for(int y = 56; y; y--)
       {
@@ -1151,8 +1162,17 @@ namespace MDFN_IEN_VB
     }
     else
     {
-      uint32 *target = surface->pixels + Column;
-      const uint32 *left_src = AnaSlowBuf[Column];
+//      uint32 *target = surface->pixels + Column;
+#if BPP == 8
+    uint8 *target = surface->pixels8 + Column;
+    const uint8 *left_src = AnaSlowBuf[Column];
+#elif BPP == 16
+    uint16 *target = surface->pixels16 + Column;
+    const uint16 *left_src = AnaSlowBuf[Column];
+#else
+    uint32 *target = surface->pixels + Column;
+    const uint32 *left_src = AnaSlowBuf[Column];
+#endif      
       const int32 pitch32 = surface->pitch32;
 
       for(int y = 56; y; y--)

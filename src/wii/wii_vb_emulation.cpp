@@ -24,6 +24,8 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
+#include "main.h"
+
 #include "wii_app.h"
 #include "wii_config.h"
 #include "wii_input.h"
@@ -114,9 +116,7 @@ void wii_start_emulation( char *romfile, const char *savefile, bool reset, bool 
         }
         else
         {
-  #if 0
-          succeeded = mpLynx->ContextLoad( savefile );                    
-  #endif
+          succeeded = MDFNI_LoadState( savefile, NULL );                    
 
           if( !succeeded )
           {
@@ -130,17 +130,30 @@ void wii_start_emulation( char *romfile, const char *savefile, bool reset, bool 
 
   if( succeeded )
   {
-    // Wait until no buttons are pressed
-    wii_wait_until_no_buttons( 2 );
-
-    // Start the emulator loop
-    wii_vb_emu_loop();            
-
-    // Auto save?
-    if( wii_auto_save_state )
+    int retVal = 1;
+    if( !resume && !reset )
     {
-      wii_save_snapshot( autosavename, TRUE );
-    }        
+      // Wait until no buttons are pressed
+      wii_wait_until_no_buttons( 2 );
+
+      // Show the controls screen (if applicable)
+      retVal = wii_vb_show_controls_screen();
+    }
+
+    if( retVal )
+    {
+      // Wait until no buttons are pressed
+      wii_wait_until_no_buttons( 2 );
+
+      // Start the emulator loop
+      wii_vb_emu_loop();            
+
+      // Auto save?
+      if( wii_auto_save_state )
+      {
+        wii_save_snapshot( autosavename, TRUE );
+      }        
+    }
 
     // Store the name of the last rom (for resuming later)        
     // Do it in this order in case they passed in the pointer

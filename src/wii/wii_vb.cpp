@@ -57,22 +57,56 @@ BOOL wii_auto_load_state = TRUE;
 int wii_screen_x = DEFAULT_SCREEN_X;
 // The screen Y size
 int wii_screen_y = DEFAULT_SCREEN_Y;
+// The curent controller (for mapping buttons, etc.)
+int wii_current_controller = 0;
+// The custom anaglyph colors
+RGBA wii_custom_colors[2];
+// Whether parallax is enabled
+BOOL wii_custom_colors_parallax = TRUE;
+
+#define CUSTOM_MODE_KEY "custom"
 
 // The list of available 3d modes
 Vb3dMode wii_vb_modes[] =
 {
-  { "white_black", "White/black (2d)", 0xFFFFFF, 0x000000, false },
-  { "red_black", "Red/black (2d)", 0xFF0000, 0x000000, false },
-  { "red_blue", "Red/blue (3d)", 0xFF0000, 0x0000FF, true },
-  { "red_green", "Red/green (3d)", 0xFF0000, 0x00FF00, true },
-  { "green_red", "Green/red (3d)", 0x00FF00, 0xFF0000, true },
-  { "yellow_blue", "Yellow/blue (3d)", 0xFFFF00, 0x0000FF, true },
+  { "red_black", "(2d) Red/black", 0xFF0000, 0x000000, false },
+  { "white_black", "(2d) White/black", 0xFFFFFF, 0x000000, false },
+  { "red_blue", "(3d) Red/blue", 0xFF0000, 0x0000FF, true },
+  { "red_cyan", "(3d) Red/cyan", 0xFF0000, 0x00B7EB, true },
+  { "red_ecyan", "(3d) Red/electric cyan", 0xFF0000, 0x00FFFF, true },
+  { "red_green", "(3d) Red/green", 0xFF0000, 0x00FF00, true },
+  { "green_red", "(3d) Green/red", 0x00FF00, 0xFF0000, true },
+  { "yellow_blue", "(3d) Yellow/blue", 0xFFFF00, 0x0000FF, true },
+  { CUSTOM_MODE_KEY, "(custom)", 0x0, 0x0, true }
 };
 
 int wii_vb_mode_count = sizeof( wii_vb_modes ) / sizeof( Vb3dMode );
 
 // The current 3d mode
 char wii_vb_mode_key[255] = DEFAULT_VB_MODE_KEY;
+
+/*
+ * Whether custom colors are available
+ *
+ * return   Whether custom colors are available
+ */
+BOOL wii_has_custom_colors()
+{
+  return 
+    Util_rgbatovalue( &wii_custom_colors[0], FALSE ) != 0 ||
+    Util_rgbatovalue( &wii_custom_colors[1], FALSE ) != 0;
+}
+
+/*
+ * Whether the specified mode is the custom mode
+ *
+ * mode   The mode
+ * return Whether the mode is the custom mode
+ */
+extern BOOL wii_is_custom_mode(  const Vb3dMode* mode )
+{
+  return !strcmp( mode->key, CUSTOM_MODE_KEY );
+}
 
 /*
  * Returns the index of the specified 3d mode key
@@ -139,8 +173,18 @@ int wii_get_render_rate()
  */
 void wii_handle_init()
 {  
+  // Initialize the custom colors
+  memset( wii_custom_colors, sizeof( wii_custom_colors ), 0x0 );
+
   // Read the config values
   wii_read_config();
+
+  // Reset color choice if custom is selected and it shouldn't be allowed
+  Vb3dMode mode = wii_get_vb_mode();
+  if( wii_is_custom_mode( &mode ) && !wii_has_custom_colors() )
+  {
+    strcpy( wii_vb_mode_key, DEFAULT_VB_MODE_KEY );
+  }
 
   // Startup the SDL
   if( !wii_sdl_init() ) 

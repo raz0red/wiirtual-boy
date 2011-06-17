@@ -24,6 +24,8 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
+#include "main.h"
+
 #include <stdio.h>
 
 #include "wii_app.h"
@@ -32,6 +34,11 @@ distribution.
 #include "wii_vb.h"
 #include "wii_vb_emulation.h"
 #include "wii_vb_main.h"
+
+// Mednafen externs
+extern volatile MDFN_Surface *VTBuffer[2];
+extern MDFN_Rect VTDisplayRects[2];
+extern MDFN_Rect *VTLineWidths[2];
 
 /*
  * Determines the save name for the specified rom file
@@ -56,9 +63,13 @@ extern "C" void wii_snapshot_handle_get_name(
  */
 extern "C" BOOL wii_snapshot_handle_save( char* filename )
 {
-#if 0
-  return mpLynx->ContextSave( filename ) ? TRUE : FALSE;  
-#endif
+  return
+    MDFNI_SaveState(
+      filename, 
+      NULL, 
+      (const MDFN_Surface*)VTBuffer[0], 
+      NULL, 
+      NULL );
 }
 
 /*

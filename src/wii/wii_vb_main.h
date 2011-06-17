@@ -50,4 +50,12 @@ extern int wii_vb_load_game( char* game );
  */
 extern void wii_vb_emu_loop();
 
+/*
+ * Displays a screen indicating the controls configuration for the current
+ * cartridge
+ *
+ * return   Returns 1 if we should continue past the screen
+ */
+extern int wii_vb_show_controls_screen();
+
 #endif

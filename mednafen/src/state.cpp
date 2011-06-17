@@ -946,19 +946,19 @@ void MDFNI_SelectState(int w)
  MDFND_SetStateStatus(status);
 }  
 
-void MDFNI_SaveState(const char *fname, const char *suffix, const MDFN_Surface *surface, const MDFN_Rect *DisplayRect, const MDFN_Rect *LineWidths)
+int MDFNI_SaveState(const char *fname, const char *suffix, const MDFN_Surface *surface, const MDFN_Rect *DisplayRect, const MDFN_Rect *LineWidths)
 {
  if(!MDFNGameInfo->StateAction) 
-  return;
+  return 0;
 
  MDFND_SetStateStatus(NULL);
- MDFNSS_Save(fname, suffix, surface, DisplayRect, LineWidths);
+ return MDFNSS_Save(fname, suffix, surface, DisplayRect, LineWidths);
 }
 
-void MDFNI_LoadState(const char *fname, const char *suffix)
+int MDFNI_LoadState(const char *fname, const char *suffix)
 {
  if(!MDFNGameInfo->StateAction) 
-  return;
+  return 0;
 
  MDFND_SetStateStatus(NULL);
 
@@ -976,7 +976,10 @@ void MDFNI_LoadState(const char *fname, const char *suffix)
   if(MDFNMOV_IsRecording())
    MDFNMOV_RecordState();
 #endif
+  return 1;
  }
+
+ return 0;
 }
 
 #include "compress/minilzo.h"

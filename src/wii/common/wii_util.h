@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <string.h>
+#include <gccore.h>
 
 #define DIR_SEP_CHAR '/'
 #define DIR_SEP_STR  "/"
@@ -29,6 +30,16 @@ extern int Util_hextodec( const char* hex );
 extern void Util_hextorgba( const char* hex, RGBA* rgba );
 extern void Util_dectohex( int dec, char *hex, int fill );
 extern void Util_rgbatohex( RGBA* rgba, char *hex );
+
+/*
+ * Converts the RGBA to an integer value
+ *
+ * rgba   The RGBA
+ * includeAlpha Whether to include alpha in the value
+ * return The RGBA as an integer value
+ */
+extern u32 Util_rgbatovalue( RGBA* rgba, BOOL includeAlpha );
+
 
 #ifdef __cplusplus
 }

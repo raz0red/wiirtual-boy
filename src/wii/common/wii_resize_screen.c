@@ -73,7 +73,7 @@ extern Mtx gx_view;
 /*
  * GX render callback
  */
-void wii_resize_render_callback()
+static void wii_resize_render_callback()
 {
   GX_SetVtxDesc( GX_VA_POS, GX_DIRECT );
   GX_SetVtxDesc( GX_VA_CLR0, GX_DIRECT );
