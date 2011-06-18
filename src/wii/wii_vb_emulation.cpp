@@ -146,7 +146,7 @@ void wii_start_emulation( char *romfile, const char *savefile, bool reset, bool 
       wii_wait_until_no_buttons( 2 );
 
       // Start the emulator loop
-      wii_vb_emu_loop();            
+      wii_vb_emu_loop( resume );            
 
       // Auto save?
       if( wii_auto_save_state )

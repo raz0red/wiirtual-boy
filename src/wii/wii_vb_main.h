@@ -47,8 +47,10 @@ extern int wii_vb_load_game( char* game );
 
 /*
  * The emulation loop
+ *
+ * resume   Whether we are resuming
  */
-extern void wii_vb_emu_loop();
+extern void wii_vb_emu_loop( BOOL resume );
 
 /*
  * Displays a screen indicating the controls configuration for the current
