@@ -202,12 +202,20 @@ namespace MDFN_IEN_VB
 
 /*
  * The emulation loop
+ *
+ * resume   Whether we are resuming
  */
-void wii_vb_emu_loop()
+void wii_vb_emu_loop( BOOL resume )
 {
-  // Reset frame skip information
-  MDFN_IEN_VB::vb_skip_frame = 0;
-  MDFN_IEN_VB::vb_skip_sum = wii_get_render_rate();
+    // Reset frame skip information
+    MDFN_IEN_VB::vb_skip_frame = 0;
+#ifdef BOUND_HIGH_HACK
+    // This is an extremely lame hack that allow for "Bound High!" to work
+    // correctly with frame skipping. 
+    MDFN_IEN_VB::vb_skip_sum = wii_get_render_rate();
+#else
+    MDFN_IEN_VB::vb_skip_sum = 0;
+#endif
 
   wii_vb_db_apply_button_map( &wii_vb_db_entry );
 
