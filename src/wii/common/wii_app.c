@@ -177,15 +177,20 @@ int wii_check_button_pressed()
 
   return ( 
     ( held & 
-      ( WPAD_BUTTON_A | WPAD_BUTTON_B | WPAD_BUTTON_1 | 
-          WPAD_BUTTON_2 | 
-      ( isClassic ? 
-          ( WPAD_CLASSIC_BUTTON_X | WPAD_CLASSIC_BUTTON_A	| 
-              WPAD_CLASSIC_BUTTON_Y	| WPAD_CLASSIC_BUTTON_B	) : 
-          ( WPAD_NUNCHUK_BUTTON_Z	| WPAD_NUNCHUK_BUTTON_C	) ) ) ) || 
+      ( WPAD_BUTTON_A | WPAD_BUTTON_B | WPAD_BUTTON_1 | WPAD_BUTTON_2 |
+        WPAD_BUTTON_PLUS | WPAD_BUTTON_MINUS |
+        ( isClassic ? 
+          ( WPAD_CLASSIC_BUTTON_PLUS | WPAD_CLASSIC_BUTTON_MINUS | 
+            WPAD_CLASSIC_BUTTON_X | WPAD_CLASSIC_BUTTON_A | 
+            WPAD_CLASSIC_BUTTON_Y | WPAD_CLASSIC_BUTTON_B ) : 
+          ( WPAD_NUNCHUK_BUTTON_Z | WPAD_NUNCHUK_BUTTON_C ) 
+        ) 
+      ) 
+    ) || 
     ( gcHeld & 
-        ( PAD_BUTTON_A	| PAD_BUTTON_B | PAD_BUTTON_X | 
-            PAD_BUTTON_Y ) )
+        ( PAD_BUTTON_START | PAD_BUTTON_A | PAD_BUTTON_B | 
+          PAD_BUTTON_X | PAD_BUTTON_Y ) 
+    )
   );
 }
 

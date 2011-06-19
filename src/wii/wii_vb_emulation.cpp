@@ -92,6 +92,14 @@ void wii_start_emulation( char *romfile, const char *savefile, bool reset, bool 
     {
       // Look up the cartridge in the database
       wii_vb_db_get_entry( wii_cartridge_hash, &wii_vb_db_entry );
+    
+#ifdef WII_NETTRACE
+        net_print_string( NULL, 0, "%s, %s, %s, %s\n", 
+          wii_vb_db_entry.name, 
+          wii_cartridge_hash_with_header,
+          wii_cartridge_hash,
+          ( wii_vb_db_entry.frameSkip ? "Yes" : "No" ) );
+#endif
 
       // Load the save if applicable
       if( !reset && succeeded &&

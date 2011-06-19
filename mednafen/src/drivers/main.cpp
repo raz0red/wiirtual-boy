@@ -1201,7 +1201,7 @@ int GameLoop(void *arg)
     } while(((InFrameAdvance && !NeedFrameAdvance) || GameLoopPaused) && GameThreadRun);
 
 #ifdef BOUND_HIGH_HACK
-    // This is an extremely lame hack that allow for "Bound High!" to work
+    // This is an extremely lame hack that allows for "Bound High!" to work
     // correctly with frame skipping. 
     if( !GameThreadRun )
     {

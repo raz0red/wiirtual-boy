@@ -210,7 +210,7 @@ void wii_vb_emu_loop( BOOL resume )
     // Reset frame skip information
     MDFN_IEN_VB::vb_skip_frame = 0;
 #ifdef BOUND_HIGH_HACK
-    // This is an extremely lame hack that allow for "Bound High!" to work
+    // This is an extremely lame hack that allows for "Bound High!" to work
     // correctly with frame skipping. 
     MDFN_IEN_VB::vb_skip_sum = wii_get_render_rate();
 #else
