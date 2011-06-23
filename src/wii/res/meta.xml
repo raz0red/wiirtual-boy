@@ -2,8 +2,8 @@
  <app version="1">
    <name>WiirtualBoy</name>
    <coder>raz0red and Arikado</coder>
-   <version>0.0</version>
-   <release_date>201105220000</release_date>
+   <version>0.1</version>
+   <release_date>201106210000</release_date>
    <short_description>Virtual Boy Emulator</short_description>
    <long_description>WiirtualBoy is a port of the Mednafen Virtual Boy Emulator.
 

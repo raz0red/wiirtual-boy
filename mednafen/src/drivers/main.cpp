@@ -202,10 +202,14 @@ MDFNSetting DriverSettings[] =
   { "sound", MDFNSF_NOFLAGS, gettext_noop("Enable sound output."), NULL, MDFNST_BOOL, "1" },
   { "sound.period_time", MDFNSF_NOFLAGS, gettext_noop("Desired period size in microseconds."), gettext_noop("Currently only affects OSS and ALSA output.  A value of 0 defers to the default in the driver code in SexyAL.\n\nNote: This is not the \"sound buffer size\" setting, that would be \"sound.buffer_time\"."), MDFNST_UINT,  "0", "0", "100000" },
   { "sound.buffer_time", MDFNSF_NOFLAGS, gettext_noop("Desired total buffer size in milliseconds."), NULL, MDFNST_UINT, 
+#ifdef WII
+  "52"
+#else
 #ifdef WIN32
   "52"
 #else
   "32"
+#endif
 #endif
   ,"1", "1000" },
   { "sound.rate", MDFNSF_NOFLAGS, gettext_noop("Specifies the sound playback rate, in frames per second(\"Hz\")."), NULL, MDFNST_UINT, "32000", "22050", "48000"},
