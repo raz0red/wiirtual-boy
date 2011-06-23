@@ -343,7 +343,7 @@ SexyAL_device *SexyALI_SDL_Open(const char *id, SexyAL_format *format, SexyAL_bu
   desired.userdata = (void *)device;
   //#ifndef WII
   desired.format = AUDIO_S16;
-  desired.samples = 256; //512;	// FIXME
+  desired.samples = 1024; //512;	// FIXME
   //#else
   //  desired.format = AUDIO_S16MSB;
   //  desired.samples = 512;

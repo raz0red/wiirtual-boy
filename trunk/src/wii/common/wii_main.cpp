@@ -749,9 +749,10 @@ void wii_menu_show()
         }
       }
 
-      if( ( down & ( WII_BUTTON_A | 
-        ( isClassic ? WII_CLASSIC_BUTTON_A : WII_NUNCHUK_BUTTON_A ) ) ) ||
-        ( gcDown & GC_BUTTON_A ) )
+      if( ( ( down & ( WII_BUTTON_A | 
+            ( isClassic ? WII_CLASSIC_BUTTON_A : WII_NUNCHUK_BUTTON_A ) ) ) ||
+            ( gcDown & GC_BUTTON_A ) ) &&
+            menu_cur_idx != -1 )
       {	
         wii_menu_handle_select_node( menu->children[menu_cur_idx] );
         wii_menu_force_redraw = 1;            
