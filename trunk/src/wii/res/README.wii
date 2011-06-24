@@ -1,5 +1,5 @@
 --------------------------------------------
-WiirtualBoy v0.0 release README
+WiirtualBoy v0.1 release README
 --------------------------------------------
 
 Ported by raz0red and Arikado
@@ -55,7 +55,14 @@ following steps:
 Cartridge Compatibility 
 --------------------------------------------
 
-TODO
+The WiirtualBoy Cartridge Compatibility page lists each game that has been
+tested along with its associated hash values (one for the full file, one
+that excludes the header information).
+
+[http://www.wiibrew.org/wiki/WiirtualBoy/Cartridge_Compatibility]
+
+Enable the "Debug mode" option within the "Advanced" menu to view the hash
+(excluding header information) when a cartridge is playing.
 
 --------------------------------------------
 Controls
@@ -165,16 +172,22 @@ Special Thanks
 --------------------------------------------
 
 Tantric       : Menu example code and SDL enhancements
-Mednafen team : Providing valuable insights and suggestions
+Mednafen team : Providing an incredible emulator along with valuable insights
+                and suggestions during the port.
 
 --------------------------------------------
 Change Log
 --------------------------------------------
 
+06/23/11 (0.1)
+-------------------
+  - Initial public release
+    - Improved sound quality
+    - Left and right sound channels are now correct 
+    - Several minor bug fixes
+    - Minor performance improvements 
+
 06/13/11 (0.0)
 -------------------
-  - Preliminary release
-    - Several people have asked for access to this port, so we decided to go
-      ahead and put together what we consider a preliminary (or possibly 
-      preview) release. A lot of work is still taking place in an effort to
-      optimize the emulator performance.
+  - Pre-release
+  
