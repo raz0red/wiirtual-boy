@@ -1086,12 +1086,7 @@ namespace MDFN_IEN_VB
 int GameLoop(void *arg)
 {
   int sskip = 0;
-#ifdef BOUND_HIGH_HACK
-  int exitcount = 0;
-  while(GameThreadRun || exitcount > 0)
-#else
   while(GameThreadRun)
-#endif
   {
     int16 *sound;
     int32 ssize;
@@ -1203,27 +1198,6 @@ int GameLoop(void *arg)
             sound[x] = 0;
       }
     } while(((InFrameAdvance && !NeedFrameAdvance) || GameLoopPaused) && GameThreadRun);
-
-#ifdef BOUND_HIGH_HACK
-    // This is an extremely lame hack that allows for "Bound High!" to work
-    // correctly with frame skipping. 
-    if( !GameThreadRun )
-    {
-      if( exitcount > 0 )
-      {
-        exitcount--;
-      }
-      else
-      {
-        // Only occurs with 50% frame skipping (the default)
-        int render_rate = wii_get_render_rate();        
-        if( render_rate == 50 && MDFN_IEN_VB::vb_skip_sum == 0 )
-        {
-          exitcount = 1;
-        }
-      }
-    }
-#endif
   }
   return(1);
 }   
