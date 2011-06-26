@@ -281,6 +281,10 @@ class V810
  void BSTR_WWORD(v810_timestamp_t &timestamp, uint32 A, uint32 V);
  bool Do_BSTR_Search(v810_timestamp_t &timestamp, const int inc_mul, unsigned int bit_test);
 
+ void IdleLoopTest(uint32 old_pc, uint32 new_pc);
+ void IdleLoopMurder(void);
+ void IdleLoopManslaughter(uint32 addr);
+ void IdleLoopAssault(uint32 jump_addr);
 
  uint8 DummyRegion[V810_FAST_MAP_PSIZE + V810_FAST_MAP_TRAMPOLINE_SIZE];
 };
