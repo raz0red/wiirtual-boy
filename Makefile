@@ -50,7 +50,7 @@ INCLUDES	:= \
 # options for code generation
 #---------------------------------------------------------------------------------  
 #CFLAGS  -Wall -DWII_NETTRACE -funsafe-math-optimizations
-CFLAGS	= -g -O3 $(MACHDEP) $(INCLUDE) -DWII -DWII_BIN2O -DHAVE_CONFIG_H -DHAVE_FLOAT_H -DBPP=8 -funsafe-math-optimizations -DBOUND_HIGH_HACK
+CFLAGS	= -g -O3 $(MACHDEP) $(INCLUDE) -DWII -DWII_BIN2O -DHAVE_CONFIG_H -DHAVE_FLOAT_H -DBPP=8 -funsafe-math-optimizations
 CXXFLAGS	=	$(CFLAGS) 
 
 #CFLAGS	= -fsigned-char -Wall -Winline -Wshadow -Wempty-body -Wignored-qualifiers -fomit-frame-pointer -finline-limit=6000 --param large-function-growth=800 --param inline-unit-growth=175 --param max-inline-insns-single=10000 -fno-strict-overflow -I -g -O2 $(MACHDEP) $(INCLUDE) -DWII -DWII_BIN2O -DHAVE_CONFIG_H -DHAVE_FLOAT_H -DBPP=8 -DWII_NETTRACE

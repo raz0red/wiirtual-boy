@@ -119,13 +119,18 @@ static uint8 HWCTRL_Read(v810_timestamp_t timestamp, uint32 A)
 
  if(A & 0x3)
  { 
-  puts("HWCtrl Bogus Read?");
+#ifdef VB_DEBUG_MESSAGES
+      MDFN_PrintError("HWCtrl Bogus Read?");
+#endif
   return(ret);
  }
 
  switch(A & 0xFF)
  {
-  default: printf("Unknown HWCTRL Read: %08x\n", A);
+    default: 
+#ifdef VB_DEBUG_MESSAGES
+      MDFN_PrintError("Unknown HWCTRL Read: %08x\n", A);
+#endif
 	   break;
 
   case 0x18:
@@ -150,13 +155,18 @@ static void HWCTRL_Write(v810_timestamp_t timestamp, uint32 A, uint8 V)
 {
  if(A & 0x3)
  {
-  puts("HWCtrl Bogus Write?");
+#ifdef VB_DEBUG_MESSAGES
+      MDFN_PrintError("HWCtrl Bogus Write?");
+#endif
   return;
  }
 
  switch(A & 0xFF)
  {
-  default: printf("Unknown HWCTRL Write: %08x %02x\n", A, V);
+    default: 
+#ifdef VB_DEBUG_MESSAGES
+      MDFN_PrintError("Unknown HWCTRL Write: %08x %02x\n", A, V);
+#endif
            break;
 
   case 0x18:
@@ -2010,19 +2020,19 @@ static int Load(const char *name, MDFNFILE *fp)
 
  if(fp->size != round_up_pow2(fp->size))
  {
-  puts("VB ROM image size is not a power of 2???");
+      MDFN_PrintError("VB ROM image size is not a power of 2???");
   return(0);
  }
 
  if(fp->size < 256)
  {
-  puts("VB ROM image size is too small??");
+      MDFN_PrintError("VB ROM image size is too small??");
   return(0);
  }
 
  if(fp->size > (1 << 24))
  {
-  puts("VB ROM image size is too large??");
+      MDFN_PrintError("VB ROM image size is too large??");
   return(0);
  }
 
@@ -2121,7 +2131,7 @@ static int Load(const char *name, MDFNFILE *fp)
   if(gp)
   {
    if(gzread(gp, GPRAM, 65536) != 65536)
-    puts("Error reading GPRAM");
+          MDFN_PrintError("Error reading GPRAM");
    gzclose(gp);
   }
  }
@@ -2209,6 +2219,7 @@ static int Load(const char *name, MDFNFILE *fp)
 
 static void CloseGame(void)
 {
+#if 0
  // Only save cart RAM if it has been modified.
  for(unsigned int i = 0; i < GPRAM_Mask + 1; i++)
  {
@@ -2221,6 +2232,7 @@ static void CloseGame(void)
    break;
   }
  }
+#endif
  //VIP_Kill();
  
  if(VB_VSU)
@@ -2401,7 +2413,7 @@ static MDFNSetting VBSettings[] =
 {
  { "vb.input.instant_read_hack", MDFNSF_EMU_STATE | MDFNSF_UNTRUSTED_SAFE, gettext_noop("Input latency reduction hack."), gettext_noop("Reduces latency in some games by 20ms by returning the current pad state, rather than latched state, on serial port data reads.  This hack may cause some homebrew software to malfunction, but it should be relatively safe for commercial official games."), MDFNST_BOOL, "1", NULL, NULL, NULL, SettingChanged },
  
- { "vb.instant_display_hack", MDFNSF_NOFLAGS, gettext_noop("Display latency reduction hack."), gettext_noop("Reduces latency in games by displaying the framebuffer 20ms earlier.  This hack has some potential of causing graphical glitches, so it is disabled by default."), MDFNST_BOOL, "0", NULL, NULL, NULL, SettingChanged },
+  { "vb.instant_display_hack", MDFNSF_NOFLAGS, gettext_noop("Display latency reduction hack."), gettext_noop("Reduces latency in games by displaying the framebuffer 20ms earlier.  This hack has some potential of causing graphical glitches, so it is disabled by default."), MDFNST_BOOL, "1", NULL, NULL, NULL, SettingChanged },
  { "vb.allow_draw_skip", MDFNSF_EMU_STATE | MDFNSF_UNTRUSTED_SAFE, gettext_noop("Allow draw skipping."), gettext_noop("If vb.instant_display_hack is set to \"1\", and this setting is set to \"1\", then frame-skipping the drawing to the emulated framebuffer will be allowed.  THIS WILL CAUSE GRAPHICAL GLITCHES, AND THEORETICALLY(but unlikely) GAME CRASHES, ESPECIALLY WITH DIRECT FRAMEBUFFER DRAWING GAMES."), MDFNST_BOOL, "0", NULL, NULL, NULL, SettingChanged },
 
  // FIXME: We're going to have to set up some kind of video mode change notification for changing vb.3dmode while the game is running to work properly.
