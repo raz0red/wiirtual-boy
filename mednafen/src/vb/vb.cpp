@@ -947,7 +947,7 @@ static const struct VBGameEntry VBGames[] =
        0x070176a4,
  }},
 
- { { 0xa44de03c }, "Jack Bros (US)", {  0x070001A6 }},
+ { { 0xa44de03c, 0x81af4d6d /*[b1]*/,  0xb15d706e /*(Enable Cheats Hack)*/, 0x79a99f3c /*[T+Ger1.0_KR155E]*/ }, "Jack Bros (US)", {  0x070001A6 }},
  { { 0xcab61e8b }, "Jack Bros (Japan)", {
        0x07000192,
  } },
@@ -1013,7 +1013,7 @@ static const struct VBGameEntry VBGames[] =
        0xffe0d51c,
  } },
 
- { { 0x19bb2dfb }, "Panic Bomber (US)", { 0x07001FE8,
+ { { 0x19bb2dfb, 0x25fb89bb /*[b1]*/, 0x21d224af /*[h1]*/, 0xc767fe4b /*[h2]*/ }, "Panic Bomber (US)", { 0x07001FE8,
        0x07001f34,
        0x07001fc6,
  } },
@@ -1263,11 +1263,11 @@ static const struct VBGameEntry VBGames[] =
  } },
 
  // Is 0xc2211fcc a bad dump?
- { {0x60895693, 0xc2211fcc }, "Space Squash (Japan)", {
+ { {0x60895693, 0xc2211fcc, 0x7cb69b3a /*[T+Eng]*/ }, "Space Squash (Japan)", {
        0x0701a97e,
  } },
 
- { { 0x6ba07915 }, "T&E Virtual Golf (Japan)", {
+ { { 0x6ba07915, 0x41fb63bf /*[b1]*/ }, "T&E Virtual Golf (Japan)", {
        0x0700027e,
        0x07000286,
        0x070013d0,
@@ -1344,7 +1344,7 @@ static const struct VBGameEntry VBGames[] =
        0x070079a2,
  } },
 
- { { 0x36103000 }, "Teleroboxer", {
+ { { 0x36103000, 0xa6e0d6db /*[T+Ger.4b_KR155E]*/, 0x126123ad /*[T+Ger1.0_KR155E]*/ }, "Teleroboxer", {
        0xfff2c408,
        0xfff2c3f2,
        0xfff2b626,
@@ -1793,12 +1793,12 @@ static const struct VBGameEntry VBGames[] =
        0xfff8d30e,
  } },
 
- { { 0x4c32ba5e }, "Vertical Force (US)", { 0x7000BF4 } },
+ { { 0x4c32ba5e, 0xdc8c0bf4 /*[h1]*/ }, "Vertical Force (US)", { 0x7000BF4 } },
 
  // Is 0x05d06377 a bad dump?
  { { 0x9e9b8b92, 0x05d06377 }, "Vertical Force (Japan)", { 0x7000BF4 } },
 
- { { 0x20688279 }, "Virtual Bowling (Japan)", {
+ { { 0x20688279, 0xddf9abe0 /*(Debug Menu Hack)*/ }, "Virtual Bowling (Japan)", {
        0xfff24eda,
        0xfff28bea,
        0xfff28c00,
@@ -1836,7 +1836,7 @@ static const struct VBGameEntry VBGames[] =
        0xfff2d62e,
  } },
 
- { { 0x526cc969 }, "Virtual Fishing (Japan)", {
+ { { 0x526cc969, 0x45471e40 /*[b1]*/ }, "Virtual Fishing (Japan)", {
        0x07000388,
        0x07000368,
  } },
@@ -1912,7 +1912,7 @@ static const struct VBGameEntry VBGames[] =
        0x07000c40,
  } },
 
-  { { 0x82a95e51 }, "Waterworld (US)", { 	// Apparently has complex wait loop.
+  { { 0x82a95e51, 0x742298d1 /*[b1]*/  }, "Waterworld (US)", { 	// Apparently has complex wait loop.
        0x070008fc,
        0x0700090e,
        0x0700209e,
@@ -1936,7 +1936,7 @@ static void PatchROM(void)
 {
  uint32 checksum = crc32(0, GPROM, GPROM_Mask + 1);
 
- printf("0x%08x\n", checksum);
+ MDFN_printf("0x%08x\n", checksum);
 
  GPROM_NonPatched = GPROM;
 
@@ -1968,11 +1968,11 @@ static void PatchROM(void)
     uint8 code_ex = raw >> 9;
     uint8 replace_code_ex = code_ex;
 
-    printf("%02x -- %04x\n", code_ex, raw);
+    MDFN_printf("%02x -- %04x\n", code_ex, raw);
 
     switch(code_ex)
     {
-     default: printf("Unhandled patch code: 0x%02x -- %08x\n", code_ex, VBGames[i].patch_address[j]);	//assert(0);
+     default: MDFN_printf("Unhandled patch code: 0x%02x -- %08x\n", code_ex, VBGames[i].patch_address[j]);	//assert(0);
 		 break;
 
      case 0x42:		// BE
@@ -3148,7 +3148,7 @@ bool V810::bstr_subop(v810_timestamp_t &timestamp, int sub_op, int arg1)
 {
  if((sub_op >= 0x10) || (!(sub_op & 0x8) && sub_op >= 0x4))
  {
-  printf("%08x\tBSR Error: %04x\n", PC,sub_op);
+  MDFN_printf("%08x\tBSR Error: %04x\n", PC,sub_op);
 
   SetPC(GetPC() - 2);
   Exception(INVALID_OP_HANDLER_ADDR, ECODE_INVALID_OP);
@@ -3195,7 +3195,7 @@ bool V810::bstr_subop(v810_timestamp_t &timestamp, int sub_op, int arg1)
  }
  else
  {
-  printf("BSTR Search: %02x\n", sub_op);
+  MDFN_printf("BSTR Search: %02x\n", sub_op);
   return(Do_BSTR_Search(timestamp, ((sub_op & 1) ? -1 : 1), (sub_op & 0x2) >> 1));
  }
  assert(0);
@@ -3539,7 +3539,7 @@ void V810::Exception(uint32 handler, uint16 eCode)
 {
  // Exception overhead is unknown.
 
-    printf("Exception: %08x %04x\n", handler, eCode);
+    MDFN_printf("Exception: %08x %04x\n", handler, eCode);
 
     // Invalidate our bitstring state(forces the instruction to be re-read, and the r/w buffers reloaded).
     in_bstr = FALSE;
@@ -3548,7 +3548,7 @@ void V810::Exception(uint32 handler, uint16 eCode)
 
     if(S_REG[PSW] & PSW_NP) // Fatal exception
     {
-     printf("Fatal exception; Code: %08x, ECR: %08x, PSW: %08x, PC: %08x\n", eCode, S_REG[ECR], S_REG[PSW], PC);
+     MDFN_printf("Fatal exception; Code: %08x, ECR: %08x, PSW: %08x, PC: %08x\n", eCode, S_REG[ECR], S_REG[PSW], PC);
      Halted = HALT_FATAL_EXCEPTION;
      IPendingCache = 0;
      return;
