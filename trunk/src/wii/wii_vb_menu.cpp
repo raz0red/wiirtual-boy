@@ -37,9 +37,6 @@ distribution.
 #include "wii_vb_emulation.h"
 #include "wii_vb_sdl.h"
 #include "wii_vb_snapshot.h"
-#include "Wii_vb_language.h"
-
-extern Language *language;
 
 // Have we read the games list yet?
 static BOOL games_read = FALSE;
@@ -75,21 +72,21 @@ void wii_vb_menu_init()
   wii_menu_root = wii_create_tree_node( NODETYPE_ROOT, "root" );
 
   TREENODE* child = NULL;
-  child = wii_create_tree_node( NODETYPE_RESUME, language->root[0].c_str()  );
+  child = wii_create_tree_node( NODETYPE_RESUME, "Resume" );
   wii_add_child( wii_menu_root, child );
 
   child = NULL;
-  child = wii_create_tree_node( NODETYPE_RESET, language->root[1].c_str()  );
+  child = wii_create_tree_node( NODETYPE_RESET, "Reset" );
   wii_add_child( wii_menu_root, child );
 
-  child = wii_create_tree_node( NODETYPE_LOAD_ROM, language->root[2].c_str() );
+  child = wii_create_tree_node( NODETYPE_LOAD_ROM, "Load cartridge" );
   wii_add_child( wii_menu_root, child );
 
   child = wii_create_tree_node( NODETYPE_CARTRIDGE_SETTINGS_CURRENT_SPACER, "" );
   wii_add_child( wii_menu_root, child );
 
   TREENODE *cart_settings = wii_create_tree_node( 
-    NODETYPE_CARTRIDGE_SETTINGS_CURRENT, language->root[3].c_str() );
+    NODETYPE_CARTRIDGE_SETTINGS_CURRENT, "Cartridge settings (current cartridge)" );
   wii_add_child( wii_menu_root, cart_settings );    
 
   child = wii_create_tree_node( NODETYPE_SPACER, "" );
@@ -101,16 +98,16 @@ void wii_vb_menu_init()
   //
 
   TREENODE *state = wii_create_tree_node( 
-    NODETYPE_SAVE_STATE_MANAGEMENT, language->save[0].c_str()  );
+    NODETYPE_SAVE_STATE_MANAGEMENT, "Save state management" );
   wii_add_child( wii_menu_root, state );
 
   child = wii_create_tree_node( NODETYPE_AUTO_LOAD_STATE, 
-    language->save[1].c_str() );
+    "Auto load " );
   child->x = -2; child->value_x = -3;
   wii_add_child( state, child );
 
   child = wii_create_tree_node( NODETYPE_AUTO_SAVE_STATE, 
-    language->save[2].c_str() );
+    "Auto save " );
   child->x = -2; child->value_x = -3;
   wii_add_child( state, child );
 
@@ -118,18 +115,18 @@ void wii_vb_menu_init()
   wii_add_child( state, child );
 
   child = wii_create_tree_node( NODETYPE_LOAD_STATE, 
-    language->save[3].c_str() );
+    "Load saved state" );
   wii_add_child( state, child );
 
   child = wii_create_tree_node( NODETYPE_SPACER, "" );
   wii_add_child( state, child );
 
   child = wii_create_tree_node( NODETYPE_SAVE_STATE, 
-    language->save[4].c_str() );
+    "Save state (current cartridge)" );
   wii_add_child( state, child );
 
   child = wii_create_tree_node( NODETYPE_DELETE_STATE, 
-    language->save[5].c_str() );
+    "Delete saved state (current cartridge)" );
   wii_add_child( state, child );
 
   child = wii_create_tree_node( NODETYPE_SPACER, "" );
@@ -142,24 +139,24 @@ void wii_vb_menu_init()
   // Controls sub-menu
 
   TREENODE *controls = wii_create_tree_node( 
-    NODETYPE_CARTRIDGE_SETTINGS_CONTROLS, language->controlsub[0].c_str() );                                                        
+    NODETYPE_CARTRIDGE_SETTINGS_CONTROLS, "Control settings" );                                                        
   wii_add_child( cart_settings, controls );
 
-  child = wii_create_tree_node( NODETYPE_CONTROLLER, language->controlsub[1].c_str() );
+  child = wii_create_tree_node( NODETYPE_CONTROLLER, "Controller " );
   child->x = -2; child->value_x = -3;
   wii_add_child( controls, child );
 
   child = wii_create_tree_node( NODETYPE_SPACER, "" );
   wii_add_child( controls, child );
   
-  child = wii_create_tree_node( NODETYPE_WIIMOTE_SUPPORTED, language->controlsub[2].c_str() );
+  child = wii_create_tree_node( NODETYPE_WIIMOTE_SUPPORTED, "Supported " );
   child->x = -2; child->value_x = -3;
   wii_add_child( controls, child );
 
   int button;
   for( button = NODETYPE_BUTTON1; button <= NODETYPE_BUTTON10; button++ )
   {
-    child = wii_create_tree_node( (NODETYPE)button, language->controlsub[3].c_str() );
+    child = wii_create_tree_node( (NODETYPE)button, "Button " );
     child->x = -2; child->value_x = -3;
     wii_add_child( controls, child );
   }
@@ -167,27 +164,27 @@ void wii_vb_menu_init()
   // Display sub-menu
 
   TREENODE *cartDisplay = wii_create_tree_node( 
-    NODETYPE_CARTRIDGE_SETTINGS_DISPLAY, language->displaysub[0].c_str() );                                                        
+    NODETYPE_CARTRIDGE_SETTINGS_DISPLAY, "Display settings" );                                                        
   wii_add_child( cart_settings, cartDisplay );
 
   child = wii_create_tree_node( NODETYPE_CART_FRAME_SKIP, 
-    language->displaysub[1].c_str() );
+    "Frame skip " );
   child->x = -2; child->value_x = -3;
   wii_add_child( cartDisplay, child );
 
   child = wii_create_tree_node( NODETYPE_CART_RENDER_RATE, 
-    language->displaysub[2].c_str() );
+    "Render rate (%) " );
   child->x = -2; child->value_x = -3;
   wii_add_child( cartDisplay, child );
 
   // Advanced sub-menu
 
   TREENODE *cartadvanced = wii_create_tree_node( 
-    NODETYPE_CARTRIDGE_SETTINGS_ADVANCED, language->advancedsub[0].c_str() );
+    NODETYPE_CARTRIDGE_SETTINGS_ADVANCED, "Advanced" );
   wii_add_child( cart_settings, cartadvanced );
 
   child = wii_create_tree_node( 
-    NODETYPE_ROM_PATCH_CART, language->advancedsub[1].c_str() );
+    NODETYPE_ROM_PATCH_CART, "ROM patching " );
   child->x = -2; child->value_x = -3;
   wii_add_child( cartadvanced, child );  
 
@@ -197,15 +194,15 @@ void wii_vb_menu_init()
   wii_add_child( cart_settings, child );
 
   child = wii_create_tree_node( 
-    NODETYPE_SAVE_CARTRIDGE_SETTINGS, language->savesub[0].c_str() );
+    NODETYPE_SAVE_CARTRIDGE_SETTINGS, "Save settings" );
   wii_add_child( cart_settings, child );  
 
   child = wii_create_tree_node( 
-    NODETYPE_REVERT_CARTRIDGE_SETTINGS, language->savesub[1].c_str() );
+    NODETYPE_REVERT_CARTRIDGE_SETTINGS, "Revert to saved settings" );
   wii_add_child( cart_settings, child );  
 
   child = wii_create_tree_node( 
-    NODETYPE_DELETE_CARTRIDGE_SETTINGS, language->savesub[2].c_str() );
+    NODETYPE_DELETE_CARTRIDGE_SETTINGS, "Delete settings" );
   wii_add_child( cart_settings, child );  
 
   //
@@ -213,14 +210,14 @@ void wii_vb_menu_init()
   //
 
   TREENODE *display = wii_create_tree_node( NODETYPE_DISPLAY_SETTINGS, 
-    language->display[0].c_str() );
+    "Display settings" );
   wii_add_child( wii_menu_root, display );
 
   child = wii_create_tree_node( NODETYPE_SPACER, "" );
   wii_add_child( wii_menu_root, child );
 
   child = wii_create_tree_node( NODETYPE_RESIZE_SCREEN, 
-    language->display[1].c_str() );      
+    "Screen size " );      
   child->x = -2; child->value_x = -3;
   wii_add_child( display, child );     
 
@@ -228,7 +225,7 @@ void wii_vb_menu_init()
   wii_add_child( display, child );
 
   child = wii_create_tree_node( NODETYPE_VB_MODE, 
-    language->display[2].c_str() );
+    "Display mode " );
   child->x = -2; child->value_x = -3;
   wii_add_child( display, child );
 
@@ -249,21 +246,21 @@ void wii_vb_menu_init()
   //
 
   TREENODE *advanced = wii_create_tree_node( NODETYPE_ADVANCED, 
-    language->advanced[0].c_str() );
+    "Advanced" );
   wii_add_child( wii_menu_root, advanced );    
 
   child = wii_create_tree_node( NODETYPE_DEBUG_MODE, 
-    language->advanced[1].c_str() );
+    "Debug mode " );
   child->x = -2; child->value_x = -3;
   wii_add_child( advanced, child );
 
   child = wii_create_tree_node( NODETYPE_TOP_MENU_EXIT, 
-    language->advanced[2].c_str() );
+    "Top menu exit " );
   child->x = -2; child->value_x = -3;
   wii_add_child( advanced, child );
 
   child = wii_create_tree_node( NODETYPE_WIIMOTE_MENU_ORIENT, 
-    language->advanced[3].c_str() );
+    "Wiimote (menu) " );
   child->x = -2; child->value_x = -3;
   wii_add_child( advanced, child );
 
@@ -271,15 +268,7 @@ void wii_vb_menu_init()
   wii_add_child( advanced, child );
 
   child = wii_create_tree_node( 
-    NODETYPE_ROM_PATCH, language->advanced[4].c_str() );
-  child->x = -2; child->value_x = -3;
-  wii_add_child( advanced, child );  
-  
-  child = wii_create_tree_node( NODETYPE_SPACER, "" );
-  wii_add_child( advanced, child );
-
-  child = wii_create_tree_node( 
-    NODETYPE_LANGUAGE, language->advanced[5].c_str() );
+    NODETYPE_ROM_PATCH, "ROM patching " );
   child->x = -2; child->value_x = -3;
   wii_add_child( advanced, child );  
 
