@@ -177,6 +177,17 @@ void wii_vb_menu_init()
   child->x = -2; child->value_x = -3;
   wii_add_child( cartDisplay, child );
 
+  // Advanced sub-menu
+
+  TREENODE *cartadvanced = wii_create_tree_node( 
+    NODETYPE_CARTRIDGE_SETTINGS_ADVANCED, "Advanced" );
+  wii_add_child( cart_settings, cartadvanced );
+
+  child = wii_create_tree_node( 
+    NODETYPE_ROM_PATCH_CART, "ROM patching " );
+  child->x = -2; child->value_x = -3;
+  wii_add_child( cartadvanced, child );  
+
   // Save/Revert/Delete
 
   child = wii_create_tree_node( NODETYPE_SPACER, "" );
@@ -252,6 +263,14 @@ void wii_vb_menu_init()
     "Wiimote (menu) " );
   child->x = -2; child->value_x = -3;
   wii_add_child( advanced, child );
+
+  child = wii_create_tree_node( NODETYPE_SPACER, "" );
+  wii_add_child( advanced, child );
+
+  child = wii_create_tree_node( 
+    NODETYPE_ROM_PATCH, "ROM patching " );
+  child->x = -2; child->value_x = -3;
+  wii_add_child( advanced, child );  
 
   wii_menu_push( wii_menu_root );	
 }
@@ -341,11 +360,15 @@ void wii_menu_handle_get_node_name(
     case NODETYPE_AUTO_LOAD_STATE:
     case NODETYPE_AUTO_SAVE_STATE:
     case NODETYPE_CART_FRAME_SKIP:
+    case NODETYPE_ROM_PATCH:
     case NODETYPE_VSYNC:
       {
         BOOL enabled = FALSE;
         switch( node->node_type )
         {
+          case NODETYPE_ROM_PATCH:
+            enabled = wii_patch_rom;
+            break;
           case NODETYPE_VSYNC:
             enabled = ( wii_vsync == VSYNC_ENABLED );
             break;
@@ -396,6 +419,20 @@ void wii_menu_handle_get_node_name(
     case NODETYPE_CONTROLLER:
       snprintf( value, WII_MENU_BUFF_SIZE, "%s",
         WiiControllerNames[wii_current_controller] );
+      break;
+    case NODETYPE_ROM_PATCH_CART:
+      switch( wii_vb_db_entry.romPatch )
+      {
+        case ROM_PATCH_ENABLED:
+          strmode = "Enabled";
+          break;
+        case ROM_PATCH_DISABLED:
+          strmode = "Disabled";
+          break;
+        default:
+          strmode = "(default)";
+      }
+      snprintf( value, WII_MENU_BUFF_SIZE, "%s", strmode );
       break;
     case NODETYPE_BUTTON1:
     case NODETYPE_BUTTON2:
@@ -535,6 +572,7 @@ void wii_menu_handle_select_node( TREENODE *node )
     case NODETYPE_CARTRIDGE_SETTINGS_CURRENT:
     case NODETYPE_CARTRIDGE_SETTINGS_DISPLAY:
     case NODETYPE_CARTRIDGE_SETTINGS_CONTROLS:
+    case NODETYPE_CARTRIDGE_SETTINGS_ADVANCED:
       wii_menu_push( node );
       if( node->node_type == NODETYPE_LOAD_ROM )
       {
@@ -600,6 +638,16 @@ void wii_menu_handle_select_node( TREENODE *node )
       {
         wii_current_controller = 0;
       }
+      break;
+    case NODETYPE_ROM_PATCH_CART:
+      wii_vb_db_entry.romPatch++;
+      if( wii_vb_db_entry.romPatch > ROM_PATCH_DISABLED )
+      {
+        wii_vb_db_entry.romPatch = 0;
+      }
+      break;
+    case NODETYPE_ROM_PATCH:
+      wii_patch_rom ^= 1;
       break;
     case NODETYPE_BUTTON1:
     case NODETYPE_BUTTON2:

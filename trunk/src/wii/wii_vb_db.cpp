@@ -213,6 +213,7 @@ void wii_vb_db_get_defaults( VbDbEntry* entry )
   entry->frameSkip = 0;
   entry->renderRate = MAX_RENDER_RATE;
   entry->wiimoteSupported = 1;
+  entry->romPatch = ROM_PATCH_DEFAULT;
   memset( entry->buttonMap, 0x0, sizeof(entry->buttonMap) );
 
   // Set the default button map values
@@ -302,7 +303,7 @@ static void write_entry( FILE* file, char* hash, VbDbEntry *entry )
   fprintf( file, "frameSkip=%d\n", entry->frameSkip );
   fprintf( file, "renderRate=%d\n", entry->renderRate );
   fprintf( file, "wiimoteSupported=%d\n", entry->wiimoteSupported );
-
+  fprintf( file, "romPatch=%d\n", entry->romPatch );
 
   for( int i = 0; i < WII_CONTROLLER_COUNT; i++ )
   {
@@ -381,6 +382,10 @@ void wii_vb_db_get_entry( char* hash, VbDbEntry* entry )
           else if( !strcmp( buff, "wiimoteSupported" ) )
           {
             entry->wiimoteSupported = Util_sscandec( ptr );
+          }
+          else if( !strcmp( buff, "romPatch" ) )
+          {
+            entry->romPatch = Util_sscandec( ptr );
           }
 
           int i;
@@ -564,4 +569,18 @@ int wii_vb_db_write_entry( char* hash, VbDbEntry *entry )
   }
 
   return 1;
+}
+
+/*
+ * Whether to patch ROMs
+ *
+ * entry    The database entry
+ * return   Whether to patch ROMs
+ */
+BOOL wii_rom_patching_enabled( VbDbEntry *entry )
+{
+  return
+    ( ( entry->romPatch == ROM_PATCH_ENABLED ) ||
+      ( ( entry->romPatch == ROM_PATCH_DEFAULT ) &&
+        ( wii_patch_rom ) ) );
 }

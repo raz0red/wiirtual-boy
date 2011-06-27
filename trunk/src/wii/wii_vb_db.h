@@ -34,6 +34,11 @@ distribution.
 #define MAX_RENDER_RATE   99
 #define MIN_RENDER_RATE   1
 
+// ROM patching
+#define ROM_PATCH_DEFAULT    0
+#define ROM_PATCH_ENABLED    1
+#define ROM_PATCH_DISABLED   2
+
 /*
  * Structure for a virtual boy button 
  */
@@ -72,6 +77,7 @@ typedef struct VbDbEntry
   u8 renderRate;        // The render rate (if skipping enabled)
   u8 loaded;            // Whether the settings were loaded 
   u8 wiimoteSupported;  // Whether the Wiimote is supported
+  u8 romPatch;          // Whether to patch the ROM
   u8 buttonMap[WII_CONTROLLER_COUNT][WII_MAP_BUTTON_COUNT];
   u32 appliedButtonMap[WII_CONTROLLER_COUNT][VB_BUTTON_COUNT];
   char buttonDesc[VB_BUTTON_COUNT][255]; // Button description
@@ -119,5 +125,14 @@ extern int wii_vb_db_delete_entry( char* hash );
  * fullClear  Whether to fully clear the entry
  */
 extern void wii_vb_db_get_defaults( VbDbEntry* entry );
+
+
+/*
+ * Whether to patch ROMs
+ *
+ * entry    The database entry
+ * return   Whether to patch ROMs
+ */
+extern BOOL wii_rom_patching_enabled( VbDbEntry *entry );
 
 #endif

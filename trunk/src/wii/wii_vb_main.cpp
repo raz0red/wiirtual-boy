@@ -286,9 +286,12 @@ static void gxrender_callback()
     }
     int renderRate = wii_get_render_rate();
     sprintf( 
-      text, "%s %s %s (%d%%) hash:%s%s", 
+      text, "%s %s %s (%d%%) hash:%s%s%s", 
       virtfps, drawnfps, blitfps, ( renderRate == -1 ? 100 : renderRate ),
-      wii_cartridge_hash, ( wii_vb_db_entry.loaded ? " (db)" : "" ) );
+      wii_cartridge_hash, 
+      ( wii_vb_db_entry.loaded ? " (db)" : "" ),
+      ( wii_rom_patching_enabled( &wii_vb_db_entry ) ? " (p)" : "" )
+    );
 
     GXColor color = (GXColor){0x0, 0x0, 0x0, 0x80};                       
     wii_gx_drawrectangle( 

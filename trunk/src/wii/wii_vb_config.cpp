@@ -94,6 +94,10 @@ extern "C" void wii_config_handle_read_value( char *name, char* value )
   {
     wii_custom_colors_parallax = Util_sscandec( value );
   }
+  else if( strcmp( name, "PATCH_ROM" ) == 0 )
+  {
+    wii_patch_rom = Util_sscandec( value );
+  }  
 }
 
 /*
@@ -113,6 +117,7 @@ extern "C" void wii_config_handle_write_config( FILE *fp )
   fprintf( fp, "SCREEN_X=%d\n", wii_screen_x );
   fprintf( fp, "SCREEN_Y=%d\n", wii_screen_y );
   fprintf( fp, "SCREEN_MODE=%s\n", wii_vb_mode_key );
+  fprintf( fp, "PATCH_ROM=%d\n", wii_patch_rom );
 
   for( int i = 0; i < 2; i++ )
   {

@@ -91,6 +91,8 @@ extern int wii_current_controller;
 extern RGBA wii_custom_colors[2];
 // Whether parallax is enabled
 extern BOOL wii_custom_colors_parallax;
+// Patch ROM
+extern BOOL wii_patch_rom;
 
 /*
  * Returns the index of the specified 3d mode key

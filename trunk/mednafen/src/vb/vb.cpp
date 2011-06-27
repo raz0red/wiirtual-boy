@@ -1932,7 +1932,11 @@ static const struct VBGameEntry VBGames[] =
  } },
 };
 
+#ifndef WII
 static void PatchROM(void)
+#else
+void PatchROM(bool checkROM)
+#endif
 {
  uint32 checksum = crc32(0, GPROM, GPROM_Mask + 1);
 
@@ -1940,72 +1944,74 @@ static void PatchROM(void)
 
  GPROM_NonPatched = GPROM;
 
- for(unsigned int i = 0; i < sizeof(VBGames) / sizeof(VBGameEntry); i++)
+ if( checkROM )
  {
-  for(int ci = 0; ci < 16 && VBGames[i].checksums[ci]; ci++)
-   if(VBGames[i].checksums[ci] == checksum)
-  {
-   // Allocate and copy mem for GPROM_NonPatched, so we won't trigger any games potential anti-piracy checksum routines.
-   // Comment out this code if you know it won't be a problem.
-   if(VBGames[i].patch_address[0])
+   for(unsigned int i = 0; i < sizeof(VBGames) / sizeof(VBGameEntry); i++)
    {
-    if(!(GPROM_NonPatched = (uint8 *)MDFN_calloc(1, GPROM_Mask + 1, _("GPROM"))))
+    for(int ci = 0; ci < 16 && VBGames[i].checksums[ci]; ci++)
+     if(VBGames[i].checksums[ci] == checksum)
     {
-     // Soft fail:
-     GPROM_NonPatched = GPROM;
-     return;
+     // Allocate and copy mem for GPROM_NonPatched, so we won't trigger any games potential anti-piracy checksum routines.
+     // Comment out this code if you know it won't be a problem.
+     if(VBGames[i].patch_address[0])
+     {
+      if(!(GPROM_NonPatched = (uint8 *)MDFN_calloc(1, GPROM_Mask + 1, _("GPROM"))))
+      {
+       // Soft fail:
+       GPROM_NonPatched = GPROM;
+       return;
+      }
+      memcpy(GPROM_NonPatched, GPROM, GPROM_Mask + 1);
+     }
+     //
+     //
+     //
+
+     for(int j = 0; j < 512 && VBGames[i].patch_address[j]; j++)
+     {
+      uint32 addr = VBGames[i].patch_address[j] & GPROM_Mask;
+      uint16 raw = MDFN_de16lsb(&GPROM[addr]);
+      uint8 code_ex = raw >> 9;
+      uint8 replace_code_ex = code_ex;
+
+      MDFN_printf("%02x -- %04x\n", code_ex, raw);
+
+      switch(code_ex)
+      {
+       default: MDFN_printf("Unhandled patch code: 0x%02x -- %08x\n", code_ex, VBGames[i].patch_address[j]);	//assert(0);
+		   break;
+
+       case 0x42:		// BE
+	         replace_code_ex = 0x36;
+	         break;
+
+       case 0x4A:		// BNE
+	         replace_code_ex = 0x37;
+	         break;
+
+       case 0x4C:		// BP
+	         replace_code_ex = 0x64;
+	         break;
+
+       case 0x41:		// BL
+	         replace_code_ex = 0x6C;
+	         break;
+
+       case 0x46:		// BLT
+	         replace_code_ex = 0x65;
+	         break;
+
+       case 0x45:		// BR
+		  replace_code_ex = 0x6D;
+		  break;
+      }
+
+      MDFN_en16lsb(&GPROM[addr], (raw & 0x1FF) | (replace_code_ex << 9));
+     }
+     break;
     }
-    memcpy(GPROM_NonPatched, GPROM, GPROM_Mask + 1);
    }
-   //
-   //
-   //
-
-   for(int j = 0; j < 512 && VBGames[i].patch_address[j]; j++)
-   {
-    uint32 addr = VBGames[i].patch_address[j] & GPROM_Mask;
-    uint16 raw = MDFN_de16lsb(&GPROM[addr]);
-    uint8 code_ex = raw >> 9;
-    uint8 replace_code_ex = code_ex;
-
-    MDFN_printf("%02x -- %04x\n", code_ex, raw);
-
-    switch(code_ex)
-    {
-     default: MDFN_printf("Unhandled patch code: 0x%02x -- %08x\n", code_ex, VBGames[i].patch_address[j]);	//assert(0);
-		 break;
-
-     case 0x42:		// BE
-	       replace_code_ex = 0x36;
-	       break;
-
-     case 0x4A:		// BNE
-	       replace_code_ex = 0x37;
-	       break;
-
-     case 0x4C:		// BP
-	       replace_code_ex = 0x64;
-	       break;
-
-     case 0x41:		// BL
-	       replace_code_ex = 0x6C;
-	       break;
-
-     case 0x46:		// BLT
-	       replace_code_ex = 0x65;
-	       break;
-
-     case 0x45:		// BR
-		replace_code_ex = 0x6D;
-		break;
-    }
-
-    MDFN_en16lsb(&GPROM[addr], (raw & 0x1FF) | (replace_code_ex << 9));
-   }
-   break;
-  }
  }
-
 }
 
 static int Load(const char *name, MDFNFILE *fp)
@@ -2212,7 +2218,9 @@ static int Load(const char *name, MDFNFILE *fp)
  if((GPRAM_Mask + 1) >= 32768)
   MDFNMP_AddRAM(GPRAM_Mask + 1, 6 << 24, GPRAM);
 
+#ifndef WII
  PatchROM();
+#endif
 
  return(1);
 }

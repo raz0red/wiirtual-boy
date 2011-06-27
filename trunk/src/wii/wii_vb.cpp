@@ -63,6 +63,8 @@ int wii_current_controller = 0;
 RGBA wii_custom_colors[2];
 // Whether parallax is enabled
 BOOL wii_custom_colors_parallax = TRUE;
+// Patch ROM
+BOOL wii_patch_rom = TRUE;
 
 #define CUSTOM_MODE_KEY "custom"
 
