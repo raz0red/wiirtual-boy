@@ -65,6 +65,8 @@ RGBA wii_custom_colors[2];
 BOOL wii_custom_colors_parallax = TRUE;
 // Patch ROM
 BOOL wii_patch_rom = TRUE;
+// Whether the current rom is patched
+BOOL wii_current_rom_patched = FALSE;
 
 #define CUSTOM_MODE_KEY "custom"
 

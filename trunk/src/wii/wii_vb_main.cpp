@@ -290,7 +290,8 @@ static void gxrender_callback()
       virtfps, drawnfps, blitfps, ( renderRate == -1 ? 100 : renderRate ),
       wii_cartridge_hash, 
       ( wii_vb_db_entry.loaded ? " (db)" : "" ),
-      ( wii_rom_patching_enabled( &wii_vb_db_entry ) ? " (p)" : "" )
+      ( wii_rom_patching_enabled( &wii_vb_db_entry ) ? 
+        ( wii_current_rom_patched ? " (p:1)" : " (p:0)" ) : "" )
     );
 
     GXColor color = (GXColor){0x0, 0x0, 0x0, 0x80};                       

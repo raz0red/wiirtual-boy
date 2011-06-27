@@ -1935,9 +1935,10 @@ static const struct VBGameEntry VBGames[] =
 #ifndef WII
 static void PatchROM(void)
 #else
-void PatchROM(bool checkROM)
+bool PatchROM(bool checkROM)
 #endif
 {
+  bool patched = false;
  uint32 checksum = crc32(0, GPROM, GPROM_Mask + 1);
 
  MDFN_printf("0x%08x\n", checksum);
@@ -1959,10 +1960,11 @@ void PatchROM(bool checkROM)
       {
        // Soft fail:
        GPROM_NonPatched = GPROM;
-       return;
+       return false;
       }
       memcpy(GPROM_NonPatched, GPROM, GPROM_Mask + 1);
      }
+     patched = true;
      //
      //
      //
@@ -2012,6 +2014,8 @@ void PatchROM(bool checkROM)
     }
    }
  }
+
+ return patched;
 }
 
 static int Load(const char *name, MDFNFILE *fp)

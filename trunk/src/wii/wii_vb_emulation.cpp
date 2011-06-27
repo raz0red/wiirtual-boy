@@ -45,7 +45,7 @@ extern "C" void WII_ChangeSquare(int xscale, int yscale, int xshift, int yshift)
 
 namespace MDFN_IEN_VB
 {
-  extern void PatchROM(bool checkROM);
+  extern bool PatchROM(bool checkROM);
 }
 
 /*
@@ -97,7 +97,8 @@ void wii_start_emulation( char *romfile, const char *savefile, bool reset, bool 
     {
       // Look up the cartridge in the database
       wii_vb_db_get_entry( wii_cartridge_hash, &wii_vb_db_entry );
-      MDFN_IEN_VB::PatchROM( wii_rom_patching_enabled( &wii_vb_db_entry ) );      
+      wii_current_rom_patched =
+        MDFN_IEN_VB::PatchROM( wii_rom_patching_enabled( &wii_vb_db_entry ) );      
     
 #ifdef WII_NETTRACE
       net_print_string( NULL, 0, "%s, %s, %s, %s\n", 
