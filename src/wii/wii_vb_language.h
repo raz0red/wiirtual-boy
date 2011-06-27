@@ -28,39 +28,21 @@ distribution.
 
 text definitions:
 
-root0        -    Resume
-root1        -    Reset
-root2        -    Load Cartridge
-root3        -    Cartridge settings (current cartridge)
-save0        -    Save state management
-save1        -    Autoload
-save2        -    Autosave
-save3        -    Load saved state
-save4        -    Save state (current cartridge)
-save5        -    Delete saved state (current cartridge)
-controlsub0  -    Control settings
-controlsub1  -    Controller
-controlsub2  -    Supported
-controlsub3  -    Button
-displaysub0  -    Display settings
-displaysub1  -    Frameskip
-displaysub2  -    Render rate (%)
-advancedsub0 -    Advanced
-advancedsub1 -    ROM Patching 
-savesub0     -    Save settings
-savesub1     -    Revert to saved settings
-savesub2     -    Delete settings
-display0     -    Display settings
-display1     -    Screen size
-display2     -    Display mode
-advanced0    -    Advanced
-advanced1    -    Debug mode
-advanced2    -    Top menu exit
-advanced3    -    Wiimote (menu)
-advanced4    -    ROM Patching
-advanced5    -    Language
-
-
+control     - "U/D = Scroll. A = Select. Home = Exit"
+menu0       - "Load Cartridge"
+load0       - "U/D = Scroll. L/R = Page. A = Select. B = Back. Home = Exit"
+load1       - " cartridges found. displaying "
+menu1       - "Save state management"
+save0       - "Auto load:"
+save1       - "Auto save:"
+save2       - "Load saved state"
+menu2       - "Display settings"
+display0    - "Screen size:"
+display1    - "Display mode:"
+menu3       - "Advanced"
+advanced0   - "Debug mode:"
+advanced1   - "Top menu exit:"
+advanced2   - "Wiimote [menu]:"
 
 */
 
@@ -82,14 +64,12 @@ class Language
 	bool languageLoad(char* filepath);
 	
 	string name;//Language name
-	string root[4];
-	string save[6];
-	string controlsub[4];
-	string displaysub[3];
-	string advancedsub[2];
-	string savesub[3];
-	string display[3];
-	string advanced[6];
+	string control;
+	string menu[4];
+	string load[2];
+	string save[3];
+	string display[2];
+	string advanced[3];
 	
 	private:
 	
