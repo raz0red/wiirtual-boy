@@ -46,6 +46,7 @@ distribution.
 #include "wii_file_io.h"
 #include "wii_freetype.h"
 #include "wii_video.h"
+#include "wii_vb_language.h"
 
 #define ABOUT_Y 20
 
@@ -101,6 +102,8 @@ static char **main_argv;
 
 // Forward refs
 static void wii_free_node( TREENODE* node );
+
+Language *language;
 
 /*
 * Test to see if the machine is PAL or NTSC
@@ -479,6 +482,7 @@ static void wii_menu_render( TREENODE *menu )
       buffer );    
   }
 
+  VIDEO_WaitVSync();
   VIDEO_SetNextFramebuffer( fb );
   VIDEO_SetBlack(FALSE);
   VIDEO_Flush();	
@@ -861,6 +865,21 @@ static void init_app()
 
   // Initialize the freetype library
   wii_ft_init();
+
+  //Initilialize languages
+  language = new Language();
+  char *filepath;
+  //Eventually we'll use a setting for the default language
+  if(wii_is_usb)
+	filepath = "usb:/wiivb/languages/english.ln";
+  else
+	filepath = "sd:/wiivb/languages/english.ln";
+  if(!language->languageLoad(filepath))
+  {
+	generateEnglishLanguageFile(filepath);//Need to change this when default language setting is implemented
+	if(!language->languageLoad(filepath))
+		exit(0);
+  }
 
   // Initialize the application
   wii_handle_init();
