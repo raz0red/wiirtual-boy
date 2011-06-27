@@ -93,6 +93,9 @@ extern RGBA wii_custom_colors[2];
 extern BOOL wii_custom_colors_parallax;
 // Patch ROM
 extern BOOL wii_patch_rom;
+// Whether the current rom is patched
+extern BOOL wii_current_rom_patched;
+
 
 /*
  * Returns the index of the specified 3d mode key
