@@ -24,6 +24,7 @@ distribution.
 
 #include <stdio.h>
 #include <sys/dir.h>
+#include <dirent.h>
 
 #include <wiiuse/wpad.h>
 #include <gccore.h>
@@ -47,6 +48,7 @@ distribution.
 #include "wii_freetype.h"
 #include "wii_video.h"
 #include "wii_vb_language.h"
+#include "debug.h"
 
 #define ABOUT_Y 20
 
@@ -103,6 +105,7 @@ static char **main_argv;
 // Forward refs
 static void wii_free_node( TREENODE* node );
 
+LanguageList *languagelist;
 Language *language;
 
 /*
@@ -865,9 +868,14 @@ static void init_app()
 
   // Initialize the freetype library
   wii_ft_init();
+  
+  InitGecko();
+  gprintf("Gecko here to save the day ;)\n");
 
   //Initilialize languages
+  languagelist = new LanguageList();
   language = new Language();
+  Language *tmplanguage = new Language();
   char *filepath;
   //Eventually we'll use a setting for the default language
   if(wii_is_usb)
@@ -880,6 +888,44 @@ static void init_app()
 	if(!language->languageLoad(filepath))
 		exit(0);
   }
+  //*language = tmplanguage;
+  languagelist->Append(*language);
+  //Count how many languages exist
+  int len;
+  struct dirent *pDirent;
+  DIR *pDir;
+
+  if(wii_is_usb)
+	pDir = opendir("usb:/wiivb/languages/");
+  else
+	pDir = opendir("sd:/wiivb/languages/");
+  if (pDir != NULL) 
+  {
+	while ((pDirent = readdir(pDir)) != NULL) 
+	{
+		len = strlen (pDirent->d_name);
+			if (len >= 3) 
+			{
+				if (strcmp (".ln", &(pDirent->d_name[len - 3])) == 0) 
+				{
+				    char newchar[150];
+					strcpy( newchar, "sd:/wiivb/languages/" );
+					strcat( newchar, pDirent->d_name);
+					tmplanguage->languageLoad(newchar);
+					gprintf("Loading %s into tmplanguage\n", newchar);
+					gprintf("tmplanguage.name is %s\n", tmplanguage->name.c_str());
+					gprintf("language->name is %s\n", language->name.c_str());
+					if(tmplanguage->name != language->name)
+					{
+						languagelist->Append(*tmplanguage);
+						gprintf("Appeneded %s into languagelist\n", tmplanguage->name.c_str());
+					}
+				}
+			}
+	}
+		closedir (pDir);
+  }
+
 
   // Initialize the application
   wii_handle_init();
