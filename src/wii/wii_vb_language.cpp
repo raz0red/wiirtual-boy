@@ -28,6 +28,8 @@ distribution.
 
 #include <stdio.h>
 
+#include "debug.h"
+
 using namespace std;
 
 Language::Language() {}
@@ -45,7 +47,7 @@ bool Language::languageLoad(char *filepath)
 
     string filebuffer;
 	
-	FILE *fp = fopen(filepath, "rb");
+	FILE *fp = fopen(filepath, "r");
 	if(!fp)
 		return false;
 	
@@ -88,6 +90,8 @@ bool Language::languageLoad(char *filepath)
 	this->advanced[3] = this->parseTag("advanced3", filebuffer);
 	this->advanced[4] = this->parseTag("advanced4", filebuffer);
 	this->advanced[5] = this->parseTag("advanced5", filebuffer);
+	
+	fclose(fp);
 
 	return true;
 }
@@ -112,6 +116,101 @@ string Language::parseTag(string tag, string filebuffer)
 	
 	return ret;
 
+}
+
+/*
+
+Append a language node to the linked list
+ 
+*/
+void LanguageList::Append(Language data) {
+
+    LanguageNode* newNode = new LanguageNode();
+    newNode->SetData(data);
+    newNode->SetNext(NULL);
+
+    LanguageNode *tmp = head;
+
+    if (tmp != NULL) 
+	{
+		while (tmp->Next() != NULL) 
+		{
+			tmp = tmp->Next();
+		}
+
+		tmp->SetNext(newNode);
+    }
+    else 
+	{
+		head = newNode;
+    }
+}
+
+/*
+
+Returns next language in the list 
+
+*/
+Language LanguageList::nextLanguage() {
+
+    LanguageNode *tmp = new LanguageNode();
+	tmp = head;
+	Language tmplanguage;
+	
+	gprintf("Currentcount %i\n", currentcount);
+
+    if(currentcount == 0)
+	{
+		currentcount++;
+		tmplanguage = tmp->Data();
+	}
+	else
+	{
+		for(int i = 0; i < currentcount; i++)
+		{
+			tmp = tmp->Next();
+			tmplanguage = tmp->Data();
+		
+			if(tmp->Next() == NULL)
+			{
+				currentcount = 0;
+				return tmplanguage;
+			}
+		}
+		currentcount++;
+	}
+	
+	gprintf("Returning %s from nextLanguage\n", tmplanguage.name.c_str());
+	return tmplanguage;
+	
+	// Temp pointer
+	/*
+    LanguageNode *tmp = head;
+	Language tmplanguage;
+    // No nodes
+    if ( tmp == NULL ) {
+    gprintf("EMPTY\n");
+    return tmplanguage;
+    }
+
+    // One node in the list
+    if ( tmp->Next() == NULL ) {
+    tmplanguage = tmp->Data();
+    gprintf("One node in the list: %s\n", tmplanguage.name.c_str());
+    }
+    else {
+    // Parse and print the list
+    do {
+        tmplanguage = tmp->Data();
+        gprintf("Found node: %s\n", tmplanguage.name.c_str());
+        tmp = tmp->Next();
+    }
+    while ( tmp != NULL );
+
+    gprintf("End of list reached\n\n");
+    }
+	
+	return tmplanguage;*/
 }
 
 /*
@@ -166,4 +265,21 @@ bool generateEnglishLanguageFile(char *filepath)
 	fclose(fp);
 
 	return true;
+}
+
+/*
+
+Retrieves the name of any language file
+
+*/
+
+string retrieveLanguageName(char *filepath)
+{
+	Language name;
+	
+	if(name.languageLoad(filepath))
+		return name.name;
+	else
+		return "";
+
 }
