@@ -26,6 +26,7 @@ distribution.
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <dirent.h>
 
 #include "wii_app.h"
 #include "wii_resize_screen.h"
@@ -39,6 +40,7 @@ distribution.
 #include "wii_vb_snapshot.h"
 #include "Wii_vb_language.h"
 
+extern LanguageList *languagelist;
 extern Language *language;
 
 // Have we read the games list yet?
@@ -477,7 +479,10 @@ void wii_menu_handle_get_node_name(
           }
         }
       }
-      break;     
+      break;    
+	case NODETYPE_LANGUAGE:
+	  snprintf( value, WII_MENU_BUFF_SIZE, "%s", language->name.c_str() );
+	  break;
     default:
       break;
   }
@@ -688,7 +693,11 @@ void wii_menu_handle_select_node( TREENODE *node )
             wii_current_controller][index] = mappedBtn;
         }
       }
-      break;     
+      break; 
+	case NODETYPE_LANGUAGE:
+		*language = languagelist->nextLanguage();
+		wii_vb_menu_init();
+		break;
     default:
       /* do nothing */
       break;

@@ -97,6 +97,35 @@ class Language
 	
 };
 
+class LanguageNode
+{
+
+	Language data;
+    LanguageNode* next;
+
+	public:
+		LanguageNode() {};
+		void SetData(Language aData) { data = aData; };
+		void SetNext(LanguageNode* aNext) { next = aNext; };
+		Language Data() { return data; };
+		LanguageNode* Next() { return next; };
+
+};
+
+class LanguageList
+{
+
+    LanguageNode *head;
+	int currentcount;
+	
+    public:
+		LanguageList() { head = NULL; currentcount = 1; };
+		Language nextLanguage();
+		void Append(Language data);
+
+};
+
 bool generateEnglishLanguageFile(char *filepath);
+string retrieveLanguageName(char *filepath);
 
 #endif
