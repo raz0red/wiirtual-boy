@@ -1,3 +1,7 @@
+#
+# Application message strings
+#
+
 msgid "(2d) Red/black"
 msgstr "(2D) r3D/bl@Ck"
 
@@ -319,3 +323,252 @@ msgstr "$7a7e saV35 f0UnD, DisPl@YiNg"
 msgid "to"
 msgstr "70"
 
+#
+# Cartridge database message strings
+#
+
+msgid "Activate spin/power meter"
+msgstr "@Ctiv@73 $piN/p0WeR m373R"
+
+msgid "Aim"
+msgstr "@im"
+
+msgid "Aim left"
+msgstr "@IM l3f7"
+
+msgid "Aim right"
+msgstr "@iM rIgH7"
+
+msgid "Ascend"
+msgstr "a5c3nd"
+
+msgid "Attack"
+msgstr "a77@ck"
+
+msgid "Auto fire"
+msgstr "@U70 fire"
+
+msgid "Bird's eye view"
+msgstr "8ird'5 ey3 vi3W"
+
+msgid "Bowl"
+msgstr "80wL"
+
+msgid "Cancel"
+msgstr "C@nc3l"
+
+msgid "Cast/reel in"
+msgstr "C@$7/r33L IN"
+
+msgid "Change altitude"
+msgstr "CH@Ng3 @L7i7Ud3"
+
+msgid "Change layer"
+msgstr "cH@nG3 LaY3R"
+
+msgid "Change perspective"
+msgstr "ch@Ng3 P3r5P3C7ive"
+
+msgid "Charge power"
+msgstr "Ch@rGe p0w3r"
+
+msgid "Decrease speed"
+msgstr "d3CR3a$3 5p3ed"
+
+msgid "Descend"
+msgstr "d3$c3nd"
+
+msgid "Destroy drone"
+msgstr "De$7Roy dr0N3"
+
+msgid "Drone 1"
+msgstr "dr0ne 1"
+
+msgid "Drone 2"
+msgstr "dr0N3 2"
+
+msgid "Drone 3"
+msgstr "dr0n3 3"
+
+msgid "Drone controls"
+msgstr "dR0N3 C0n7rol5"
+
+msgid "Drop faster"
+msgstr "dR0P f@$ter"
+
+msgid "Evasive maneuver"
+msgstr "3v@$iv3 M@n3uv3R"
+
+msgid "Execute"
+msgstr "3x3Cu73"
+
+msgid "Fire"
+msgstr "fir3"
+
+msgid "Fire down"
+msgstr "FIR3 D0Wn"
+
+msgid "Fire left"
+msgstr "fir3 l3F7"
+
+msgid "Fire right"
+msgstr "fIR3 rigH7"
+
+msgid "Fire up"
+msgstr "Fir3 uP"
+
+msgid "Fires cannon/homing missile"
+msgstr "fIr35 c@nn0N/H0MINg MI$5iL3"
+
+msgid "Fork ball/steal"
+msgstr "F0rK 8@lL/57eaL"
+
+msgid "Go left"
+msgstr "g0 l3Ft"
+
+msgid "Go right"
+msgstr "G0 Righ7"
+
+msgid "Hook fish"
+msgstr "h00K fi5H"
+
+msgid "Increase speed"
+msgstr "Incr3@$e $p33D"
+
+msgid "Jump"
+msgstr "JUMp"
+
+msgid "Left flipper"
+msgstr "lef7 FlIPp3R"
+
+msgid "Left punch"
+msgstr "L3f7 PuNCh"
+
+msgid "Left punch/block"
+msgstr "l3f7 puNcH/8loCk"
+
+msgid "Maneuver faster"
+msgstr "m@N3Uv3r F@57eR"
+
+msgid "Map"
+msgstr "M@p"
+
+msgid "Move"
+msgstr "m0v3"
+
+msgid "Move block"
+msgstr "M0v3 8loCK"
+
+msgid "Move cursor"
+msgstr "M0v3 CuR50R"
+
+msgid "Move forward"
+msgstr "m0v3 F0rW@rd"
+
+msgid "Move left"
+msgstr "m0v3 L3f7"
+
+msgid "Move right"
+msgstr "m0v3 RIGh7"
+
+msgid "Pause"
+msgstr "P@U5e"
+
+msgid "Pick off/bunt"
+msgstr "piCk 0Ff/8uN7"
+
+msgid "Reload"
+msgstr "r3Lo@D"
+
+msgid "Right flipper"
+msgstr "rIGht Flipp3r"
+
+msgid "Right punch"
+msgstr "rIght pUncH"
+
+msgid "Right punch/block"
+msgstr "riGH7 puNCH/8l0cK"
+
+msgid "Rotate"
+msgstr "R07@73"
+
+msgid "Rotate backward"
+msgstr "r07@73 8@CkW@rD"
+
+msgid "Rotate clockwise"
+msgstr "r07@73 CL0cKWI5e"
+
+msgid "Rotate container left"
+msgstr "r07@73 c0n7aiN3R l3Ft"
+
+msgid "Rotate container right"
+msgstr "r07@73 c0nt@In3r rIgh7"
+
+msgid "Rotate counter-clockwise"
+msgstr "r07@73 C0un73r-Cl0cKwi$e"
+
+msgid "Rotate forward"
+msgstr "R07a7e F0rW@Rd"
+
+msgid "Run"
+msgstr "run"
+
+msgid "Select unit"
+msgstr "$3L3c7 unI7"
+
+msgid "Shake"
+msgstr "$h@K3"
+
+msgid "Shoot"
+msgstr "$h007"
+
+msgid "Show menu"
+msgstr "$hoW m3Nu"
+
+msgid "Soft shot, lob"
+msgstr "$0f7 5H07, l08"
+
+msgid "Solid shot"
+msgstr "s0liD $H07"
+
+msgid "Sub screen"
+msgstr "$u8 5Cre3n"
+
+msgid "Swing left"
+msgstr "5wINg l3f7"
+
+msgid "Swing right"
+msgstr "$Wing RIght"
+
+msgid "Swing up"
+msgstr "5wIng uP"
+
+msgid "Switch camera"
+msgstr "5wi7ch C@M3r@"
+
+msgid "Throw"
+msgstr "7hR0W"
+
+msgid "Throw down"
+msgstr "thr0w D0Wn"
+
+msgid "Throw left"
+msgstr "7hroW L3F7"
+
+msgid "Throw right"
+msgstr "7hr0W riGh7"
+
+msgid "Throw up"
+msgstr "7hrow up"
+
+msgid "Throw/jump/dive/swing"
+msgstr "7Hr0w/JuMP/div3/5Wing"
+
+msgid "Toggle auto rotation"
+msgstr "70Ggl3 @U70 R0t@7i0n"
+
+msgid "Use power"
+msgstr "U53 p0wer"
+
+msgid "Use special"
+msgstr "U53 $PeCiaL"
