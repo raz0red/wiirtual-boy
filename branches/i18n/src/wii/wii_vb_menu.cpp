@@ -383,8 +383,11 @@ void wii_menu_handle_get_footer( TREENODE* menu, char *buffer )
       }
       break;
     case NODETYPE_LOAD_STATE:
-      wii_get_list_footer( 
-        menu, "state save", "state saves", buffer );
+       if( save_states_read )
+       {
+        wii_get_list_footer( 
+          menu, "state save", "state saves", buffer );
+       }
       break;
     default:
       break;
