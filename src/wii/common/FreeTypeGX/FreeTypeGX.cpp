@@ -101,7 +101,7 @@ uint16_t FT_GetWidth( FT_UInt pixelSize, char *text )
  * @param strChar	Character string to be converted.
  * @return Wide character representation of supplied character string.
  */
-
+#if 0
 wchar_t* charToWideChar(const char* strChar)
 {
 	wchar_t *strWChar;
@@ -110,6 +110,25 @@ wchar_t* charToWideChar(const char* strChar)
 	char *tempSrc = (char *)strChar;
 	wchar_t *tempDest = strWChar;
 	while((*tempDest++ = *tempSrc++));
+
+	return strWChar;
+}
+#endif
+wchar_t* charToWideChar(const char* strChar)
+{
+	wchar_t *strWChar = new wchar_t[strlen(strChar) + 1];
+	if(!strWChar)
+		return NULL;
+
+	int bt = mbstowcs(strWChar, strChar, strlen(strChar));
+	if (bt > 0)
+	{
+		strWChar[bt] = (wchar_t)'\0';
+		return strWChar;
+	}
+
+	wchar_t *tempDest = strWChar;
+	while((*tempDest++ = *strChar++));
 
 	return strWChar;
 }

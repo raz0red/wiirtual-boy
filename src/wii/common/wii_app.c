@@ -34,6 +34,8 @@ distribution.
 #include "wii_app.h"
 #include "wii_app_common.h"
 
+#include "gettext.h"
+
 #ifdef WII_NETTRACE
 #include <network.h>
 #include "net_print.h"  
@@ -46,7 +48,7 @@ static char app_path[WII_MAX_PATH] = "";
 char wii_status_message[WII_MENU_BUFF_SIZE] = "";
 
 // The status message display count down
-u8 wii_status_message_count = 0;
+u32 wii_status_message_count = 0;
 
 // Whether we are installed on a USB drive
 BOOL wii_is_usb = FALSE;
@@ -222,6 +224,8 @@ void wii_console_init( void *fb )
  */ 
 void wii_set_status_message( const char *message )
 {
-  wii_status_message_count = 3;
-  snprintf( wii_status_message, sizeof(wii_status_message), "%s", message );
+  //LOCK_RENDER_MUTEX();
+  wii_status_message_count = ( wii_is_pal ? 50 : 60 ) * 5; // 5 seconds
+  snprintf( wii_status_message, sizeof(wii_status_message), "%s", gettextmsg(message) );
+  //UNLOCK_RENDER_MUTEX();
 }

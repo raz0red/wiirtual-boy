@@ -39,6 +39,8 @@ distribution.
 
 #include "wiimotenotsupported_png.h"
 
+#include "gettext.h"
+
 #ifdef WII_NETTRACE
 #include <network.h>
 #include "net_print.h"  
@@ -49,8 +51,7 @@ extern "C"
 void WII_VideoStart();
 void WII_VideoStop();
 void WII_ChangeSquare(int xscale, int yscale, int xshift, int yshift);
-void WII_SetRenderCallback( void (*cb)(void) );
-Mtx gx_view;
+extern Mtx gx_view;
 }
 
 // Forward references
@@ -143,11 +144,11 @@ void wii_vb_init()
 #endif
   nf.colorspace = MDFN_COLORSPACE_RGB;
 
+  MDFN_printf(_("BPP: %d\n"), nf.bpp);
+
   VTBuffer[0] = new MDFN_Surface(NULL, VB_WIDTH, VB_HEIGHT, VB_WIDTH, nf);
-  //VTBuffer[1] = new MDFN_Surface(NULL, VB_WIDTH, VB_HEIGHT, VB_WIDTH, nf);
   VTBuffer[1] = VTBuffer[0];
   VTLineWidths[0] = (MDFN_Rect *)calloc(VB_HEIGHT, sizeof(MDFN_Rect));
-  //VTLineWidths[1] = (MDFN_Rect *)calloc(VB_HEIGHT, sizeof(MDFN_Rect));
   VTLineWidths[1] = VTLineWidths[0];
 
   FPS_Init();
@@ -233,9 +234,8 @@ void wii_vb_emu_loop( BOOL resume )
   //MDFN_IEN_VB::VIP_Set3DMode( 0, false, 1, 0 );
 
   wii_sdl_black_back_surface();
-  WII_SetRenderCallback( &gxrender_callback );  
+  wii_gx_push_callback( &gxrender_callback, TRUE );  
   WII_ChangeSquare( wii_screen_x, wii_screen_y, 0, 0 );  
-  WII_VideoStart();    
   ClearSound();
   PauseSound( 0 );
 
@@ -245,7 +245,7 @@ void wii_vb_emu_loop( BOOL resume )
   GameLoop( NULL );
 
   PauseSound( 1 );
-  WII_VideoStop();     
+  wii_gx_pop_callback();     
 }
 
 #define CB_PIXELSIZE 14
@@ -285,8 +285,8 @@ static void gxrender_callback()
       CalcFramerates( virtfps, drawnfps, blitfps, 64 );  
     }
     int renderRate = wii_get_render_rate();
-    sprintf( 
-      text, "%s %s %s (%d%%) hash:%s%s%s", 
+    snprintf( 
+      text, sizeof(text), "%s %s %s (%d%%) hash:%s%s%s", 
       virtfps, drawnfps, blitfps, ( renderRate == -1 ? 100 : renderRate ),
       wii_cartridge_hash, 
       ( wii_vb_db_entry.loaded ? " (db)" : "" ),
@@ -316,7 +316,7 @@ static int controls_alpha = 0;
  * for the current cartridge
  */
 static void controls_render_callback()
-{
+{  
   GX_SetVtxDesc( GX_VA_POS, GX_DIRECT );
   GX_SetVtxDesc( GX_VA_CLR0, GX_DIRECT );
   GX_SetVtxDesc( GX_VA_TEX0, GX_NONE );
@@ -375,9 +375,8 @@ int wii_vb_show_controls_screen()
   const int ALPHA_INC = 10;
   const int MAX_TIME = 5 * 1000; // 5 seconds
 
-  wii_sdl_black_back_surface();
-  WII_SetRenderCallback( &controls_render_callback );  
-  WII_VideoStart();  
+  // Push our callback
+  wii_gx_push_callback( &controls_render_callback, FALSE );  
 
   u32 startTime = SDL_GetTicks();
 
@@ -428,8 +427,8 @@ int wii_vb_show_controls_screen()
   }
   while( controls_alpha > 0 );
 
-  WII_VideoStop();
-  WII_SetRenderCallback( NULL );  
+  // Pop our callback
+  wii_gx_pop_callback();
 
   return retVal;
 }

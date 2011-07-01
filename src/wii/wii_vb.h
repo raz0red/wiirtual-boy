@@ -95,7 +95,8 @@ extern BOOL wii_custom_colors_parallax;
 extern BOOL wii_patch_rom;
 // Whether the current rom is patched
 extern BOOL wii_current_rom_patched;
-
+// The current language
+extern char wii_language[WII_MAX_PATH];
 
 /*
  * Returns the index of the specified 3d mode key
@@ -154,6 +155,13 @@ extern char* wii_get_roms_dir();
  * return   The saves directory
  */
 extern char* wii_get_saves_dir();
+
+/*
+ * Returns the lang directory
+ *
+ * return   The roms directory
+ */
+extern char* wii_get_lang_dir();
 
 /*
  * Returns the base directory

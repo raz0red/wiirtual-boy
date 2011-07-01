@@ -29,10 +29,9 @@ distribution.
 #include "wii_resize_screen.h"
 #include "wii_sdl.h"
 
-extern void WII_SetRenderCallback( void (*cb)(void) );
+#include "gettext.h"
+
 extern void WII_ChangeSquare(int xscale, int yscale, int xshift, int yshift);
-extern void WII_VideoStart();
-extern void WII_VideoStop();
 
 // Whether the aspect ratio is locked
 static BOOL arlocked = TRUE;
@@ -102,29 +101,44 @@ static void wii_resize_render_callback()
   u16 right = ( FTGX_ALIGN_TOP | FTGX_JUSTIFY_RIGHT );
   u16 left = ( FTGX_ALIGN_TOP | FTGX_JUSTIFY_LEFT );
 
-  wii_gx_drawtext( 0, y, fontsize, "D-pad/Analog :", black, right );
-  wii_gx_drawtext( 0, y, fontsize, " Resize screen", black, left );
+  char buffer[512] = "";
+  snprintf( buffer, sizeof(buffer), "%s :", gettextmsg( "D-pad/Analog" ) );
+  wii_gx_drawtext( 0, y, fontsize, buffer, black, right );
+  snprintf( buffer, sizeof(buffer), " %s", gettextmsg( "Resize screen" ) );
+  wii_gx_drawtext( 0, y, fontsize, buffer, black, left );
   y-=spacing;
 
-  wii_gx_drawtext( 0, y, fontsize, "A/2 button :", black, right );
-  wii_gx_drawtext( 0, y, fontsize, " Accept changes", black, left );
+  snprintf( buffer, sizeof(buffer), "%s :", gettextmsg( "A/2 button" ) );
+  wii_gx_drawtext( 0, y, fontsize, buffer, black, right );
+  snprintf( buffer, sizeof(buffer), " %s", gettextmsg( "Accept changes" ) );
+  wii_gx_drawtext( 0, y, fontsize, buffer, black, left );
   y-=spacing;
 
-  wii_gx_drawtext( 0, y, fontsize, "B/1 button :", black, right );
-  wii_gx_drawtext( 0, y, fontsize, " Cancel changes", black, left );
+  snprintf( buffer, sizeof(buffer), "%s :", gettextmsg( "B/1 button" ) );
+  wii_gx_drawtext( 0, y, fontsize, buffer, black, right );
+  snprintf( buffer, sizeof(buffer), " %s", gettextmsg( "Cancel changes" ) );
+  wii_gx_drawtext( 0, y, fontsize, buffer, black, left );
   y-=largespacing;
 
-  wii_gx_drawtext( 0, y, fontsize, "Minus/LTrigger :", black, right );
-  wii_gx_drawtext( 0, y, fontsize, " Toggle A/R lock", black, left );
+  snprintf( buffer, sizeof(buffer), "%s :", gettextmsg( "Minus/LTrigger" ) );
+  wii_gx_drawtext( 0, y, fontsize, buffer, black, right );
+  snprintf( buffer, sizeof(buffer), " %s", gettextmsg( "Toggle A/R lock" ) );
+  wii_gx_drawtext( 0, y, fontsize, buffer, black, left );
   y-=spacing;
 
-  wii_gx_drawtext( 0, y, fontsize, "Plus/RTrigger :", black, right );
-  wii_gx_drawtext( 0, y, fontsize, " Reset to defaults", black, left );
+  snprintf( buffer, sizeof(buffer), "%s :", gettextmsg( "Plus/RTrigger" ) );
+  wii_gx_drawtext( 0, y, fontsize, buffer, black, right );
+  snprintf( buffer, sizeof(buffer), " %s", gettextmsg( "Reset to defaults" ) );
+  wii_gx_drawtext( 0, y, fontsize, buffer, black, left );
   y-=largespacing;
+
+  snprintf( buffer, sizeof(buffer), "(%s : %s)",
+    gettextmsg( "Aspect ratio" ),
+    ( arlocked ? gettextmsg( "Locked" ) : gettextmsg( "Unlocked" ) ) );
 
   wii_gx_drawtext( 
     0, y, fontsize, 
-    ( arlocked ? "(Aspect ratio : Locked)" : "(Aspect ratio : Unlocked)" ), 
+    buffer, 
     black, FTGX_ALIGN_TOP | FTGX_JUSTIFY_CENTER  );
 }
 
@@ -143,9 +157,9 @@ void wii_resize_screen_gui( resize_info* rinfo )
   reset_aspect_ratio( currentX, currentY );
 
   WII_ChangeSquare( currentX, currentY, 0, 0 );
-  WII_SetRenderCallback( &wii_resize_render_callback );  
 
-  WII_VideoStart();   
+  // Push our callback
+  wii_gx_push_callback( &wii_resize_render_callback, TRUE ); 
 
   // Allows for incremental speed when scaling
   // (Scales faster the longer the directional pad is held)
@@ -327,8 +341,8 @@ void wii_resize_screen_gui( resize_info* rinfo )
     VIDEO_WaitVSync();
   } 
 
-  WII_VideoStop();
-  WII_SetRenderCallback( NULL );  
+  // Pop our callback
+  wii_gx_pop_callback();
 }
 
 /*

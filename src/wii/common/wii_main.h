@@ -51,8 +51,6 @@ typedef struct treenode {
   TREENODEPTR *children;
   u16 child_count;
   u16 max_children;
-  s16 x;
-  s16 value_x;
 } TREENODE;
 
 #define WII_MAX_PATH MAXPATHLEN + 1
@@ -74,8 +72,6 @@ extern int wii_vsync;
 extern TREENODEPTR wii_menu_stack[4];
 // The head of the menu stack
 extern s8 wii_menu_stack_head;
-// Two framebuffers (double buffered)
-extern u32 *wii_xfb[2];
 // Whether to quite the menu loop
 extern BOOL wii_menu_quit_loop;
 // Forces the menu to be redrawn
@@ -155,14 +151,18 @@ extern TREENODE* wii_menu_pop();
 extern int wii_menu_name_compare( const void *a, const void *b );
 
 /*
- * Returns the standard list footer for snapshots, games, etc.
- *
- * menu     The current menu
- * listname The name of the list (snapshot/game, etc.)
- * buffer   The buffer to write the footer to
- */
+* Returns the standard list footer for snapshots, games, etc.
+*
+* menu     The current menu
+* listname The name of the list (snapshot/game, etc.)
+* listname The name of the list in plural form (snapshot/game, etc.)
+* buffer   The buffer to write the footer to
+*/
 extern void wii_get_list_footer( 
-  TREENODE* menu, const char *listname, char *buffer );
+  TREENODE* menu, 
+  const char *listname, 
+  const char *listnameplural, 
+  char *buffer );
 
 /*
  * Sets whether to enable VSYNC or not 

@@ -36,6 +36,7 @@ distribution.
 #include "FreeTypeGX.h"
 
 #include "font_ttf.h"
+#include "asot_ttf.h"
 
 extern "C" {
   void WII_VideoStop();
@@ -67,6 +68,8 @@ BOOL wii_custom_colors_parallax = TRUE;
 BOOL wii_patch_rom = TRUE;
 // Whether the current rom is patched
 BOOL wii_current_rom_patched = FALSE;
+// The current language
+char wii_language[WII_MAX_PATH] = "";
 
 #define CUSTOM_MODE_KEY "custom"
 
@@ -197,7 +200,7 @@ void wii_handle_init()
     exit( EXIT_FAILURE );
   }
 
-  // FreeTypeGX
+  // FreeTypeGX 
   InitFreeType( (uint8_t*)font_ttf, (FT_Long)font_ttf_size  );
 
   // Initializes the menu
@@ -227,7 +230,7 @@ void wii_handle_free_resources()
  */
 void wii_handle_run()
 {
-  WII_VideoStop();
+  //WII_VideoStop();
 
   // Show the menu
   wii_menu_show();
@@ -269,6 +272,25 @@ char* wii_get_saves_dir()
   }
 
   return saves_dir;
+}
+
+// The lang dir
+static char lang_dir[WII_MAX_PATH] = "";
+
+/*
+ * Returns the lang directory
+ *
+ * return   The roms directory
+ */
+char* wii_get_lang_dir()
+{
+  if( lang_dir[0] == '\0' )
+  {
+    snprintf( 
+      lang_dir, WII_MAX_PATH, "%s%s", wii_get_fs_prefix(), WII_LANG_DIR );
+  }
+
+  return lang_dir;
 }
 
 // The base dir

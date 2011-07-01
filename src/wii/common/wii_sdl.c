@@ -38,6 +38,10 @@ distribution.
 SDL_Surface *back_surface = NULL;
 // The BLIT surface
 SDL_Surface *blit_surface = NULL;
+// The render mutex
+static SDL_mutex *render_mutex = NULL;
+// mutext lock count
+static int mutex_lock_count = 0;
 
 // Fonts
 TTF_Font *sdl_font_18 = NULL;
@@ -49,6 +53,39 @@ TTF_Font *sdl_font_12 = NULL;
 SDL_Color SDL_COLOR_WHITE = { 255, 255, 255, 0 };
 SDL_Color SDL_COLOR_BLACK = { 0, 0, 0, 0 };
 SDL_Color SDL_COLOR_RED = { 255, 0, 0, 0 };
+
+/* Locks the render mutext */
+void LOCK_RENDER_MUTEX()
+{
+  if( render_mutex != NULL )
+  {
+    SDL_mutexP( render_mutex );
+    mutex_lock_count++;
+#ifdef WII_NETTRACE
+    //net_print_string( NULL, 0, "RenderMutexLock:%d\n", mutex_lock_count ); 
+#endif
+  }
+}
+
+/* Unlocks the render mutext */
+void UNLOCK_RENDER_MUTEX()
+{
+  if( render_mutex != NULL )
+  {
+    --mutex_lock_count;
+#ifdef WII_NETTRACE
+    //net_print_string( NULL, 0, "RenderMutexUnlock:%d\n", mutex_lock_count ); 
+#endif
+    if( !mutex_lock_count )
+    {
+#ifdef WII_NETTRACE
+    //net_print_string( NULL, 0, "MutexUnlocked\n" ); 
+#endif
+      SDL_mutexV( render_mutex );
+    }
+  }
+}
+
 
 /*
 * Maps the specified color into the back surface.
@@ -357,6 +394,8 @@ void wii_sdl_fill_rectangle(
  */
 int wii_sdl_init()
 {
+  render_mutex = SDL_CreateMutex();
+
   // App initialization of the SDL
   wii_sdl_handle_init();
 
@@ -391,6 +430,7 @@ void wii_sdl_flip()
  */
 void wii_sdl_free_resources()
 {
+
   if( back_surface != NULL )
   {
     SDL_FreeSurface( back_surface );

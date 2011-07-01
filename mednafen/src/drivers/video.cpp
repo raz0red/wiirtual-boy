@@ -962,19 +962,21 @@ void BlitScreen(MDFN_Surface *msurface, const MDFN_Rect *DisplayRect, const MDFN
   u32* dest = (u32*)screen->pixels;
   u32* src = msurface->pixels;
 #endif
-  int destPitch = screen->pitch/screen->format->BytesPerPixel;
-  int srcPitch = msurface->pitch32;  
+
+  int destPitch = (screen->pitch/screen->format->BytesPerPixel)-msurface->w;
+  int srcPitch = msurface->pitch32-msurface->w;  
   dest += screen->offset/screen->format->BytesPerPixel;
 
   for( int y = 0; y < msurface->h; y++ )
-  {
+  {    
     for( int x = 0; x < msurface->w; x++ )
     {         
-      *(dest+x) = *(src+x);
+      *dest++ = *src++;
     }
     dest+=destPitch;
-    src+=srcPitch;
+    src+=srcPitch;    
   }
+
 #else
   SDL_Rect src_rect;
   const MDFN_PixelFormat *pf_needed = &pf_normal;

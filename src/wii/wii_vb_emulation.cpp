@@ -63,9 +63,6 @@ void wii_start_emulation( char *romfile, const char *savefile, bool reset, bool 
   // Write out the current config
   wii_write_config();
 
-  VIDEO_ClearFrameBuffer( vmode, wii_xfb[0], COLOR_BLACK );
-  VIDEO_ClearFrameBuffer( vmode, wii_xfb[1], COLOR_BLACK );			
-
   bool succeeded = true;
   char autosavename[WII_MAX_PATH] = "";
 

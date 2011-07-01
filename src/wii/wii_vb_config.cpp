@@ -98,6 +98,10 @@ extern "C" void wii_config_handle_read_value( char *name, char* value )
   {
     wii_patch_rom = Util_sscandec( value );
   }  
+  else if( strcmp( name, "LANGUAGE" ) == 0 )
+  {
+    Util_strlcpy( wii_language, value, sizeof(wii_language) );
+  }  
 }
 
 /*
@@ -118,6 +122,7 @@ extern "C" void wii_config_handle_write_config( FILE *fp )
   fprintf( fp, "SCREEN_Y=%d\n", wii_screen_y );
   fprintf( fp, "SCREEN_MODE=%s\n", wii_vb_mode_key );
   fprintf( fp, "PATCH_ROM=%d\n", wii_patch_rom );
+  fprintf( fp, "LANGUAGE=%s\n", wii_language );
 
   for( int i = 0; i < 2; i++ )
   {

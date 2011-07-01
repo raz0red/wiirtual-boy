@@ -1,0 +1,321 @@
+msgid "(2d) Red/black"
+msgstr "(2D) r3D/bl@Ck"
+
+msgid "(2d) White/black"
+msgstr "(2D) wHi73/8L@ck"
+
+msgid "(3d) Green/red"
+msgstr "(3D) gR33n/R3d"
+
+msgid "(3d) Red/blue"
+msgstr "(3D) reD/8lU3"
+
+msgid "(3d) Red/cyan"
+msgstr "(3d) R3d/Cy@N"
+
+msgid "(3d) Red/electric cyan"
+msgstr "(3d) R3d/3L3C7RiC CY@N"
+
+msgid "(3d) Red/green"
+msgstr "(3d) r3D/gr33N"
+
+msgid "(3d) Yellow/blue"
+msgstr "(3D) y3Ll0w/8lU3"
+
+msgid "(default)"
+msgstr "(d3F@UL7)"
+
+msgid "(none)"
+msgstr "(N0N3)"
+
+msgid "1 cartridge found."
+msgstr "1 car7ridg3 f0UnD."
+
+msgid "1 state save found."
+msgstr "1 57@73 5aV3 f0unD."
+
+msgid "A/2 button"
+msgstr "@/2 8u770N"
+
+msgid "Accept changes"
+msgstr "acc3P7 CH@NGes"
+
+msgid "Advanced"
+msgstr "@dv@Nced"
+
+msgid "An error occurred attempting to delete saved state."
+msgstr "@N 3rRoR 0ccuRR3d @7t3mP7iNG to d3L3te $@v3D 57a73."
+
+msgid "An error occurred attempting to save state."
+msgstr "@n 3RR0R 0CcURR3d @77emp7iNG 70 s@ve $7@7e."
+
+msgid "An error occurred deleting cartridge settings."
+msgstr "@n 3rr0r 0cCurr3D D3le7inG c@R7rIdG3 s377inG$."
+
+msgid "An error occurred saving cartridge settings."
+msgstr "@n err0r 0CcurR3d $@VINg C@R7Ridg3 5e7tiNGs."
+
+msgid "Aspect ratio"
+msgstr "@5P3c7 ra7i0"
+
+msgid "Auto load"
+msgstr "@Ut0 L0@D"
+
+msgid "Auto save"
+msgstr "@u70 s@V3"
+
+msgid "B/1 button"
+msgstr "8/1 8U7t0n"
+
+msgid "Back"
+msgstr "8@CK"
+
+msgid "Cancel changes"
+msgstr "C@NC3l ch@Ng3$"
+
+msgid "Cartridge settings (current cartridge)"
+msgstr "c@r7rIDg3 s377ing$ (Curr3n7 C@r7RiDG3)"
+
+msgid "Classic"
+msgstr "CL@$$iC"
+
+msgid "Control settings"
+msgstr "c0N7R0L s377ing$"
+
+msgid "Controller"
+msgstr "C0NtR0Ll3r"
+
+msgid "Custom"
+msgstr "cu570m"
+
+msgid "D-pad/Analog"
+msgstr "D-P@D/@n@l0g"
+
+msgid "Debug mode"
+msgstr "d38uG M0De"
+
+msgid "Delete saved state (current cartridge)"
+msgstr "D3Le73 5@v3d 57@73 (curR3n7 c@r7RIDg3)"
+
+msgid "Delete settings"
+msgstr "d3l3t3 5e77INg5"
+
+msgid "Disabled"
+msgstr "Di$@8l3d"
+
+msgid "Display mode"
+msgstr "Di5pL@y M0D3"
+
+msgid "Display settings"
+msgstr "dI$pl@y 5377ing5"
+
+msgid "Enabled"
+msgstr "3NabLed"
+
+msgid "English"
+msgstr "eNGli$h"
+
+msgid "Error loading the specified save state file."
+msgstr "3rror l0@dInG tH3 $P3CIFI3D $@v3 57@t3 FIl3."
+
+msgid "Error opening roms directory."
+msgstr "err0r 0P3NInG Rom5 DIr3c70Ry."
+
+msgid "Error opening state saves directory."
+msgstr "3rr0R 0peninG 5t@73 $@v3s dir3C70rY."
+
+msgid "Exit"
+msgstr "3xi7"
+
+msgid "Frame skip"
+msgstr "fRaM3 skIp"
+
+msgid "Game Settings"
+msgstr "G@m3 $37tInG$"
+
+msgid "GameCube"
+msgstr "gaM3cu83"
+
+msgid "Hacker"
+msgstr "hack3r"
+
+msgid "Home"
+msgstr "H0m3"
+
+msgid "L-Down"
+msgstr "l-d0Wn"
+
+msgid "L-Left"
+msgstr "l-l3f7"
+
+msgid "L-Right"
+msgstr "L-righ7"
+
+msgid "L-Up"
+msgstr l-uP"
+
+msgid "Language"
+msgstr "l@nGU@G3"
+
+msgid "Load cartridge"
+msgstr "l0ad C@R7riDg3"
+
+msgid "Load saved state"
+msgstr "l0ad $@v3D $7a73"
+
+msgid "Locked"
+msgstr "l0CK3d"
+
+msgid "Minus"
+msgstr "mInu5"
+
+msgid "Minus/LTrigger"
+msgstr "Minu5/l7RIGg3r"
+
+msgid "No cartridges found."
+msgstr "no c@R7rIDg3$ F0UND."
+
+msgid "No state saves found."
+msgstr "n0 s7@t3 $@v3$ f0UnD."
+
+msgid "Page"
+msgstr "P@Ge"
+
+msgid "Pause"
+msgstr "p@u53"
+
+msgid "Plus"
+msgstr "plu$"
+
+msgid "Plus/RTrigger"
+msgstr "plus/r7Rigg3r"
+
+msgid "R-Down"
+msgstr "r-D0wN"
+
+msgid "R-Left"
+msgstr "R-l3f7"
+
+msgid "R-Right"
+msgstr "r-rigH7"
+
+msgid "R-Up"
+msgstr "r-Up"
+
+msgid "ROM patching"
+msgstr "r0m p@7cHIng"
+
+msgid "Reading game list..."
+msgstr "r3@DINg G@m3 li57..."
+
+msgid "Reading saved state list..."
+msgstr "R3adinG $@V3D 57@73 lI$7..."
+
+msgid "Render rate (%)"
+msgstr "r3Nd3r R@t3 (%)"
+
+msgid "Reset to defaults"
+msgstr "r3$37 70 D3f@Ul7$"
+
+msgid "Reset"
+msgstr "r3537"
+
+msgid "Resize screen"
+msgstr "r3siz3 5cre3N"
+
+msgid "Resume"
+msgstr "R35Um3"
+
+msgid "Revert to saved settings"
+msgstr "reV3r7 70 $@Ved 5et7InG5"
+
+msgid "Save settings"
+msgstr "s@V3 5377inG$"
+
+msgid "Save state (current cartridge)"
+msgstr "s@Ve $7@7e (cUrR3n7 C@r7ridg3)"
+
+msgid "Save state management"
+msgstr "$@v3 $t@73 m@N@g3MeN7"
+
+msgid "Screen size"
+msgstr "5cr33N 5IZ3"
+
+msgid "Scroll"
+msgstr "5cr0ll"
+
+msgid "Select"
+msgstr "s3L3C7"
+
+msgid "Sideways"
+msgstr "5id3w@y$"
+
+msgid "Start"
+msgstr "$7ar7"
+
+msgid "Successfully deleted cartridge settings."
+msgstr "$ucC3s$fully d3L373d caR7rIdG3 5377ings."
+
+msgid "Successfully reverted to saved settings."
+msgstr "5uCCe$5fULLy R3V3r73d t0 sav3d 5377iNg5."
+
+msgid "Successfully saved cartridge settings."
+msgstr "$Ucc3$sfullY 5@v3d C@R7riDg3 537tiNg5."
+
+msgid "Successly deleted saved state."
+msgstr "5UCC35sLY d3L373d $@V3d $7@7e."
+
+msgid "Successly saved state."
+msgstr "$UCCe$slY $@v3D 57@73."
+
+msgid "Supported"
+msgstr "$uPP0r73D"
+
+msgid "The file selected is not a valid saved state file."
+msgstr "7h3 file s3L3c73D i$ N07 @ V@lid 5@V3D $7a73 fIL3."
+
+msgid "The save specified is not valid."
+msgstr "the 5@v3 5p3cifIeD i$ n07 v@lId."
+
+msgid "Toggle A/R lock"
+msgstr "70ggL3 @/r l0cK"
+
+msgid "Top menu exit"
+msgstr "t0p m3nU 3XIt"
+
+msgid "Unable to find associated ROM file."
+msgstr "una8L3 70 fINd @5s0ci@73D rom fIl3."
+
+msgid "Unable to find the specified save state file."
+msgstr "Una8L3 70 finD tH3 $pecifI3d $av3 $7@73 fIl3."
+
+msgid "Unlocked"
+msgstr "uNL0CK3d"
+
+msgid "Upright"
+msgstr "uprIGh7"
+
+msgid "Wiimote (menu)"
+msgstr "wiim07e (menU)"
+
+msgid "Wiimote + Nunchuk"
+msgstr "wiIM073 + Nunchuk"
+
+msgid "Wiimote"
+msgstr "wiIm07e"
+
+msgid "Yes"
+msgstr "Y3$"
+
+msgid "cartridges found, displaying"
+msgstr "C@r7rIdg3s f0Und, dispL@yiNG"
+
+msgid "items found, displaying"
+msgstr "It3ms f0und, dI$pL@yInG"
+
+msgid "state saves found, displaying"
+msgstr "$7a7e saV35 f0UnD, DisPl@YiNg"
+
+msgid "to"
+msgstr "70"
+

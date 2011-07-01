@@ -395,7 +395,7 @@ void wii_vb_db_get_entry( char* hash, VbDbEntry* entry )
             for( int j = 0; !btnFound && j < WII_MAP_BUTTON_COUNT; j++ )
             {
               char btnName[64];
-              sprintf( btnName, "btn.%d.%d", i, j );
+              snprintf( btnName, sizeof(btnName), "btn.%d.%d", i, j );
               if( !strcmp( buff, btnName ) )
               {
                 entry->buttonMap[i][j] = Util_sscandec( ptr );

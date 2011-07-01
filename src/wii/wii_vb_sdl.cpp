@@ -62,7 +62,7 @@ int wii_sdl_handle_init()
 #else 
       32,
 #endif
-      SDL_HWSURFACE
+      SDL_HWSURFACE | SDL_HWPALETTE | SDL_FULLSCREEN
     );
 
 #if 0

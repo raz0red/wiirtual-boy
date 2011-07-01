@@ -35,7 +35,7 @@ extern "C" {
 extern char wii_status_message[WII_MENU_BUFF_SIZE];
 
 // The status message display count down
-extern u8 wii_status_message_count;
+extern u32 wii_status_message_count;
 
 // Whether we are installed on a USB drive
 extern BOOL wii_is_usb;

@@ -35,6 +35,7 @@ SOURCES		:=	\
     src/wii/common \
     src/wii/common/netprint \
     src/wii/common/pngu \
+    src/wii/common/i18n \
     src/wii/common/FreeTypeGX
 DATA		:=	src/wii/res/fonts src/wii/res/gfx  
 INCLUDES	:= \
@@ -44,12 +45,13 @@ INCLUDES	:= \
     src/wii/common \
     src/wii/common/netprint \
     src/wii/common/pngu \
+    src/wii/common/i18n \
     src/wii/common/FreeTypeGX
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------  
-#CFLAGS  -Wall -DWII_NETTRACE -funsafe-math-optimizations
+#CFLAGS  -Wall -DWII_NETTRACE -funsafe-math-optimizations -DWII_NETTRACE -DTRACK_UNIQUE_MSGIDS
 CFLAGS	= -g -O3 $(MACHDEP) $(INCLUDE) -DWII -DWII_BIN2O -DHAVE_CONFIG_H -DHAVE_FLOAT_H -DBPP=8 -funsafe-math-optimizations
 CXXFLAGS	=	$(CFLAGS) 
 

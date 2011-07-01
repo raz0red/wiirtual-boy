@@ -36,7 +36,7 @@ extern "C" {
 
 // The Wii surface
 extern SDL_Surface* back_surface;
-// The Coleco surface
+// The Blit surface
 extern SDL_Surface* blit_surface;
 
 // Fonts
@@ -140,6 +140,12 @@ extern void wii_sdl_draw_rectangle(
  * Frees the SDL resources
  */
 extern void wii_sdl_free_resources();
+
+/* Locks the render mutext */
+extern void LOCK_RENDER_MUTEX();
+
+/* Unlocks the render mutext */
+extern void UNLOCK_RENDER_MUTEX();
 
 //
 // Methods to be implemented by application
