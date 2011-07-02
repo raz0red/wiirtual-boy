@@ -119,7 +119,9 @@ static void setMSG(const char *msgid, const char *msgstr)
 {
   if( msgid && msgstr )
   {
-    msgmap[msgid] = expand_escape(msgstr);
+    char *msg = expand_escape(msgstr);
+    msgmap[msgid] = msg;
+    free( msg );
   }
 }
 
@@ -227,7 +229,7 @@ void dump_unique_msgids()
 }
 #endif
 
-const char *gettextmsg( const char *msgid)
+const char *gettextmsg( const char *msgid )
 {
 #ifdef TRACK_UNIQUE_MSGIDS
   add_msgid( msgid );
