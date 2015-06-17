@@ -7,6 +7,8 @@ Ported by raz0red and Arikado
 [http://www.twitchasylum.com]
 [http://arikadosblog.blogspot.com/]
 
+<a href='http://www.youtube.com/watch?feature=player_embedded&v=RHJ4vfpTDOQ' target='_blank'><img src='http://img.youtube.com/vi/RHJ4vfpTDOQ/0.jpg' width='425' height=344 /></a>
+
 --------------------------------------------
 Overview
 --------------------------------------------
